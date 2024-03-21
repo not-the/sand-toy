@@ -3,6 +3,38 @@
         "colors": ["344457", "344457", "344457", "334454", "344558"],
         "replace": true
     },
+
+    "#Solids": 0,
+    "stone": {
+        "colors": [
+            "8b8880",
+            "838079",
+            "8b807e"
+        ]
+    },
+    "wood": {
+        "colors": [
+            "7c5a32",
+            "7a5231",
+            "805d30"
+        ]
+    },
+    "foliage": {
+        "colors": [
+            "4f9b23",
+            "78af31",
+            "6ca338"
+        ]
+    },
+    "light": {
+        "colors": [
+            "ffffff",
+            "f2fff5",
+            "cccccc"
+        ]
+    },
+
+    "#Semi-Fluids": 0,
     "sand": {
         "colors": ["d4c376", "d3c488", "cfb56c"],
         "moves": [
@@ -27,34 +59,9 @@
             }
         ]
     },
-    "wood": {
-        "colors": [
-            "7c5a32",
-            "7a5231",
-            "805d30"
-        ]
-    },
-    "foliage": {
-        "colors": [
-            "4f9b23",
-            "78af31",
-            "6ca338"
-        ]
-    },
-    "stone": {
-        "colors": [
-            "8b8880",
-            "838079",
-            "8b807e"
-        ]
-    },
-    "light": {
-        "colors": [
-            "ffffff",
-            "f2fff5",
-            "cccccc"
-        ]
-    },
+
+
+    "#Fluids": 0,
     "water": {
         "colors": [
             "3388dd",
@@ -77,6 +84,32 @@
         "replace": true,
         "reacts": {
             "lava": "stone"
+        }
+    },
+    "lava": {
+        "colors": [
+            "ff946a",
+            "ff6145",
+            "ffbd68"
+        ],
+        "moves": [
+            {
+                "x": 0,
+                "y": 1
+            },
+            {
+                "x": -1,
+                "y": 0
+            },
+            {
+                "x": 1,
+                "y": 0
+            }
+        ],
+        "move_chance": 0.5,
+        "replace": true,
+        "reacts": {
+            "water": "stone"
         }
     },
     "steam": {
@@ -110,32 +143,7 @@
         "despawn_conversion": "water",
         "replace": true
     },
-    "lava": {
-        "colors": [
-            "ff946a",
-            "ff6145",
-            "ffbd68"
-        ],
-        "moves": [
-            {
-                "x": 0,
-                "y": 1
-            },
-            {
-                "x": -1,
-                "y": 0
-            },
-            {
-                "x": 1,
-                "y": 0
-            }
-        ],
-        "move_chance": 0.5,
-        "replace": true,
-        "reacts": {
-            "water": "stone"
-        }
-    },
+
     "smoke": {
         "colors": [
             "4b4b4b",

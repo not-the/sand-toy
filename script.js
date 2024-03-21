@@ -234,6 +234,12 @@ function mouseHandler(event) {
 // HTML
 let html = '';
 for(let [key, value] of Object.entries(materials)) {
+    if(key.startsWith('#')) {
+
+        html += `<h3>${key.substring(1)}</h3>`
+        continue;
+    }
+
     html += `
         <button onclick="brush.set('${key}')" data-brush="${key}"${key === brush.type ? ' class="active"' : ''}>
             <div class="square" style="--color: #${value.colors[0].toString(16)}"></div>

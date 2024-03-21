@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Sandbox</title>
 
     <!-- JS -->
     <script src="https://pixijs.download/v7.4.0/pixi.min.js"></script>
@@ -51,24 +51,40 @@
         * {
             box-sizing: border-box;
             image-rendering: pixelated;
+            font-family: Arial, Helvetica, sans-serif;
         }
         body {
             background-color: rgb(58, 58, 58);
             color: white;
             margin: 0;
+
+            display: flex;
+        }
+        h3 {
+            border-bottom: 1px solid gray;
+            margin: 12px 0 0 0;
+        }
+        .col {
+            width: 100%;
+        }
+        .col.tools {
+            max-width: 160px;
         }
         .container {
             padding: 12px 12px 0 12px;
         }
         #game canvas {
             width: 100%;
-            max-width: 1600px;
-            max-height: 100vh;
+            /* max-width: 1600px; */
+            max-height: 90vh;
         }
         button, input {
-            margin: 12px 2px;
+            /* margin: 12px 2px; */
+            margin: 6px 0;
             font-size: 13pt;
-            min-width: 80px;
+            /* min-width: 80px; */
+            width: 100%;
+            max-width: 100%;
         }
         button {
             cursor: pointer;
@@ -79,6 +95,9 @@
             border: 1px solid gray;
 
             text-align: left;
+        }
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
         button.active {
             background-color: white;
@@ -99,17 +118,21 @@
     </style>
 </head>
 <body>
-    <!-- Game -->
-    <div id="game" class="container"></div>
-
-    <!-- Brushes -->
-    <div id="controls" class="container">
+    <div class="col">
+        <!-- Game -->
+        <div id="game" class="container"></div>
     </div>
 
-    <!-- Options -->
-    <div class="container">
-        <label for="size">Brush size:</label><br/>
-        <input type="number" name="size" id="size" value="3" min="1">
+    <div class="col tools">
+        <!-- Brushes -->
+        <div id="controls" class="container">
+        </div>
+
+        <!-- Options -->
+        <div class="container">
+            <label for="size">Brush size:</label><br/>
+            <input type="number" name="size" id="size" value="3" min="1">
+        </div>
     </div>
 </body>
 </html>
