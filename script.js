@@ -1,6 +1,18 @@
 // DOM
 const gamespace = document.getElementById("game");
 
+/** Get JSON - https://stackoverflow.com/a/22790025/11039898
+ * @param {string} url JSON file URL
+ * @param {boolean} parse Whether or not to convert into a JS object
+ * @returns 
+ */
+function get(url, parse=true){
+    var rq = new XMLHttpRequest(); // a new request
+    rq.open("GET", url, false);
+    rq.send(null);
+    return parse ? JSON.parse(rq.responseText) : rq.responseText;          
+}
+
 // PIXI.JS
 let width = 75, height = 42;
 const app = new PIXI.Application({ width, height, antialias:false, useContextAlpha: false });
@@ -23,70 +35,8 @@ app.stage.filters = [
 ];
 
 // Materials
-const materials =  {
-    'air': {
-        colors: [0x344457, 0x344457, 0x344457, 0x334454, 0x344558],
-        replace: true,
-    },
-    'sand': {
-        colors: [0xd4c376, 0xcebe81, 0xcfb56c],
-        moves: [
-            {x:0, y:1},
-            {x:-1, y:1},
-            {x:1, y:1}
-        ]
-    },
-    'gravel': {
-        colors: [0x878a94, 0xc9b876, 0x929497],
-        moves: [
-            {x:0, y:1}
-        ]
-    },
-    'wood': {
-        colors: [0x7c5a32, 0x7a5231, 0x805d30]
-    },
-    'stone': {
-        colors: [0x8b8880]
-    },
-    'light': {
-        colors: [0xffffff]
-    },
-    'water': {
-        colors: [0x3388DD, 0x3385DD],
-        moves: [
-            {x:0, y:1},
-            {x:-1, y:0},
-            {x:1, y:0}
-        ],
-        replace: true,
-        reacts: {
-            'lava': 'stone',
-        }
-    },
-    'lava': {
-        colors: [0xff946a, 0xff6145, 0xffbd68],
-        moves: [
-            {x:0, y:1},
-            {x:-1, y:0},
-            {x:1, y:0}
-        ],
-        move_chance: 0.3,
-        replace: true,
-        reacts: {
-            'water': 'stone',
-        }
-    },
-    'smoke': {
-        colors: [0x4b4b4b, 0x575757],
-        moves: [
-            {x:0, y:-1},
-            {x:-1, y:0},
-            {x:1, y:0}
-        ],
-        move_chance: 0.25,
-        replace: true,
-    },
-}
+const materials = get('./materials.json');
+
 
 let mouse = {x:0,y:0};
 let pressed = {};
@@ -113,6 +63,8 @@ class WorldClass extends PIXI.Graphics {
     }
     /** Draw */
     draw(x, y) {
+        x-=Math.floor(brush.size/2);
+        y-=Math.floor(brush.size/2);
         let {size, type} = brush;
         for(let mx = 0; mx < size; mx++) {
             for(let my = 0; my < size; my++) this.set(x+mx, y+my, type);
@@ -127,8 +79,10 @@ class WorldClass extends PIXI.Graphics {
         let data = this.data(x, y);
         let mat = materials[data.type];
         if(!data.fresh) {
+            // Despawn chance
+            if(Math.random() <= mat.despawn_chance) return this.set(x, y, mat?.despawn_conversion ?? 'air');
 
-            // Sand
+            // Fluid movement
             if(mat?.moves !== undefined) {
                 let cx = 0;
                 let cy = 0;
@@ -173,8 +127,7 @@ class WorldClass extends PIXI.Graphics {
         if(dest === undefined || replacing_mat.replace !== true) return;
         if(dest_y > height || dest_x > width) return;
 
-        let conversion = mat?.reacts?.[dest?.type];
-        console.log(dest?.type, mat?.reacts);
+        let conversion = replacing_mat?.reacts?.[data?.type];
         if(conversion !== undefined) return this.set(dest_x, dest_y, conversion);
 
         this.set(dest_x, dest_y, data.type);
@@ -185,7 +138,7 @@ let world = new WorldClass();
 app.stage.addChild(world);
 
 let indicator = new PIXI.Graphics();
-indicator.alpha = 0.4;
+indicator.x = -100; indicator.y = -100
 app.stage.addChild(indicator);
 
 
@@ -273,17 +226,20 @@ function mouseHandler(event) {
     mouse = {x,y};
 
     // Indicator
-    indicator.x = x;
-    indicator.y = y;
+    indicator.x = x - Math.floor(brush.size/2);
+    indicator.y = y+1 - Math.floor(brush.size/2);;
 }
 
 
 // HTML
 let html = '';
 for(let [key, value] of Object.entries(materials)) {
-    html += `<button onclick="brush.set('${key}')" data-brush="${key}"${key === brush.type ? ' class="active"' : ''}>${key}</button>`;
+    html += `
+        <button onclick="brush.set('${key}')" data-brush="${key}"${key === brush.type ? ' class="active"' : ''}>
+            <div class="square" style="--color: #${value.colors[0].toString(16)}"></div>
+            <span>${key}</span>
+        </button>`;
 }
 document.getElementById('controls').innerHTML += html;
 
 document.getElementById('size').addEventListener('change', function() { brush.setSize(Number(this.value)); } )
-

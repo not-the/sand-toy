@@ -21,7 +21,7 @@
             --wood3: #805d30;
 
             --sand1: #d4c376;
-            --sand2: #c9b876;
+            --sand2: #d3c488;
             --sand3: #cfb56c;
 
             --gravel1: #878a94;
@@ -40,6 +40,12 @@
             --lava1: #ffbd68;
 
             --stone1: #8b8880;
+            --stone2: #838079;
+            --stone3: #8b807e;
+
+            --foliage1: #4f9b23;
+            --foliage2: #78af31;
+            --foliage3: #6ca338;
         }
 
         * {
@@ -51,36 +57,58 @@
             color: white;
             margin: 0;
         }
+        .container {
+            padding: 12px 12px 0 12px;
+        }
         #game canvas {
             width: 100%;
             max-width: 1600px;
             max-height: 100vh;
         }
-        #game {
-            padding: 12px;
-            /* width: 100%; */
-        }
         button, input {
-            margin: 12px 0 12px 12px;
+            margin: 12px 2px;
             font-size: 13pt;
             min-width: 80px;
         }
         button {
             cursor: pointer;
             border-radius: 6px;
+            padding: 6px 8px;
             background-color: transparent;
             color: white;
             border: 1px solid gray;
+
+            text-align: left;
         }
         button.active {
             background-color: white;
             color: black;
         }
+        button > .square {
+            --color: rgb(209, 209, 209);
+            background-color: var(--color);
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 3px;
+        }
+        button.active > .square {
+            border: 1px solid rgb(70, 70, 70);
+        }
     </style>
 </head>
 <body>
-    <div id="game"></div>
-    <div id="controls">
+    <!-- Game -->
+    <div id="game" class="container"></div>
+
+    <!-- Brushes -->
+    <div id="controls" class="container">
+    </div>
+
+    <!-- Options -->
+    <div class="container">
+        <label for="size">Brush size:</label><br/>
         <input type="number" name="size" id="size" value="3" min="1">
     </div>
 </body>
