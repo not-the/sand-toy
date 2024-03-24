@@ -13,13 +13,24 @@ function get(url, parse=true){
     return parse ? JSON.parse(rq.responseText) : rq.responseText;          
 }
 
-// PIXI.JS
+// Size
 let width = 75, height = 42;
+// let width = 125, height = 70;
+// let width = 200, height = 112;
+let params = location.search.substring(1).split(',');
+if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1])];
+
+// PIXI.JS
 const app = new PIXI.Application({ width, height, antialias:false, useContextAlpha: false });
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 app.renderer.background.color = 0x000000;
+app.renderer.clearBeforeRender = false;
+app.stage.interactiveChildren = false;
 gamespace.appendChild(app.view);
 let canvas = document.querySelector('canvas');
+
+const worldContainer = new PIXI.Container();
+app.stage.addChild(worldContainer);
 
 // Filters
 app.stage.filters = [
@@ -40,24 +51,21 @@ const materials = get('./materials.json');
 
 let mouse = {x:0,y:0};
 let pressed = {};
+let test = true;
 
 
 // World
 let grid = [];
-class WorldClass extends PIXI.Graphics {
-    constructor() {
-        super();
-        this.paused = false;
-    }
-
+class WorldClass {
     /** Set pixel */
-    set(x, y, type) {
+    set(x, y, type, preColor) {
         let p = grid?.[y]?.[x];
         if(p === undefined || (p?.type === type && p?.type !== 'air')) return;
 
         const mat = materials[type]
-        const color = mat.colors[Math.floor(Math.random() * mat.colors.length)];
-        world.beginFill(color).drawRect(x, y, 1, 1).endFill();
+        const color = preColor ?? mat.colors[Math.floor(Math.random() * mat.colors.length)];
+        // if(test) world.beginFill(color).drawRect(x, y, 1, 1).endFill();
+        p.tint = color;
         p.type = type;
         p.fresh = true;
     }
@@ -82,29 +90,24 @@ class WorldClass extends PIXI.Graphics {
             // Despawn chance
             if(Math.random() <= mat.despawn_chance) return this.set(x, y, mat?.despawn_conversion ?? 'air');
 
-            // Fluid movement
+            // Movement
             if(mat?.moves !== undefined) {
                 let cx = 0;
                 let cy = 0;
 
-                // // Find empty space below
-                // for(let i = 0; i < 3; i++) {
-                //     let below = this.data(x+cx, y+cy);
-                //     if(below === undefined || below?.type !== 'air') {
-                //         if(cx === 0) cx = -1;
-                //         else if(cx === -1) cx = 1;
-                //         else return;
-                //     }
-                //     else break;
-                // }
-
+                // Move chance
                 if(Math.random() >= mat.move_chance) return;
 
+                // Move checks
                 for(let m of mat.moves) {
-                    let dest = this.data(x+m.x, y+m.y);
+                    let moveX = m.x, moveY = m.y;
+                    if(Array.isArray(moveX)) moveX = moveX[Math.floor(Math.random() * moveX.length)]
+
+                    // Test if destination is valid
+                    let dest = this.data(x+moveX, y+moveY);
                     if(dest === undefined || (materials[dest?.type]?.replace !== true || dest.type === data.type)) continue;
-                    cx = m.x,
-                    cy = m.y;
+                    cx = moveX,
+                    cy = moveY;
                     break;
                 }
 
@@ -130,12 +133,33 @@ class WorldClass extends PIXI.Graphics {
         let conversion = replacing_mat?.reacts?.[data?.type];
         if(conversion !== undefined) return this.set(dest_x, dest_y, conversion);
 
-        this.set(dest_x, dest_y, data.type);
+        this.set(dest_x, dest_y, data.type, data.tint);
         this.set(x, y, replacing);
     }
 }
 let world = new WorldClass();
-app.stage.addChild(world);
+// world.width = width; world.height = height;
+// app.stage.addChild(world);
+
+
+// Pixels
+for(let yi = 0; yi < height; yi++) {
+    grid.push([]);
+    for(let xi = 0; xi < width; xi++) {
+        let pixel = new PIXI.Sprite(PIXI.Texture.WHITE);
+        pixel.type = 'air';
+        pixel.height = 1; pixel.width = 1;
+        pixel.x = xi;
+        pixel.y = yi;
+        worldContainer.addChild(pixel);
+
+        grid[yi][xi] = pixel;
+
+        world.set(xi, yi, type='air');
+    }
+}
+
+
 
 let indicator = new PIXI.Graphics();
 indicator.x = -100; indicator.y = -100
@@ -144,15 +168,16 @@ app.stage.addChild(indicator);
 
 // Brush
 let brush = {
-    size: 3,
+    // Type
     type: 'sand',
-
-    set(type) {
-        brush.type=type;
+    setType(type) {
+        this.type=type;
         document.querySelectorAll(`[data-brush]`).forEach(element => element.classList.remove('active'));
         document.querySelector(`[data-brush="${type}"]`).classList.add('active');
     },
 
+    // Size
+    size: 3,
     setSize(value) {
         this.size = value;
         indicator.clear().lineStyle(1, 0x000000).drawRect(0, -1, brush.size+1, brush.size+1).endFill();
@@ -169,20 +194,6 @@ brush.setSize(3);
 //     }
 // }
 
-
-// Pixels
-for(let yi = 0; yi < height; yi++) {
-    grid.push([]);
-    for(let xi = 0; xi < width; xi++) {
-        let p = {
-            xi, yi,
-            type: 'air'
-        }
-
-        grid[yi][xi] = p;
-        world.set(xi, yi, type='air');
-    }
-}
 
 // Ticker
 let elapsed = 0;
@@ -216,36 +227,42 @@ canvas.addEventListener('pointerdown', () => pressed['click'] = true )
 canvas.addEventListener('pointerup', () => delete pressed['click'] )
 
 // Events
-app.stage.interactive = true;
-app.stage.on('pointerdown', mouseHandler);
-app.stage.on('pointermove', mouseHandler);
-function mouseHandler(event) {
-    let pos = event.data.global;
-    let x = Math.floor(pos.x);
-    let y = Math.floor(pos.y);
-    mouse = {x,y};
+canvas.addEventListener('mousemove', event => {
+    const mouseX = event.clientX - canvas.offsetLeft;
+    const mouseY = event.clientY - canvas.offsetTop;
+  
+    // scale mouse coordinates to canvas coordinates
+    mouse = {
+        x: Math.floor(mouseX * canvas.width / canvas.clientWidth),
+        y: Math.floor(mouseY * canvas.height / canvas.clientHeight)
+    }
 
     // Indicator
-    indicator.x = x - Math.floor(brush.size/2);
-    indicator.y = y+1 - Math.floor(brush.size/2);;
-}
+    indicator.x = mouse.x - Math.floor(brush.size/2);
+    indicator.y = mouse.y+1 - Math.floor(brush.size/2);
+});
 
 
 // HTML
 let html = '';
 for(let [key, value] of Object.entries(materials)) {
     if(key.startsWith('#')) {
-
         html += `<h3>${key.substring(1)}</h3>`
         continue;
     }
 
     html += `
-        <button onclick="brush.set('${key}')" data-brush="${key}"${key === brush.type ? ' class="active"' : ''}>
-            <div class="square" style="--color: #${value.colors[0].toString(16)}"></div>
-            <span>${key}</span>
-        </button>`;
+    <button onclick="brush.setType('${key}')" data-brush="${key}"${key === brush.type ? ' class="active"' : ''}>
+        <div class="square" style="--color: #${value.colors[0].toString(16)}"></div>
+        <span>${key}</span>
+    </button>`;
 }
 document.getElementById('controls').innerHTML += html;
-
 document.getElementById('size').addEventListener('change', function() { brush.setSize(Number(this.value)); } )
+
+
+try {
+    document.querySelector(`[data-world-size="${width},${height}"`).classList.add('active');
+} catch (error) {
+    document.querySelector("[data-world-size]").classList.add('active');
+}
