@@ -81,6 +81,7 @@ button, .button, input {
     border: 1px solid gray;
 
     font-size: 13pt;
+    text-decoration: none;
 }
 input {
     background-color: transparent;
