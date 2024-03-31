@@ -13,15 +13,19 @@ function get(url, parse=true){
     return parse ? JSON.parse(rq.responseText) : rq.responseText;          
 }
 
+Array.prototype.random = function() {
+    return this[Math.floor(Math.random() * this.length)]
+}
+
 // Size
-let width = 75, height = 42;
+let width = 75, height = 42, scale = 10;
 // let width = 125, height = 70;
 // let width = 200, height = 112;
 let params = location.search.substring(1).split(',');
 if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1])];
 
 // PIXI.JS
-const app = new PIXI.Application({ width, height, antialias:false, useContextAlpha: false });
+const app = new PIXI.Application({ width:width*scale, height:height*scale, antialias:false, useContextAlpha: false });
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 app.renderer.background.color = 0x000000;
 app.renderer.clearBeforeRender = false;
@@ -30,10 +34,12 @@ gamespace.appendChild(app.view);
 let canvas = document.querySelector('canvas');
 
 const worldContainer = new PIXI.Container();
+worldContainer.scale.x = scale;
+worldContainer.scale.y = scale;
 app.stage.addChild(worldContainer);
 
 // Filters
-app.stage.filters = [
+worldContainer.filters = [
     new PIXI.filters.AdvancedBloomFilter({
         threshold: 0.7,
         bloomScale: 1,
@@ -41,7 +47,7 @@ app.stage.filters = [
         blur: 2,
         quality: 8,
         kernels: null,
-        pixelSize: 0.5
+        pixelSize: 0.5*scale
     })
 ];
 
@@ -50,112 +56,191 @@ const materials = get('./materials.json');
 
 
 let mouse = {x:0,y:0};
+let lastMouse = {x:0,y:0};
+let panStart = {x:0,y:0};
 let pressed = {};
 let test = true;
 
 
+const world = {
+    paused: false,
+    tickrate: 1.5,
+}
+
+function run(x, y, method='set', ...params) {
+    return grid?.[y]?.[x]?.[method]?.(...params);
+}
+function getPixel(x, y) {
+    return grid?.[y]?.[x];
+}
+
+
 // World
 let grid = [];
-class WorldClass {
+class Pixel extends PIXI.Sprite {
+    constructor(x, y, type='air') {
+        super(PIXI.Texture.WHITE);
+        
+        this.type = type;
+        this.mat = materials[type];
+        this.height = 1; this.width = 1;
+        this.x = x;
+        this.y = y;
+
+        this.set(type);
+        worldContainer.addChild(this);
+    }
+
     /** Set pixel */
-    set(x, y, type, preColor) {
-        let p = grid?.[y]?.[x];
-        if(p === undefined || (p?.type === type && p?.type !== 'air')) return;
+    set(type, preColor) {
+        // let this = grid?.[this.y]?.[this.x];
+        if(this === undefined || (this?.type === type && this?.type !== 'air')) return;
 
-        const mat = materials[type]
-        const color = preColor ?? mat.colors[Math.floor(Math.random() * mat.colors.length)];
-        // if(test) world.beginFill(color).drawRect(x, y, 1, 1).endFill();
-        p.tint = color;
-        p.type = type;
-        p.fresh = true;
+        this.mat = materials[type];
+        const color = preColor ?? this.mat.colors[Math.floor(Math.random() * this.mat.colors.length)];
+
+        this.tint = color;
+        this.type = type;
+        this.fresh = true;
     }
+
+    /** Performs a function over a region */
+    forRegion(size=3, callback, centered=true) {
+        if(callback === undefined) return console.warn(new Error('No callback specified'));
+
+        let {x, y} = this;
+        if(centered) {
+            x-=Math.floor(size/2);
+            y-=Math.floor(size/2);
+        }
+
+        for(let mx = size; mx >= 0; mx--)
+            for(let my = size; my >= 0; my--)
+                if(callback(x+mx, y+my, x, y) === true) break;
+    }
+
     /** Draw */
-    draw(x, y) {
-        x-=Math.floor(brush.size/2);
-        y-=Math.floor(brush.size/2);
+    draw() {
+        mouse.drawing = true;
         let {size, type} = brush;
-        for(let mx = 0; mx < size; mx++) {
-            for(let my = 0; my < size; my++) this.set(x+mx, y+my, type);
-        }
+
+        // Inbetween
+        let dist = distance(mouse, lastMouse)[0];
+        // console.log(dist);
+
+        // for(let i = 0; i < Math.ceil(dist); i++) {
+
+        // }
+
+        // var p = {
+        //     x: p1.x + xDist * fractionOfTotal,
+        //     y: p1.y + yDist * fractionOfTotal
+        //  }
+
+        this.forRegion(size, (x, y) => {
+            run(x, y, 'set', type);
+        })
     }
-    data(x, y) {
-        return grid?.[y]?.[x];
-    }
 
-    tick(x, y) {
-        // this.set(x, y, 'wood');
-        let data = this.data(x, y);
-        let mat = materials[data.type];
-        if(!data.fresh) {
-            // Despawn chance
-            if(Math.random() <= mat.despawn_chance) return this.set(x, y, mat?.despawn_conversion ?? 'air');
+    tick() {
+        if(this.fresh) return delete this.fresh;
 
-            // Movement
-            if(mat?.moves !== undefined) {
-                let cx = 0;
-                let cy = 0;
+        // Despawn chance
+        if(this.mat?.despawn_chance !== undefined) if(Math.random() <= this.mat.despawn_chance) return this.set(this.mat?.despawn_conversion ?? 'air');
 
-                // Move chance
-                if(Math.random() >= mat.move_chance) return;
+        // Movement
+        if(this.mat?.moves !== undefined) {
+            let cx = 0;
+            let cy = 0;
 
-                // Move checks
-                for(let m of mat.moves) {
-                    let moveX = m.x, moveY = m.y;
-                    if(Array.isArray(moveX)) moveX = moveX[Math.floor(Math.random() * moveX.length)]
+            // Move chance
+            if(Math.random() >= this.mat.move_chance) return;
 
-                    // Test if destination is valid
-                    let dest = this.data(x+moveX, y+moveY);
-                    if(dest === undefined || (materials[dest?.type]?.replace !== true || dest.type === data.type)) continue;
-                    cx = moveX,
-                    cy = moveY;
-                    break;
-                }
+            // Move checks
+            for(let m of this.mat.moves) {
+                let moveX = m.x, moveY = m.y;
+                if(Array.isArray(moveX)) moveX = moveX[Math.floor(Math.random() * moveX.length)];
+                if(Array.isArray(moveY)) moveY = moveY[Math.floor(Math.random() * moveY.length)];
 
-                // console.log(cx, cy);
-                this.move(x, y, cx, cy, data);
+                // Test if destination is valid
+                let dest = getPixel(this.x+moveX, this.y+moveY);
+                if(dest === undefined || (dest.mat.replace !== true || dest.type === this.type)) continue;
+                cx = moveX,
+                cy = moveY;
+                break;
             }
+
+            // console.log(cx, cy);
+            this.move(cx, cy);
         }
 
-        delete data.fresh;
+        // Reacts
+        if(this.mat?.reacts !== undefined) {
+            this.forRegion(3, (x, y) => {
+                if(this.x === x && this.y === y) return;
+
+                let dest = getPixel(x, y);
+                if(dest === undefined) return;
+
+                let conversion = dest.mat?.reacts?.[this?.type];
+                if(conversion === undefined) return
+                if(
+                    this.mat?.reaction_chance === undefined ||
+                    Math.random() < this.mat?.reaction_chance
+                ) run(x, y, 'set', conversion);
+            });
+        }
+
+
+        // Wire/electricity
+        if(this.type === 'electricity') {
+            getPixel(this.x-1, this.y-1).forRegion(3, (x, y, ox, oy) => {
+                const dest = getPixel(x, y);
+                if(
+                    dest !== undefined &&
+                    // dest?.type === 'wire' &&
+                    x !== ox && y !== oy
+                ) {
+                    // this.set(x, y, 'electricity');
+                    this.set(ox+1, oy+1, 'wire');
+                    // return true;
+                }
+            })
+        }
+
+        else if(this.type === 'explosion') {
+            this.forRegion(5, (x, y) => {
+                let type = ['fire', 'smoke'];
+                // this.set(type.random());
+                run(x, y, 'set', type.random());
+            })
+        }
     }
 
-    move(x, y, cx=0, cy=0, data) {
-        let dest_x = x+cx;
-        let dest_y = y+cy;
+    move(cx=0, cy=0) {
+        let dest_x = this.x+cx;
+        let dest_y = this.y+cy;
         let dest = grid?.[dest_y]?.[dest_x];
         let replacing = dest.type;
-        const mat = materials?.[data?.type];
-        const replacing_mat = materials?.[dest?.type];
 
-        if(dest === undefined || replacing_mat.replace !== true) return;
+        if(dest === undefined) return;
         if(dest_y > height || dest_x > width) return;
 
-        let conversion = replacing_mat?.reacts?.[data?.type];
-        if(conversion !== undefined) return this.set(dest_x, dest_y, conversion);
+        let conversion = dest.mat?.reacts?.[this?.type];
+        if(conversion !== undefined) return run(dest_x, dest_y, 'set', conversion);
 
-        this.set(dest_x, dest_y, data.type, data.tint);
-        this.set(x, y, replacing);
+        dest.set(this.type, this.tint);
+        this.set(replacing);
     }
 }
-let world = new WorldClass();
-// world.width = width; world.height = height;
-// app.stage.addChild(world);
 
 
 // Pixels
 for(let yi = 0; yi < height; yi++) {
     grid.push([]);
     for(let xi = 0; xi < width; xi++) {
-        let pixel = new PIXI.Sprite(PIXI.Texture.WHITE);
-        pixel.type = 'air';
-        pixel.height = 1; pixel.width = 1;
-        pixel.x = xi;
-        pixel.y = yi;
-        worldContainer.addChild(pixel);
-
+        let pixel = new Pixel(xi, yi);
         grid[yi][xi] = pixel;
-
-        world.set(xi, yi, type='air');
     }
 }
 
@@ -163,11 +248,11 @@ for(let yi = 0; yi < height; yi++) {
 
 let indicator = new PIXI.Graphics();
 indicator.x = -100; indicator.y = -100
-app.stage.addChild(indicator);
+worldContainer.addChild(indicator);
 
 
 // Brush
-let brush = {
+const brush = {
     // Type
     type: 'sand',
     setType(type) {
@@ -181,18 +266,12 @@ let brush = {
     setSize(value) {
         this.size = value;
         indicator.clear().lineStyle(1, 0x000000).drawRect(0, -1, brush.size+1, brush.size+1).endFill();
+        document.getElementById("size").value = value;
     }
 }
 brush.setSize(3);
+// brush.setSize(1);
 
-// class Pixel extends PIXI.Graphics {
-//     // constructor() {
-//     //     super();
-//     // }
-//     setColor(color=0x000000) {
-//         this.beginFill(color).drawRect(this.xi, this.yi, 1, 1).endFill();
-//     }
-// }
 
 
 // Ticker
@@ -200,7 +279,8 @@ let elapsed = 0;
 let last_tick = 0;
 app.ticker.add(delta => {
     // Draw
-    if(pressed['click']) world.draw(mouse.x, mouse.y);
+    if(pressed['click']) run(mouse.x, mouse.y, 'draw');
+    else mouse.drawing = false;
 
     // Indicator
     indicator.alpha = (Math.abs(Math.sin(elapsed/20)+1)/20)+0.2;
@@ -210,10 +290,10 @@ app.ticker.add(delta => {
     if(world.paused) return;
 
     // Tick
-    if(elapsed >= last_tick+1.5) {
+    if(elapsed >= last_tick+world.tickrate) {
         for(let xi = grid.length-1; xi >= 0; xi--) {
             for(let yi = grid[xi].length-1; yi >= 0; yi--) {
-                world.tick(Number(yi), Number(xi));
+                run(Number(yi), Number(xi), 'tick');
             }
         }
 
@@ -223,31 +303,77 @@ app.ticker.add(delta => {
 
 
 
-canvas.addEventListener('pointerdown', () => pressed['click'] = true )
-canvas.addEventListener('pointerup', () => delete pressed['click'] )
+function distance(one, two) {
+    let distX = one.x - two.x;
+    let distY = one.y - two.y;
+    return [Math.hypot(distX, distY), distX, distY];
+}
+
+
+
+canvas.addEventListener('pointerdown', pointerHandler)
+document.addEventListener('pointerup', pointerHandler)
+
+function pointerHandler(event) {
+    const clickIDs = ['click', 'middle_click', 'right_click'];
+    const id = clickIDs[event.button];
+
+    event.type === "pointerdown" ?
+        pressed[id] = true :
+        delete pressed[id];
+
+    if(id === 'middle_click' && event.type === "pointerdown") {
+        // Get type
+        console.log(getPixel(mouse.x, mouse.y).type);
+
+        // Pan camera
+        panStart.x = mouse.x, panStart.y = mouse.y;
+    }
+}
+
+canvas.addEventListener('contextmenu', event => {
+    event.preventDefault();
+    pressed['rclick'] = true;
+})
+document.addEventListener('contextmenu', event => {
+    event.preventDefault();
+    delete pressed['rclick'];
+})
 
 // Events
 canvas.addEventListener('mousemove', event => {
     const mouseX = event.clientX - canvas.offsetLeft;
     const mouseY = event.clientY - canvas.offsetTop;
+
+    // Last position
+    lastMouse.x = mouse.x, lastMouse.y = mouse.y, lastMouse.drawing = mouse.drawing;
   
     // scale mouse coordinates to canvas coordinates
-    mouse = {
-        x: Math.floor(mouseX * canvas.width / canvas.clientWidth),
-        y: Math.floor(mouseY * canvas.height / canvas.clientHeight)
-    }
+    mouse.x = Math.floor(mouseX * canvas.width / canvas.clientWidth / scale);
+    mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / scale);
 
     // Indicator
     indicator.x = mouse.x - Math.floor(brush.size/2);
     indicator.y = mouse.y+1 - Math.floor(brush.size/2);
 });
 
+document.addEventListener('keydown', event => {
+    if(event.key === " ") {
+        world.paused = !world.paused;
+    }
+    else if(event.key === 'ArrowDown') world.tickrate += 0.25;
+    else if(event.key === 'ArrowUp' && world.tickrate > 0) world.tickrate -= 0.25;
+    // console.log(world.tickrate);
+})
+
+
+
 
 // HTML
 let html = '';
 for(let [key, value] of Object.entries(materials)) {
     if(key.startsWith('#')) {
-        html += `<h3>${key.substring(1)}</h3>`
+        html += `<h3>${key.substring(1)}</h3>`;
         continue;
     }
 

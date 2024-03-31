@@ -5,36 +5,38 @@
     },
 
     "#Solids": 0,
-    "stone": {
+    "concrete": {
         "colors": [
             "8b8880",
             "838079",
             "8b807e"
         ]
     },
-    "wood": {
+    "hot_stone": {
         "colors": [
-            "7c5a32",
-            "7a5231",
-            "805d30"
-        ]
-    },
-    "foliage": {
-        "colors": [
-            "4f9b23",
-            "78af31",
-            "6ca338"
-        ]
-    },
-    "light": {
-        "colors": [
-            "ffffff",
-            "f2fff5",
-            "cccccc"
+            "988585",
+            "9A9090",
+            "D88A84",
+            "9FA4AB"
         ]
     },
 
-    "#Semi-Fluids": 0,
+    "#Nature": 0,
+    "stone": {
+        "colors": [
+            "878C8E",
+            "90969A",
+            "9CA2A9",
+            "9FA4AB"
+        ],
+        "moves": [
+            { "x":0, "y":1 }
+        ],
+        "reacts": {
+            "water": "gravel"
+        },
+        "reaction_chance": 0.01
+    },
     "sand": {
         "colors": ["d4c376", "d3c488", "cfb56c"],
         "moves": [
@@ -53,9 +55,31 @@
                 "x": 0,
                 "y": 1
             }
+        ],
+        "reacts": {
+            "water": "sand"
+        }
+    },
+    "ice": {
+        "colors": ["85A6D4", "85ACD8", "7DA1D1"],
+        "reacts": {
+            "water": "ice"
+        }
+    },
+    "wood": {
+        "colors": [
+            "7c5a32",
+            "7a5231",
+            "805d30"
         ]
     },
-
+    "foliage": {
+        "colors": [
+            "4f9b23",
+            "78af31",
+            "6ca338"
+        ]
+    },
 
     "#Fluids": 0,
     "water": {
@@ -80,7 +104,8 @@
         ],
         "replace": true,
         "reacts": {
-            "lava": "stone"
+            "lava": "concrete",
+            "hot_stone": "steam"
         }
     },
     "lava": {
@@ -95,18 +120,14 @@
                 "y": 1
             },
             {
-                "x": -1,
-                "y": 0
-            },
-            {
-                "x": 1,
+                "x": [-1, 1],
                 "y": 0
             }
         ],
         "move_chance": 0.5,
         "replace": true,
         "reacts": {
-            "water": "stone"
+            "water": "concrete"
         }
     },
     "steam": {
@@ -130,7 +151,10 @@
         ],
         "despawn_chance": 0.0005,
         "despawn_conversion": "water",
-        "replace": true
+        "replace": true,
+        "reacts": {
+            "ice": "water"
+        }
     },
 
     "smoke": {
@@ -178,6 +202,24 @@
             "water": "steam"
         }
     },
+
+    "#Man-made": 0,
+    "cement": {
+        "colors": [
+            "8b8880",
+            "838079",
+            "8b807e"
+        ],
+        "moves": [
+            { "x":0, "y":1 },
+            { "x":-1, "y":0 },
+            { "x":1, "y":0 }
+        ],
+        "reacts": {
+            "water": "concrete",
+            "lava": "concrete"
+        }
+    },
     "confetti": {
         "colors": [
             "D55D54",
@@ -193,11 +235,54 @@
             {
                 "x": [-1, 0, 1],
                 "y": 1
-            },
-            {
-                "x": [-1, 1],
-                "y": 0
             }
         ]
+    },
+    "sugar": {
+        "colors": [
+            "afafaf"
+        ],
+        "move_chance": 1,
+        "moves": [
+            {
+                "x": [-1, 0, 0, 0, 0, 1],
+                "y": 1
+            },
+            {
+                "x": [-2, 2],
+                "y": 1
+            }
+        ],
+        "reacts": {
+            "water": "water"
+        },
+        "reaction_chance": 0.01
+    },
+    "light": {
+        "colors": [
+            "ffffff",
+            "f2fff5",
+            "cccccc"
+        ]
+    },
+
+    "#Tech": 0,
+    "wire": {
+        "colors": ["D55D54"]
+    },
+    "electricity": {
+        "colors": ["EFD231"],
+        "replaces": ["wire"]
+    },
+    "bomb": {
+        "colors": ["999999"],
+        "despawn_chance": 0.01,
+        "despawn_conversion": ["explosion"],
+        "moves": [
+            { "x":0, "y":1 }
+        ]
+    },
+    "explosion": {
+        "colors": ["FF0000"]
     }
 }
