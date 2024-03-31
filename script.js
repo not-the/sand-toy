@@ -315,6 +315,8 @@ canvas.addEventListener('pointerdown', pointerHandler)
 document.addEventListener('pointerup', pointerHandler)
 
 function pointerHandler(event) {
+    moveHandler(event);
+
     const clickIDs = ['click', 'middle_click', 'right_click'];
     const id = clickIDs[event.button];
 
@@ -341,13 +343,14 @@ document.addEventListener('contextmenu', event => {
 })
 
 // Events
-canvas.addEventListener('mousemove', event => {
+canvas.addEventListener('pointermove', moveHandler);
+function moveHandler(event) {
     const mouseX = event.clientX - canvas.offsetLeft;
     const mouseY = event.clientY - canvas.offsetTop;
 
     // Last position
     lastMouse.x = mouse.x, lastMouse.y = mouse.y, lastMouse.drawing = mouse.drawing;
-  
+    
     // scale mouse coordinates to canvas coordinates
     mouse.x = Math.floor(mouseX * canvas.width / canvas.clientWidth / scale);
     mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / scale);
@@ -355,7 +358,7 @@ canvas.addEventListener('mousemove', event => {
     // Indicator
     indicator.x = mouse.x - Math.floor(brush.size/2);
     indicator.y = mouse.y+1 - Math.floor(brush.size/2);
-});
+}
 
 document.addEventListener('keydown', event => {
     if(event.key === " ") {
