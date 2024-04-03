@@ -13,19 +13,39 @@ function get(url, parse=true){
     return parse ? JSON.parse(rq.responseText) : rq.responseText;          
 }
 
+/** Distance between two points
+ * @param {object|Pixel} one 
+ * @param {object|Pixel} two 
+ * @returns 
+ */
+function distance(one, two) {
+    let distX = one.x - two.x;
+    let distY = one.y - two.y;
+    return [Math.hypot(distX, distY), distX, distY];
+}
+
+/** Returns a random item from an array
+ * @returns {any}
+ */
 Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)]
 }
 
-// Size
+
+
+// World Size. Width/height are pulled from URL parameters if available
 let width = 75, height = 42, scale = 10;
-// let width = 125, height = 70;
-// let width = 200, height = 112;
 let params = location.search.substring(1).split(',');
 if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1])];
 
-// PIXI.JS
-const app = new PIXI.Application({ width:width*scale, height:height*scale, antialias:false, useContextAlpha: false });
+
+// PIXI.JS setup
+const app = new PIXI.Application({
+    width:width * scale,
+    height:height * scale,
+    antialias:false,
+    useContextAlpha: false
+});
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 app.renderer.background.color = 0x000000;
 app.renderer.clearBeforeRender = false;
@@ -33,6 +53,7 @@ app.stage.interactiveChildren = false;
 gamespace.appendChild(app.view);
 let canvas = document.querySelector('canvas');
 
+/** World container */
 const worldContainer = new PIXI.Container();
 worldContainer.scale.x = scale;
 worldContainer.scale.y = scale;
@@ -51,32 +72,44 @@ worldContainer.filters = [
     })
 ];
 
-// Materials
+/** Material data (colors, properties, interaction/movement rules, etc.) */
 const materials = get('./materials.json');
 
-
+// Controls
 let mouse = {x:0,y:0};
 let lastMouse = {x:0,y:0};
 let panStart = {x:0,y:0};
+/** Pressed keys */
 let pressed = {};
-let test = true;
 
-
+/** World state/methods */
 const world = {
     paused: false,
     tickrate: 1.5,
 }
 
+/** Shorthand for running a method on the pixel at the given coordinates
+ * @param {number} x Pixel X coordinate
+ * @param {number} y Pixel Y coordinate
+ * @param {function} method 
+ * @param  {...any} params 
+ * @returns 
+ */
 function run(x, y, method='set', ...params) {
     return grid?.[y]?.[x]?.[method]?.(...params);
 }
-function getPixel(x, y) {
-    return grid?.[y]?.[x];
-}
+/** Returns the pixel at the provided coordinates
+ * @param {number} x Pixel X coordinate
+ * @param {number} y Pixel Y coordinate
+ * @returns {Pixel|undefined} Pixel or undefined
+ */
+function getPixel(x, y) { return grid?.[y]?.[x]; }
 
 
-// World
+/** 2D array where all pixels are stored */
 let grid = [];
+
+/** Pixel class */
 class Pixel extends PIXI.Sprite {
     constructor(x, y, type='air') {
         super(PIXI.Texture.WHITE);
@@ -91,7 +124,10 @@ class Pixel extends PIXI.Sprite {
         worldContainer.addChild(this);
     }
 
-    /** Set pixel */
+    /** Set a pixel to a material
+     * @param {string} type Material name
+     * @param {string} preColor If defined this will be used as the color value instead of a random value
+     */
     set(type, preColor) {
         // let this = grid?.[this.y]?.[this.x];
         if(this === undefined || (this?.type === type && this?.type !== 'air')) return;
@@ -104,28 +140,34 @@ class Pixel extends PIXI.Sprite {
         this.fresh = true;
     }
 
-    /** Performs a function over a region */
+    /** Performs a function over a region
+     * @param {number} size Size of the area
+     * @param {function} callback Function to run on each pixel
+     * @param {boolean} centered If falsy the current pixel will be the region's top left instead of center
+     */
     forRegion(size=3, callback, centered=true) {
         if(callback === undefined) return console.warn(new Error('No callback specified'));
 
         let {x, y} = this;
+        // Center on given pixel
         if(centered) {
             x-=Math.floor(size/2);
             y-=Math.floor(size/2);
         }
 
+        // Loop region
         for(let mx = size; mx >= 0; mx--)
             for(let my = size; my >= 0; my--)
                 if(callback(x+mx, y+my, x, y) === true) break;
     }
 
-    /** Draw */
+    /** Draws using user's brush material */
     draw() {
         mouse.drawing = true;
         let {size, type} = brush;
 
         // Inbetween
-        let dist = distance(mouse, lastMouse)[0];
+        // let dist = distance(mouse, lastMouse)[0];
         // console.log(dist);
 
         // for(let i = 0; i < Math.ceil(dist); i++) {
@@ -142,6 +184,7 @@ class Pixel extends PIXI.Sprite {
         })
     }
 
+    /** Updates a pixel be acting out its movement and interaction rules */
     tick() {
         if(this.fresh) return delete this.fresh;
 
@@ -208,6 +251,7 @@ class Pixel extends PIXI.Sprite {
             })
         }
 
+        // Explosion
         else if(this.type === 'explosion') {
             this.forRegion(5, (x, y) => {
                 let type = ['fire', 'smoke'];
@@ -217,6 +261,10 @@ class Pixel extends PIXI.Sprite {
         }
     }
 
+    /** Swaps two pixels' positions
+     * @param {number} cx Destination X coordinate
+     * @param {number} cy Destination Y coordinate
+     */
     move(cx=0, cy=0) {
         let dest_x = this.x+cx;
         let dest_y = this.y+cy;
@@ -235,7 +283,7 @@ class Pixel extends PIXI.Sprite {
 }
 
 
-// Pixels
+// Populate world with air pixels
 for(let yi = 0; yi < height; yi++) {
     grid.push([]);
     for(let xi = 0; xi < width; xi++) {
@@ -245,13 +293,13 @@ for(let yi = 0; yi < height; yi++) {
 }
 
 
-
+/** Brush indicator */
 let indicator = new PIXI.Graphics();
 indicator.x = -100; indicator.y = -100
 worldContainer.addChild(indicator);
 
 
-// Brush
+/** Brush */
 const brush = {
     // Type
     type: 'sand',
@@ -275,8 +323,8 @@ brush.setSize(3);
 
 
 // Ticker
-let elapsed = 0;
-let last_tick = 0;
+let elapsed = 0; // Time elapsed since page load
+let last_tick = 0; // Time since last world update
 app.ticker.add(delta => {
     // Draw
     if(pressed['click']) run(mouse.x, mouse.y, 'draw');
@@ -302,15 +350,7 @@ app.ticker.add(delta => {
 })
 
 
-
-function distance(one, two) {
-    let distX = one.x - two.x;
-    let distY = one.y - two.y;
-    return [Math.hypot(distX, distY), distX, distY];
-}
-
-
-
+// ----- Event Listeners ----- //
 canvas.addEventListener('pointerdown', pointerHandler)
 document.addEventListener('pointerup', pointerHandler)
 
