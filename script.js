@@ -167,17 +167,22 @@ class Pixel extends PIXI.Sprite {
         let {size, type} = brush;
 
         // Inbetween
-        // let dist = distance(mouse, lastMouse)[0];
+        // let [dist, distX, distY] = distance(mouse, lastMouse);
         // console.log(dist);
 
+        // Draw line between points
         // for(let i = 0; i < Math.ceil(dist); i++) {
+        //     let progress = 0.1;
+        //     var p = {
+        //         x: Math.ceil(this.x + distX * progress),
+        //         y: Math.ceil(this.y + distY * progress)
+        //     }
 
+        //     let between = getPixel(p.x, p.y);
+        //     between?.forRegion(size, (x, y) => {
+        //         run(x, y, 'set', 'ice');
+        //     })
         // }
-
-        // var p = {
-        //     x: p1.x + xDist * fractionOfTotal,
-        //     y: p1.y + yDist * fractionOfTotal
-        //  }
 
         this.forRegion(size, (x, y) => {
             run(x, y, 'set', type);
