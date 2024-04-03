@@ -137,7 +137,6 @@ class Pixel extends PIXI.Sprite {
 
         this.tint = color;
         this.type = type;
-        this.fresh = true;
     }
 
     /** Performs a function over a region
@@ -186,8 +185,6 @@ class Pixel extends PIXI.Sprite {
 
     /** Updates a pixel be acting out its movement and interaction rules */
     tick() {
-        if(this.fresh) return delete this.fresh;
-
         // Despawn chance
         if(this.mat?.despawn_chance !== undefined) if(Math.random() <= this.mat.despawn_chance) return this.set(this.mat?.despawn_conversion ?? 'air');
 
