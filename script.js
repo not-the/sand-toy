@@ -85,7 +85,7 @@ let pressed = {};
 /** World state/methods */
 const world = {
     paused: false,
-    tickrate: 1.5,
+    tickrate: 2,
 }
 
 /** Shorthand for running a method on the pixel at the given coordinates
