@@ -317,8 +317,8 @@ const brush = {
     type: 'sand',
     setType(type) {
         this.type=type;
-        // document.querySelectorAll(`[data-brush]`).forEach(element => element.classList.remove('active'));
-        // document.querySelector(`[data-brush="${type}"]`).classList.add('active');
+        document.querySelectorAll(`[data-brush]`).forEach(element => element.classList.remove('active'));
+        document.querySelector(`[data-brush="${type}"]`).classList.add('active');
     },
 
     // Size
