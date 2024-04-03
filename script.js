@@ -41,23 +41,30 @@ if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1
 
 // PIXI.JS setup
 const app = new PIXI.Application({
-    width:width * scale,
-    height:height * scale,
+    width:1280,
+    height:800,
     antialias:false,
     useContextAlpha: false
 });
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
-app.renderer.background.color = 0x000000;
+app.renderer.background.color = 0x1A2839;
 app.renderer.clearBeforeRender = false;
-app.stage.interactiveChildren = false;
+// app.stage.interactiveChildren = false;
 gamespace.appendChild(app.view);
 let canvas = document.querySelector('canvas');
 
 /** World container */
 const worldContainer = new PIXI.Container();
+worldContainer.interactiveChildren = false;
 worldContainer.scale.x = scale;
 worldContainer.scale.y = scale;
 app.stage.addChild(worldContainer);
+
+const UIContainer = new PIXI.Container();
+UIContainer.scale.x = 5;
+UIContainer.scale.y = 5;
+UIContainer.y = 720;
+app.stage.addChild(UIContainer);
 
 // Filters
 worldContainer.filters = [
@@ -310,8 +317,8 @@ const brush = {
     type: 'sand',
     setType(type) {
         this.type=type;
-        document.querySelectorAll(`[data-brush]`).forEach(element => element.classList.remove('active'));
-        document.querySelector(`[data-brush="${type}"]`).classList.add('active');
+        // document.querySelectorAll(`[data-brush]`).forEach(element => element.classList.remove('active'));
+        // document.querySelector(`[data-brush="${type}"]`).classList.add('active');
     },
 
     // Size
@@ -416,22 +423,58 @@ document.addEventListener('keydown', event => {
 
 
 
+// UI
+// let uiX = 0;
+// for(let [key, value] of Object.entries(materials)) {
+//     if(key.startsWith('#')) {
+//         uiX += 3;
+//         continue;
+//     }
+
+//     let container = PIXI.Sprite.from('./assets/tray.png');
+//     let icon = PIXI.Sprite.from(`./assets/materials/${key}.png`);
+//     container.brush = key;
+//     container.x = uiX;
+//     uiX += 16;
+
+//     // Events
+//     container.eventMode = 'static';
+//     container.buttonMode = true;
+//     container.defaultCursor = 'pointer';
+//     container.on('pointerdown', function(event) {
+//         console.log(this.brush);
+//         brush.setType(this.brush);
+//     });
+
+//     container.addChild(icon);
+//     UIContainer.addChild(container);
+// }
+
 
 // HTML
 let html = '';
 for(let [key, value] of Object.entries(materials)) {
     if(key.startsWith('#')) {
-        html += `<h3>${key.substring(1)}</h3>`;
+        // html += `<h3>${key.substring(1)}</h3>`;
+        html += '<div class="spacer"></div>'
         continue;
     }
 
     html += `
-    <button onclick="brush.setType('${key}')" data-brush="${key}"${key === brush.type ? ' class="active"' : ''}>
-        <div class="square" style="--color: #${value.colors[0].toString(16)}"></div>
+    <div
+        class="item material ${key === brush.type ? ' active' : ''}"
+        role="button" tabindex="0"
+        onclick="brush.setType('${key}')"
+        data-brush="${key}"
+    >
+        <img src="./assets/materials/${key}.png" alt="${key}" onerror="if(this.src !== './assets/materials/question.png') this.src = './assets/materials/question.png';">
         <span>${key}</span>
-    </button>`;
+    </div>
+    `;
 }
-document.getElementById('controls').innerHTML += html;
+document.getElementById('materials').innerHTML += html;
+
+
 document.getElementById('size').addEventListener('change', function() { brush.setSize(Number(this.value)); } )
 
 

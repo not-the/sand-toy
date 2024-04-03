@@ -14,28 +14,35 @@
     <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-    <div class="col">
-        <!-- Game -->
-        <div id="game" class="container"></div>
+    <!-- Game -->
+    <div id="game">
+
+        <!-- UI -->
+        <div id="ui">
+            <div class="inner">
+                <!-- Materials -->
+                <div id="materials" class="flex">
+
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="col tools">
-        <!-- Brushes -->
-        <div id="controls" class="container">
-        </div>
+    <!-- Brushes -->
+    <div id="controls" class="container">
+    </div>
 
-        <!-- Options -->
-        <div class="container">
-            <label for="size">Brush size:</label><br/>
-            <input type="number" name="size" id="size" value="3" min="1">
+    <!-- Options -->
+    <div class="container">
+        <label for="size">Brush size:</label><br/>
+        <input type="number" name="size" id="size" value="3" min="1">
 
-            <h3>World Size:</h3>
-            <a href="./" class="button" data-world-size>Small</a>
-            <a href="./?128,72" class="button" data-world-size="128,72">Medium</a>
-            <a href="./?176,99" class="button" data-world-size="176,99">Large</a>
-            <br/>
-            <button onclick="location.reload()">CLEAR</button>
-        </div>
+        <h3>World Size:</h3>
+        <a href="./" class="button" data-world-size>Small</a>
+        <a href="./?128,72" class="button" data-world-size="128,72">Medium</a>
+        <a href="./?176,99" class="button" data-world-size="176,99">Large</a>
+        <br/>
+        <button onclick="location.reload()">CLEAR</button>
     </div>
 </body>
 </html>

@@ -40,12 +40,13 @@
     image-rendering: pixelated;
     font-family: Arial, Helvetica, sans-serif;
 }
+.flex {
+    display: flex;
+}
 body {
     background-color: rgb(58, 58, 58);
     color: white;
     margin: 0;
-
-    display: flex;
 }
 h3 {
     border-bottom: 1px solid gray;
@@ -59,18 +60,19 @@ h3 {
     max-height: 100vh;
     overflow-y: auto;
 }
-.container {
+/* .container {
     padding: 12px 12px 0 12px;
-}
+} */
 
 #game {
-    max-height: 95vh;
-    aspect-ratio: 16 / 9;
+    max-height: 100vh;
+    /* margin: 0 auto; */
+    aspect-ratio: 16 / 10;
+    position: relative;
 }
 #game canvas {
     width: 100%;
     height: 100%;
-    /* max-width: 1600px; */
 }
 button, .button, input {
     display: block;
@@ -116,4 +118,61 @@ button > .square {
 }
 button.active > .square {
     border: 1px solid rgb(70, 70, 70);
+}
+
+/* UI */
+#ui {
+    position: absolute;
+    top:0;right:0;bottom:0;left:0;
+    z-index: 1;
+    pointer-events: none;
+    
+    -webkit-user-select: none;
+    user-select: none;
+}
+#ui > .inner {
+    position: absolute;
+    right:0;bottom:0;left:0;
+    /* background-color: rgb(97, 63, 57); */
+    pointer-events: all;
+    overflow: auto;
+}
+#materials {
+    
+}
+.spacer {
+    min-width: 12px;
+}
+
+.item {
+    /* background-color: rgb(80, 50, 44); */
+    background: url(./assets/tray.png);
+    background-size: cover;
+    padding: 2px 10px;
+    min-width: 80px;
+    height: 80px;
+
+    cursor: pointer;
+}
+/* .item.left { background-image: url(./assets/tray_left.png); }
+.item.right { background-image: url(./assets/tray_right.png); } */
+.item.active { background-image: url(./assets/selection.png); }
+
+.item img {
+    width: 56px;
+    height: 56px;
+    /* margin: 0 auto; */
+    filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.5));
+}
+.item > span {
+    display: block;
+    text-align: center;
+    width: 100%;
+    margin-top: -4px;
+    font-weight: bolder;
+    text-shadow: 1px 1px 4px black;
+}
+.item.active > span {
+    color: black;
+    text-shadow: none;
 }

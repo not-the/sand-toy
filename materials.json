@@ -124,7 +124,7 @@
                 "y": 0
             }
         ],
-        "move_chance": 0.5,
+        "move_chance": 0.65,
         "replace": true,
         "reacts": {
             "water": "concrete"
