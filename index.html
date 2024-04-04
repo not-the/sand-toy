@@ -21,29 +21,16 @@
         <!-- UI -->
         <div id="ui">
             <div class="inner">
-                <!-- Materials -->
-                <div id="materials" class="flex">
+                <h3>World Size:</h3>
+                <a href="./?75,42" class="button" data-world-size="75,42">Small</a>
+                <a href="./" class="button" data-world-size="128,72">Medium</a>
+                <a href="./?176,99" class="button" data-world-size="176,99">Large</a>
 
-                </div>
+                <br/>
+
+                <button onclick="document.body.classList.toggle('show_overlay')" class="center">Done</button>
             </div>
         </div>
-    </div>
-
-    <!-- Brushes -->
-    <div id="controls" class="container">
-    </div>
-
-    <!-- Options -->
-    <div class="container">
-        <label for="size">Brush size:</label><br/>
-        <input type="number" name="size" id="size" value="3" min="1">
-
-        <h3>World Size:</h3>
-        <a href="./?75,42" class="button" data-world-size="75,42">Small</a>
-        <a href="./" class="button" data-world-size="128,72">Medium</a>
-        <a href="./?176,99" class="button" data-world-size="176,99">Large</a>
-        <br/>
-        <button onclick="world.clear()">CLEAR</button>
     </div>
 </body>
 </html>

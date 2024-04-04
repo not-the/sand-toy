@@ -63,20 +63,6 @@ app.renderer.clearBeforeRender = false;
 gamespace.appendChild(app.view);
 let canvas = document.querySelector('canvas');
 
-/** World container */
-const worldContainer = new PIXI.Container();
-worldContainer.interactiveChildren = false;
-worldContainer.scale.x = gamescale;
-worldContainer.scale.y = gamescale;
-app.stage.addChild(worldContainer);
-
-const UIContainer = new PIXI.Container();
-UIContainer.ix = 0;
-UIContainer.scale.x = 5;
-UIContainer.scale.y = 5;
-UIContainer.y = viewHeight - UIHeight;
-app.stage.addChild(UIContainer);
-
 // Filters
 const filters = {
     'bloom': new PIXI.filters.AdvancedBloomFilter({
@@ -96,7 +82,88 @@ const filters = {
         rotation: 90,
     })
 }
+
+/** World container */
+const worldContainer = new PIXI.Container();
+worldContainer.interactiveChildren = false;
+worldContainer.scale.x = gamescale;
+worldContainer.scale.y = gamescale;
+app.stage.addChild(worldContainer);
+
+const UIContainer = new PIXI.Container();
+UIContainer.y = viewHeight - UIHeight;
+app.stage.addChild(UIContainer);
+
+const matsContainer = new PIXI.Container();
+matsContainer.ix = 0;
+matsContainer.scale.x = 5;
+matsContainer.scale.y = 5;
+UIContainer.addChild(matsContainer);
+
+// Options
+const optsContainer = new PIXI.Container();
+// optsContainer.ix = 0;
+optsContainer.scale.x = 5;
+optsContainer.scale.y = 5;
+UIContainer.addChild(optsContainer);
+
+
+/** UI */
+const ui = {
+    data: get('./ui.json'),
+
+    elements: {},
+
+    actions: {
+        none: null,
+        pause: () => world.playPause(),
+        clear: () => world.clear(),
+        brush_up: () => brush.setSize(brush.size+1),
+        brush_down: () => { if(brush.size > 0) brush.setSize(brush.size-1) },
+        options: () => document.body.classList.toggle('show_overlay')
+    },
+
+    build(name='options') {
+        let menu = this.data[name];
+        for(let props of menu) {
+            let element = !props.text ?
+                PIXI.Sprite.from(props.src) :
+                new PIXI.Text(props.text, {
+                    fontFamily: 'Arial',
+                    fontSize: props.font_size ?? 3,
+                    fontWeight: 700,
+                    align: 'center',
+                    fill: 'fff'
+                })
+
+            if(props.text) element.resolution = 24;
+
+            element.x = props.x ?? 0;
+            element.y = props.y ?? 0;
+            optsContainer.addChild(element);
+
+            this.elements[props.id] = element;
+
+            if(props.action !== undefined) {
+                element.eventMode = 'static';
+                element.buttonMode = true;
+                let handler = this.actions[props.action];
+                if(handler !== null) {
+                    element.cursor = 'pointer';
+                    element.on('pointerdown',handler);
+                }
+            }
+        }
+    }
+}
+ui.build('options');
+
+
+
+
+
 worldContainer.filters = [ filters.bloom ];
+
 
 /** Material data (colors, properties, interaction/movement rules, etc.) */
 const materials = get('./materials.json');
@@ -116,6 +183,11 @@ const world = {
 
     paused: false,
     tickrate: 2,
+
+    playPause() {
+        this.paused = !this.paused;
+        ui.elements.pause.texture = PIXI.Texture.from(this.paused ? './assets/play.png' : './assets/pause.png');
+    },
 
     clear() {
         this.forAll(p => p.set('air'));
@@ -200,6 +272,7 @@ class Pixel extends PIXI.Sprite {
     draw() {
         mouse.drawing = true;
         let {size, type} = brush;
+        size-=1;
 
         // Inbetween
         // let [dist, distX, distY] = distance(mouse, lastMouse);
@@ -354,7 +427,9 @@ const brush = {
     setSize(value) {
         this.size = value;
         indicator.clear().lineStyle(1, 0x000000).drawRect(0, -1, brush.size+1, brush.size+1).endFill();
-        document.getElementById("size").value = value;
+        // document.getElementById("size").value = value;
+
+        ui.elements.brush_size.text = value;
     }
 }
 brush.setSize(3);
@@ -388,15 +463,15 @@ app.ticker.add(delta => {
         last_tick = elapsed;
     }
 
-    UIContainer.x = lerp(UIContainer.x, UIContainer.ix, 0.2);
+    matsContainer.x = lerp(matsContainer.x, matsContainer.ix, 0.3*delta);
 
-    let max = (UIContainer.width-app.view.width)*-1;
-    if(UIContainer.x > 0) {
-        UIContainer.ix /= 1.5;
-        if(UIContainer.ix < 0) UIContainer.ix = 0;
+    let max = ( matsContainer.width - app.view.width + ( (ui.elements?.bg.width ?? 0)*5 ) ) * -1;
+    if(matsContainer.x > 0) {
+        matsContainer.ix /= 1.5;
+        if(matsContainer.ix < 0) matsContainer.ix = 0;
     }
-    else if(UIContainer.x < max) {
-        UIContainer.ix = max;
+    else if(matsContainer.x < max) {
+        matsContainer.ix = max;
     }
 })
 
@@ -426,17 +501,12 @@ function pointerHandler(event) {
 
 canvas.addEventListener('wheel', event => {
     event.preventDefault();
-    UIContainer.ix -= event.deltaY;
+    matsContainer.ix -= event.deltaY;
 })
 
-canvas.addEventListener('contextmenu', event => {
-    event.preventDefault();
-    pressed['rclick'] = true;
-})
-document.addEventListener('contextmenu', event => {
-    event.preventDefault();
-    delete pressed['rclick'];
-})
+// canvas.addEventListener('contextmenu', event => {
+//     event.preventDefault();
+// })
 
 // Events
 canvas.addEventListener('pointermove', moveHandler);
@@ -522,7 +592,7 @@ for(let [key, value] of Object.entries(materials)) {
     }
     if(button.brush === brush.type) selectHandler(undefined, button);
 
-    UIContainer.addChild(button);
+    matsContainer.addChild(button);
 }
 
 
@@ -550,9 +620,7 @@ for(let [key, value] of Object.entries(materials)) {
 // document.getElementById('materials').innerHTML += html;
 
 
-document.getElementById('size').addEventListener('change', function() { brush.setSize(Number(this.value)); } )
-
-
+// Highlight world size button
 try {
     document.querySelector(`[data-world-size="${width},${height}"`).classList.add('active');
 } catch (error) {

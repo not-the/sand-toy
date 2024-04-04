@@ -1,0 +1,60 @@
+{
+    "options": [
+        {
+            "id": "bg",
+            "src": "./assets/options_bg.png",
+            "x": 170,
+            "action": "none"
+        },
+
+        {
+            "id": "brush_size_bg",
+            "src": "./assets/text_box.png",
+            "x": 179, "y": 5
+        },
+        {
+            "id": "brush_size_label",
+            "text": "Brush Size",
+            "font_size": 3,
+            "x": 179, "y": 2
+        },
+        {
+            "id": "brush_size",
+            "text": 3,
+            "font_size": 7,
+            "x": 182, "y": 6.2
+        },
+
+        {
+            "id": "brush_size_up",
+            "src": "./assets/arrow_up.png",
+            "x": 198, "y": 2,
+            "action": "brush_up"
+        },
+        {
+            "id": "brush_size_down",
+            "src": "./assets/arrow_down.png",
+            "x": 198, "y": 8,
+            "action": "brush_down"
+        },
+        {
+            "id": "pause",
+            "src": "./assets/pause.png",
+            "x": 210, "y": 2,
+            "action": "pause"
+        },
+
+        {
+            "id": "clear",
+            "src": "./assets/clear.png",
+            "x": 225, "y": 2,
+            "action": "clear"
+        },
+        {
+            "id": "options",
+            "src": "./assets/options.png",
+            "x": 240, "y": 2,
+            "action": "options"
+        }
+    ]
+}
