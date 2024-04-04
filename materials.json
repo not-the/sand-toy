@@ -13,7 +13,6 @@
         ]
     },
     "hot_stone": {
-        "hidden": true,
         "colors": [
             "988585",
             "9A9090",
@@ -216,7 +215,6 @@
 
     "#Man-made": 0,
     "cement": {
-        "hidden": true,
         "colors": [
             "8b8880",
             "838079",

@@ -41,7 +41,7 @@ String.prototype.capitalize = function() {
 
 
 // World Size. Width/height are pulled from URL parameters if available
-let width = 128, height = 72, scale = 10;
+let width = 128, height = 72, gamescale = 10;
 let params = location.search.substring(1).split(',');
 if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1])];
 
@@ -63,8 +63,8 @@ let canvas = document.querySelector('canvas');
 /** World container */
 const worldContainer = new PIXI.Container();
 worldContainer.interactiveChildren = false;
-worldContainer.scale.x = scale;
-worldContainer.scale.y = scale;
+worldContainer.scale.x = gamescale;
+worldContainer.scale.y = gamescale;
 app.stage.addChild(worldContainer);
 
 const UIContainer = new PIXI.Container();
@@ -83,7 +83,7 @@ const filters = {
         blur: 2,
         quality: 8,
         kernels: null,
-        pixelSize: 0.5*scale
+        pixelSize: 0.5*gamescale
     }),
     'shadow': new PIXI.filters.DropShadowFilter({
         distance: 5,
@@ -436,8 +436,8 @@ function moveHandler(event) {
     lastMouse.x = mouse.x, lastMouse.y = mouse.y, lastMouse.drawing = mouse.drawing;
     
     // scale mouse coordinates to canvas coordinates
-    mouse.x = Math.floor(mouseX * canvas.width / canvas.clientWidth / scale);
-    mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / scale);
+    mouse.x = Math.floor(mouseX * canvas.width / canvas.clientWidth / gamescale);
+    mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / gamescale);
 
     // Indicator
     indicator.x = mouse.x - Math.floor(brush.size/2);
@@ -459,8 +459,7 @@ document.addEventListener('keydown', event => {
 let uiX = 0;
 let uiSelection;
 for(let [key, value] of Object.entries(materials)) {
-    if(value.hidden) continue;
-
+    // Title
     if(key.startsWith('#')) {
         uiX += 3;
         continue;
@@ -478,7 +477,8 @@ for(let [key, value] of Object.entries(materials)) {
     icon.filters = [ filters.shadow ];
     button.addChild(icon);
 
-   let label = new PIXI.Text(key.capitalize(), {
+    // Label
+    let label = new PIXI.Text(key.capitalize(), {
         fontFamily: 'Arial',
         fontSize: 3,
         fontWeight: 700,
