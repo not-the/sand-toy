@@ -112,6 +112,14 @@ let pressed = {};
 const world = {
     paused: false,
     tickrate: 2,
+
+    clear() {
+        this.forAll(p => p.set('air'));
+    },
+
+    forAll(callback) {
+        for(let yi in grid) for(let p of grid[yi]) callback(p);
+    }
 }
 
 /** Shorthand for running a method on the pixel at the given coordinates
