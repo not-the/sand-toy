@@ -13,6 +13,7 @@
         ]
     },
     "hot_stone": {
+        "hidden": true,
         "colors": [
             "988585",
             "9A9090",
@@ -71,14 +72,20 @@
             "7c5a32",
             "7a5231",
             "805d30"
-        ]
+        ],
+        "reacts": {
+            "fire": "fire"
+        }
     },
     "foliage": {
         "colors": [
             "4f9b23",
             "78af31",
             "6ca338"
-        ]
+        ],
+        "reacts": {
+            "fire": "fire"
+        }
     },
 
     "#Fluids": 0,
@@ -153,6 +160,7 @@
         "despawn_chance": 0.0005,
         "despawn_conversion": "water",
         "replace": true,
+        "reaction_chance": 0.5,
         "reacts": {
             "ice": "water"
         }
@@ -201,13 +209,14 @@
         "despawn_chance": 0.3,
         "replace": true,
         "reacts": {
-            "wood": "smoke",
+            "wood": "fire",
             "water": "steam"
         }
     },
 
     "#Man-made": 0,
     "cement": {
+        "hidden": true,
         "colors": [
             "8b8880",
             "838079",

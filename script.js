@@ -24,6 +24,9 @@ function distance(one, two) {
     return [Math.hypot(distX, distY), distX, distY];
 }
 
+/** Interpolation function. Will return target value if values are within 1 of eachother */
+function lerp(a, b, alpha) { return Math.abs(b-a)<1?b : a + alpha * (b - a); }
+
 /** Returns a random item from an array
  * @returns {any}
  */
@@ -31,10 +34,14 @@ Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)]
 }
 
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 
 
 // World Size. Width/height are pulled from URL parameters if available
-let width = 75, height = 42, scale = 10;
+let width = 128, height = 72, scale = 10;
 let params = location.search.substring(1).split(',');
 if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1])];
 
@@ -61,14 +68,15 @@ worldContainer.scale.y = scale;
 app.stage.addChild(worldContainer);
 
 const UIContainer = new PIXI.Container();
+UIContainer.ix = 0;
 UIContainer.scale.x = 5;
 UIContainer.scale.y = 5;
 UIContainer.y = 720;
 app.stage.addChild(UIContainer);
 
 // Filters
-worldContainer.filters = [
-    new PIXI.filters.AdvancedBloomFilter({
+const filters = {
+    'bloom': new PIXI.filters.AdvancedBloomFilter({
         threshold: 0.7,
         bloomScale: 1,
         brightness: 1,
@@ -76,8 +84,16 @@ worldContainer.filters = [
         quality: 8,
         kernels: null,
         pixelSize: 0.5*scale
+    }),
+    'shadow': new PIXI.filters.DropShadowFilter({
+        distance: 5,
+        color: '000',
+        alpha: 0.5,
+        blur: 1,
+        rotation: 90,
     })
-];
+}
+worldContainer.filters = [ filters.bloom ];
 
 /** Material data (colors, properties, interaction/movement rules, etc.) */
 const materials = get('./materials.json');
@@ -317,8 +333,8 @@ const brush = {
     type: 'sand',
     setType(type) {
         this.type=type;
-        document.querySelectorAll(`[data-brush]`).forEach(element => element.classList.remove('active'));
-        document.querySelector(`[data-brush="${type}"]`).classList.add('active');
+        // document.querySelectorAll(`[data-brush]`).forEach(element => element.classList.remove('active'));
+        // document.querySelector(`[data-brush="${type}"]`).classList.add('active');
     },
 
     // Size
@@ -359,6 +375,17 @@ app.ticker.add(delta => {
 
         last_tick = elapsed;
     }
+
+    UIContainer.x = lerp(UIContainer.x, UIContainer.ix, 0.2);
+
+    let max = (UIContainer.width-app.view.width)*-1;
+    if(UIContainer.x > 0) {
+        UIContainer.ix /= 1.5;
+        if(UIContainer.ix < 0) UIContainer.ix = 0;
+    }
+    else if(UIContainer.x < max) {
+        UIContainer.ix = max;
+    }
 })
 
 
@@ -385,6 +412,11 @@ function pointerHandler(event) {
     }
 }
 
+canvas.addEventListener('wheel', event => {
+    event.preventDefault();
+    UIContainer.ix -= event.deltaY;
+})
+
 canvas.addEventListener('contextmenu', event => {
     event.preventDefault();
     pressed['rclick'] = true;
@@ -398,7 +430,7 @@ document.addEventListener('contextmenu', event => {
 canvas.addEventListener('pointermove', moveHandler);
 function moveHandler(event) {
     const mouseX = event.clientX - canvas.offsetLeft;
-    const mouseY = event.clientY - canvas.offsetTop;
+    const mouseY = event.clientY - canvas.offsetTop + window.scrollY;
 
     // Last position
     lastMouse.x = mouse.x, lastMouse.y = mouse.y, lastMouse.drawing = mouse.drawing;
@@ -424,55 +456,86 @@ document.addEventListener('keydown', event => {
 
 
 // UI
-// let uiX = 0;
-// for(let [key, value] of Object.entries(materials)) {
-//     if(key.startsWith('#')) {
-//         uiX += 3;
-//         continue;
-//     }
-
-//     let container = PIXI.Sprite.from('./assets/tray.png');
-//     let icon = PIXI.Sprite.from(`./assets/materials/${key}.png`);
-//     container.brush = key;
-//     container.x = uiX;
-//     uiX += 16;
-
-//     // Events
-//     container.eventMode = 'static';
-//     container.buttonMode = true;
-//     container.defaultCursor = 'pointer';
-//     container.on('pointerdown', function(event) {
-//         console.log(this.brush);
-//         brush.setType(this.brush);
-//     });
-
-//     container.addChild(icon);
-//     UIContainer.addChild(container);
-// }
-
-
-// HTML
-let html = '';
+let uiX = 0;
+let uiSelection;
 for(let [key, value] of Object.entries(materials)) {
+    if(value.hidden) continue;
+
     if(key.startsWith('#')) {
-        // html += `<h3>${key.substring(1)}</h3>`;
-        html += '<div class="spacer"></div>'
+        uiX += 3;
         continue;
     }
 
-    html += `
-    <div
-        class="item material ${key === brush.type ? ' active' : ''}"
-        role="button" tabindex="0"
-        onclick="brush.setType('${key}')"
-        data-brush="${key}"
-    >
-        <img src="./assets/materials/${key}.png" alt="${key}" onerror="if(this.src !== './assets/materials/question.png') this.src = './assets/materials/question.png';">
-        <span>${key}</span>
-    </div>
-    `;
+    // Button
+    let button = PIXI.Sprite.from('./assets/tray.png');
+    button.brush = key;
+    button.x = uiX;
+    uiX += 16;
+
+    // Icon
+    let icon = PIXI.Sprite.from(`./assets/materials/${key}.png`);
+    icon.scale.x = 0.8, icon.scale.y = 0.8, icon.x = 1;
+    icon.filters = [ filters.shadow ];
+    button.addChild(icon);
+
+   let label = new PIXI.Text(key.capitalize(), {
+        fontFamily: 'Arial',
+        fontSize: 3,
+        fontWeight: 700,
+        align: 'center',
+        fill: 'fff'
+    });
+    label.anchor.x = 0.5;
+    label.x = 8;
+    label.y = 13;
+    label.resolution = 16;
+    button.addChild(label);
+
+
+    // Events
+    button.eventMode = 'static';
+    button.buttonMode = true;
+    button.cursor = 'pointer';
+    button.on('pointerdown', selectHandler);
+    function selectHandler(event, element=this) {
+        brush.setType(element.brush);
+
+        if(uiSelection !== undefined) {
+            uiSelection.texture = PIXI.Texture.from('./assets/tray.png');
+            uiSelection.children[1].style.fill = 'fff';
+        }
+        element.texture = PIXI.Texture.from('./assets/selection.png');
+        element.children[1].style.fill = '000';
+        uiSelection = element;
+    }
+    if(button.brush === brush.type) selectHandler(undefined, button);
+
+    UIContainer.addChild(button);
 }
-document.getElementById('materials').innerHTML += html;
+
+
+// HTML
+// let html = '';
+// for(let [key, value] of Object.entries(materials)) {
+//     if(key.startsWith('#')) {
+//         // html += `<h3>${key.substring(1)}</h3>`;
+//         html += '<div class="spacer"></div>'
+//         continue;
+//     }
+
+//     html += `
+//     <div
+//         class="item material ${key === brush.type ? ' active' : ''}"
+//         role="button" tabindex="0"
+//         onclick="brush.setType('${key}')"
+//         data-brush="${key}"
+//     >
+//         <img src="./assets/materials/${key}.png" alt="${key}" onerror="if(this.src !== './assets/materials/question.png') this.src = './assets/materials/question.png';">
+//         <span>${key}</span>
+//     </div>
+//     `;
+// }
+// document.getElementById('materials').innerHTML += html;
 
 
 document.getElementById('size').addEventListener('change', function() { brush.setSize(Number(this.value)); } )
