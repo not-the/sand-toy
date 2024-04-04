@@ -41,22 +41,25 @@ String.prototype.capitalize = function() {
 
 
 // World Size. Width/height are pulled from URL parameters if available
-let width = 128, height = 72, gamescale = 10;
+const viewWidth = 1280, viewHeight = 800, UIHeight = 80;
+
+let width = 128, height = 72;
 let params = location.search.substring(1).split(',');
 if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1])];
+
+let gamescale = viewWidth/width;
 
 
 // PIXI.JS setup
 const app = new PIXI.Application({
-    width:1280,
-    height:800,
-    antialias:false,
+    width: viewWidth,
+    height: viewHeight,
+    antialias: false,
     useContextAlpha: false
 });
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 app.renderer.background.color = 0x1A2839;
 app.renderer.clearBeforeRender = false;
-// app.stage.interactiveChildren = false;
 gamespace.appendChild(app.view);
 let canvas = document.querySelector('canvas');
 
@@ -71,7 +74,7 @@ const UIContainer = new PIXI.Container();
 UIContainer.ix = 0;
 UIContainer.scale.x = 5;
 UIContainer.scale.y = 5;
-UIContainer.y = 720;
+UIContainer.y = viewHeight - UIHeight;
 app.stage.addChild(UIContainer);
 
 // Filters
