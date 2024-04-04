@@ -108,8 +108,12 @@ let panStart = {x:0,y:0};
 /** Pressed keys */
 let pressed = {};
 
+
 /** World state/methods */
 const world = {
+    /** 2D array where all pixels are stored */
+    grid: [],
+
     paused: false,
     tickrate: 2,
 
@@ -118,7 +122,7 @@ const world = {
     },
 
     forAll(callback) {
-        for(let yi in grid) for(let p of grid[yi]) callback(p);
+        for(let yi in world.grid) for(let p of world.grid[yi]) callback(p);
     }
 }
 
@@ -130,18 +134,15 @@ const world = {
  * @returns 
  */
 function run(x, y, method='set', ...params) {
-    return grid?.[y]?.[x]?.[method]?.(...params);
+    return world.grid?.[y]?.[x]?.[method]?.(...params);
 }
 /** Returns the pixel at the provided coordinates
  * @param {number} x Pixel X coordinate
  * @param {number} y Pixel Y coordinate
  * @returns {Pixel|undefined} Pixel or undefined
  */
-function getPixel(x, y) { return grid?.[y]?.[x]; }
+function getPixel(x, y) { return world.grid?.[y]?.[x]; }
 
-
-/** 2D array where all pixels are stored */
-let grid = [];
 
 /** Pixel class */
 class Pixel extends PIXI.Sprite {
@@ -307,7 +308,7 @@ class Pixel extends PIXI.Sprite {
     move(cx=0, cy=0) {
         let dest_x = this.x+cx;
         let dest_y = this.y+cy;
-        let dest = grid?.[dest_y]?.[dest_x];
+        let dest = world.grid?.[dest_y]?.[dest_x];
         let replacing = dest.type;
 
         if(dest === undefined) return;
@@ -324,10 +325,10 @@ class Pixel extends PIXI.Sprite {
 
 // Populate world with air pixels
 for(let yi = 0; yi < height; yi++) {
-    grid.push([]);
+    world.grid.push([]);
     for(let xi = 0; xi < width; xi++) {
         let pixel = new Pixel(xi, yi);
-        grid[yi][xi] = pixel;
+        world.grid[yi][xi] = pixel;
     }
 }
 
@@ -378,8 +379,8 @@ app.ticker.add(delta => {
 
     // Tick
     if(elapsed >= last_tick+world.tickrate) {
-        for(let xi = grid.length-1; xi >= 0; xi--) {
-            for(let yi = grid[xi].length-1; yi >= 0; yi--) {
+        for(let xi = world.grid.length-1; xi >= 0; xi--) {
+            for(let yi = world.grid[xi].length-1; yi >= 0; yi--) {
                 run(Number(yi), Number(xi), 'tick');
             }
         }
