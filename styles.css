@@ -36,7 +36,6 @@
 }
 
 * {
-    box-sizing: border-box;
     image-rendering: pixelated;
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -68,7 +67,7 @@ h3 {
 } */
 
 #game {
-    max-height: 100%;
+    max-height: 100dvh;
     margin: 0 auto;
     aspect-ratio: 16 / 10;
     position: relative;
@@ -203,9 +202,8 @@ body.show_overlay #ui > .inner {
 
 /* iOS bottom padding */
 @supports (-webkit-touch-callout: none) {
-
-    body {
-        padding-bottom: 24px;
+    #game {
+        max-height: calc(100dvh - 30px);
     }
 }
 
