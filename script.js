@@ -92,6 +92,20 @@ app.stage.addChild(worldContainer);
 
 const UIContainer = new PIXI.Container();
 UIContainer.y = viewHeight - UIHeight;
+
+
+
+
+let dragOrigin = 0
+UIContainer.eventMode = 'static';
+UIContainer.on('pointerdown', dragStart);
+function dragStart() {
+    pressed['ui_dragging'] = true;
+    dragOrigin = mouse.x;
+}
+
+
+
 app.stage.addChild(UIContainer);
 
 const matsContainer = new PIXI.Container();
@@ -119,7 +133,7 @@ const ui = {
         pause: () => world.playPause(),
         clear: () => world.clear(),
         brush_up: () => brush.setSize(brush.size+1),
-        brush_down: () => { if(brush.size > 0) brush.setSize(brush.size-1) },
+        brush_down: () => { if(brush.size > 1) brush.setSize(brush.size-1) },
         options: () => document.body.classList.toggle('show_overlay')
     },
 
@@ -445,11 +459,24 @@ app.ticker.add(delta => {
     if(pressed['click']) run(mouse.x, mouse.y, 'draw');
     else mouse.drawing = false;
 
+
+    // UI
+    matsContainer.x = lerp(matsContainer.x, matsContainer.ix, 0.3*delta);
+
+    let max = ( matsContainer.width - app.view.width + ( (ui.elements?.bg.width ?? 0)*5 ) ) * -1;
+    if(matsContainer.x > 0) {
+        matsContainer.ix /= 1.5;
+        if(matsContainer.ix < 0) matsContainer.ix = 0;
+    }
+    else if(matsContainer.x < max) {
+        matsContainer.ix = max;
+    }
+
     // Indicator
     indicator.alpha = (Math.abs(Math.sin(elapsed/20)+1)/20)+0.2;
 
+    // Elapsed
     elapsed += delta;
-
     if(world.paused) return;
 
     // Tick
@@ -462,23 +489,12 @@ app.ticker.add(delta => {
 
         last_tick = elapsed;
     }
-
-    matsContainer.x = lerp(matsContainer.x, matsContainer.ix, 0.3*delta);
-
-    let max = ( matsContainer.width - app.view.width + ( (ui.elements?.bg.width ?? 0)*5 ) ) * -1;
-    if(matsContainer.x > 0) {
-        matsContainer.ix /= 1.5;
-        if(matsContainer.ix < 0) matsContainer.ix = 0;
-    }
-    else if(matsContainer.x < max) {
-        matsContainer.ix = max;
-    }
 })
 
 
 // ----- Event Listeners ----- //
-canvas.addEventListener('pointerdown', pointerHandler)
-document.addEventListener('pointerup', pointerHandler)
+canvas.addEventListener('pointerdown', pointerHandler);
+document.addEventListener('pointerup', pointerHandler);
 
 function pointerHandler(event) {
     moveHandler(event);
@@ -526,12 +542,22 @@ function moveHandler(event) {
     // Indicator
     indicator.x = mouse.x - Math.floor(brush.size/2);
     indicator.y = mouse.y+1 - Math.floor(brush.size/2);
+
+
+    // UI touch scroll
+    if(!pressed['ui_dragging'] || event.type !== 'pointermove') return;
+
+    // Scroll
+    matsContainer.ix += (dragOrigin - mouse.x)*-0.5;
+    console.log(mouse.x, dragOrigin);
+
+    // End drag
+    if(!pressed['click']) delete pressed['ui_dragging'];
+
 }
 
 document.addEventListener('keydown', event => {
-    if(event.key === " ") {
-        world.paused = !world.paused;
-    }
+    if(event.key === " ") world.playPause();
     else if(event.key === 'ArrowDown') world.tickrate += 0.25;
     else if(event.key === 'ArrowUp' && world.tickrate > 0) world.tickrate -= 0.25;
     // console.log(world.tickrate);
