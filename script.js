@@ -358,7 +358,7 @@ class Pixel extends PIXI.Sprite {
                     this.mat?.reaction_chance === undefined ||
                     Math.random() < this.mat?.reaction_chance
                 ) run(x, y, 'set', conversion);
-            });
+            }, true);
         }
 
 
@@ -446,8 +446,8 @@ const brush = {
         ui.elements.brush_size.text = value;
     }
 }
-brush.setSize(3);
-// brush.setSize(1);
+// brush.setSize(3);
+brush.setSize(1);
 
 
 
@@ -540,8 +540,8 @@ function moveHandler(event) {
     mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / gamescale);
 
     // Indicator
-    indicator.x = mouse.x - Math.floor(brush.size/2);
-    indicator.y = mouse.y+1 - Math.floor(brush.size/2);
+    indicator.x = mouse.x - Math.floor(brush.size/2)-0.5;
+    indicator.y = mouse.y+1 - Math.floor(brush.size/2)-0.5;
 
 
     // UI touch scroll
