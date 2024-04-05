@@ -29,13 +29,13 @@
             "id": "brush_size_up",
             "src": "./assets/arrow_up.png",
             "x": 198, "y": 2,
-            "action": "brush_up"
+            "action": "brush_up", "repeats": true
         },
         {
             "id": "brush_size_down",
             "src": "./assets/arrow_down.png",
             "x": 198, "y": 8,
-            "action": "brush_down"
+            "action": "brush_down", "repeats": true
         },
         {
             "id": "pause",

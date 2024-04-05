@@ -164,7 +164,27 @@ const ui = {
                 let handler = this.actions[props.action];
                 if(handler !== null) {
                     element.cursor = 'pointer';
-                    element.on('pointerdown',handler);
+
+                    // Normal click
+                    if(!props.repeats) element.on('pointerdown', handler);
+                    
+                    // Repeats
+                    else {
+                        element.on('pointerdown', () => {
+                            handler();
+                            element.timeout = setTimeout(() => {
+                                element.interval = setInterval(() => {
+                                    handler();
+                                }, 50);
+                            }, 300);
+                        });
+                        element.on('pointerup', endRepeat);
+                        element.on('pointerout', endRepeat);
+                        function endRepeat() {
+                            clearTimeout(element.timeout);
+                            clearInterval(element.interval);
+                        }
+                    }
                 }
             }
         }
@@ -255,10 +275,11 @@ class Pixel extends PIXI.Sprite {
 
         this.mat = materials[type];
         const color = preColor ?? this.mat.colors[Math.floor(Math.random() * this.mat.colors.length)];
+        this.alpha = this.mat?.alpha ?? 1;
 
         this.tint = color;
         this.type = type;
-        if(this.mat.gas === true) this.fresh = true;
+        if(this.mat?.gas === true) this.fresh = true;
     }
 
     /** Performs a function over a region
@@ -268,6 +289,7 @@ class Pixel extends PIXI.Sprite {
      */
     forRegion(size=3, callback, centered=true) {
         if(callback === undefined) return console.warn(new Error('No callback specified'));
+        size -= 1;
 
         let {x, y} = this;
         // Center on given pixel
@@ -286,7 +308,6 @@ class Pixel extends PIXI.Sprite {
     draw() {
         mouse.drawing = true;
         let {size, type} = brush;
-        size-=1;
 
         // Inbetween
         // let [dist, distX, distY] = distance(mouse, lastMouse);
@@ -318,47 +339,26 @@ class Pixel extends PIXI.Sprite {
         // Despawn chance
         if(this.mat?.despawn_chance !== undefined) if(Math.random() <= this.mat.despawn_chance) return this.set(this.mat?.despawn_conversion ?? 'air');
 
-        // Movement
-        if(this.mat?.moves !== undefined) {
-            let cx = 0;
-            let cy = 0;
-
-            // Move chance
-            if(Math.random() >= this.mat.move_chance) return;
-
-            // Move checks
-            for(let m of this.mat.moves) {
-                let moveX = m.x, moveY = m.y;
-                if(Array.isArray(moveX)) moveX = moveX[Math.floor(Math.random() * moveX.length)];
-                if(Array.isArray(moveY)) moveY = moveY[Math.floor(Math.random() * moveY.length)];
-
-                // Test if destination is valid
-                let dest = getPixel(this.x+moveX, this.y+moveY);
-                if(dest === undefined || (dest.mat.replace !== true || dest.type === this.type)) continue;
-                cx = moveX,
-                cy = moveY;
-                break;
-            }
-
-            // console.log(cx, cy);
-            this.move(cx, cy);
-        }
 
         // Reacts
         if(this.mat?.reacts !== undefined) {
+            // console.log('#####');
             this.forRegion(3, (x, y) => {
                 if(this.x === x && this.y === y) return;
 
                 let dest = getPixel(x, y);
+                // console.log(dest.type);
                 if(dest === undefined) return;
 
+                // Convert
                 let conversion = dest.mat?.reacts?.[this?.type];
                 if(conversion === undefined) return
                 if(
                     this.mat?.reaction_chance === undefined ||
-                    Math.random() < this.mat?.reaction_chance
+                    Math.random() <= this.mat?.reaction_chance
                 ) run(x, y, 'set', conversion);
             }, true);
+            // console.log('#####');
         }
 
 
@@ -385,6 +385,33 @@ class Pixel extends PIXI.Sprite {
                 // this.set(type.random());
                 run(x, y, 'set', type.random());
             })
+        }
+
+
+        // Movement
+        if(this.mat?.moves !== undefined) {
+            let cx = 0;
+            let cy = 0;
+
+            // Move chance
+            if(Math.random() >= this.mat.move_chance) return;
+
+            // Move checks
+            for(let m of this.mat.moves) {
+                let moveX = m.x, moveY = m.y;
+                if(Array.isArray(moveX)) moveX = moveX[Math.floor(Math.random() * moveX.length)];
+                if(Array.isArray(moveY)) moveY = moveY[Math.floor(Math.random() * moveY.length)];
+
+                // Test if destination is valid
+                let dest = getPixel(this.x+moveX, this.y+moveY);
+                if(dest === undefined || (dest.mat.replace !== true || dest.type === this.type)) continue;
+                cx = moveX,
+                cy = moveY;
+                break;
+            }
+
+            // console.log(cx, cy);
+            this.move(cx, cy);
         }
     }
 
@@ -549,7 +576,6 @@ function moveHandler(event) {
 
     // Scroll
     matsContainer.ix += (dragOrigin - mouse.x)*-0.5;
-    console.log(mouse.x, dragOrigin);
 
     // End drag
     if(!pressed['click']) delete pressed['ui_dragging'];
