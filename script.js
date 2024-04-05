@@ -511,7 +511,9 @@ canvas.addEventListener('wheel', event => {
 // Events
 canvas.addEventListener('pointermove', moveHandler);
 function moveHandler(event) {
-    const mouseX = event.clientX - canvas.offsetLeft;
+    const marginLeft = (document.body.scrollWidth-canvas.scrollWidth)/2;
+
+    const mouseX = event.clientX - canvas.offsetLeft - marginLeft;
     const mouseY = event.clientY - canvas.offsetTop + window.scrollY;
 
     // Last position

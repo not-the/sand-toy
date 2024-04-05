@@ -69,7 +69,7 @@ h3 {
 
 #game {
     max-height: 100vh;
-    /* margin: 0 auto; */
+    margin: 0 auto;
     aspect-ratio: 16 / 10;
     position: relative;
 }

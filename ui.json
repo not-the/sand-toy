@@ -20,7 +20,7 @@
         },
         {
             "id": "brush_size",
-            "text": 3,
+            "text": "?",
             "font_size": 7,
             "x": 182, "y": 6.2
         },
