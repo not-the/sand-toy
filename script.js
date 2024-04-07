@@ -473,8 +473,8 @@ const brush = {
         ui.elements.brush_size.text = value;
     }
 }
-// brush.setSize(3);
-brush.setSize(1);
+brush.setSize(3);
+// brush.setSize(1);
 
 
 
