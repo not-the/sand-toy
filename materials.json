@@ -10,7 +10,8 @@
             "8b8880",
             "838079",
             "8b807e"
-        ]
+        ],
+        "reaction_chance": 0.01
     },
     "hot_stone": {
         "colors": [
@@ -73,7 +74,8 @@
             "805d30"
         ],
         "reacts": {
-            "fire": "fire"
+            "fire": "fire",
+            "lava": "fire"
         }
     },
     "foliage": {
@@ -83,7 +85,8 @@
             "6ca338"
         ],
         "reacts": {
-            "fire": "fire"
+            "fire": "fire",
+            "lava": "fire"
         }
     },
 
@@ -112,7 +115,8 @@
         "replace": true,
         "reacts": {
             "lava": "concrete",
-            "hot_stone": "steam"
+            "hot_stone": "steam",
+            "acid": "acid"
         }
     },
     "lava": {
@@ -121,6 +125,7 @@
             "ff6145",
             "ffbd68"
         ],
+        "glows": true,
         "moves": [
             {
                 "x": 0,
@@ -191,6 +196,7 @@
             "ff6145",
             "ffbd68"
         ],
+        "glows": true,
         "gas": true,
         "moves": [
             {
@@ -210,16 +216,40 @@
         "replace": true,
         "reacts": {
             "wood": "fire",
-            "water": "steam"
+            "water": "steam",
+            "ice": "water"
         }
+    },
+    "acid": {
+        "colors": [
+            "6BC032",
+            "44B136",
+            "5EB857"
+        ],
+        "moves": [
+            {
+                "x": 0,
+                "y": 1
+            },
+            {
+                "x": [-1, 1],
+                "y": 1
+            },
+            {
+                "x": [-1, 1],
+                "y": 0
+            }
+        ],
+        "replace": true,
+        "reaction_chance": 0.1
     },
 
     "#Man-made": 0,
     "cement": {
         "colors": [
-            "8b8880",
-            "838079",
-            "8b807e"
+            "B0AB9F",
+            "A3A59B",
+            "AEAAAA"
         ],
         "moves": [
             { "x":0, "y":1 },
@@ -251,7 +281,10 @@
     },
     "sugar": {
         "colors": [
-            "afafaf"
+            "afafaf",
+            "b2b2b2",
+            "b2b2b2",
+            "A1A1A1"
         ],
         "move_chance": 1,
         "moves": [
