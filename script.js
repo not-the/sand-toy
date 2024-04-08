@@ -27,6 +27,11 @@ function distance(one, two) {
 /** Interpolation function. Will return target value if values are within 1 of eachother */
 function lerp(a, b, alpha) { return Math.abs(b-a)<1?b : a + alpha * (b - a); }
 
+/** If the value is an array it will return a random item from the array, otherwise returns value */
+function parse(value) {
+    return Array.isArray(value) ? value[Math.floor(Math.random() * value.length)] : value;
+}
+
 /** Returns a random item from an array
  * @returns {any}
  */
@@ -67,6 +72,7 @@ let canvas = document.querySelector('canvas');
 const filters = {
     'bloom': new PIXI.filters.AdvancedBloomFilter({
         threshold: 0.7,
+        // threshold: 0,
         bloomScale: 1,
         brightness: 1,
         blur: 2,
@@ -86,9 +92,17 @@ const filters = {
 /** World container */
 const worldContainer = new PIXI.Container();
 worldContainer.interactiveChildren = false;
+worldContainer.width = width;
+worldContainer.height = height;
 worldContainer.scale.x = gamescale;
 worldContainer.scale.y = gamescale;
 app.stage.addChild(worldContainer);
+
+
+// const bloomContainer = new PIXI.Container();
+// bloomContainer.width = width;
+// bloomContainer.height = height;
+// worldContainer.addChild(bloomContainer);
 
 const UIContainer = new PIXI.Container();
 UIContainer.y = viewHeight - UIHeight;
@@ -195,8 +209,8 @@ ui.build('options');
 
 
 
-
 worldContainer.filters = [ filters.bloom ];
+// bloomContainer.filters = [ filters.bloom ];
 
 
 /** Material data (colors, properties, interaction/movement rules, etc.) */
@@ -214,6 +228,7 @@ let pressed = {};
 const world = {
     /** 2D array where all pixels are stored */
     grid: [],
+    ticks: {},
 
     paused: false,
     tickrate: 2,
@@ -280,6 +295,20 @@ class Pixel extends PIXI.Sprite {
         this.tint = color;
         this.type = type;
         if(this.mat?.gas === true) this.fresh = true;
+
+        // if(this.mat?.glows === true && this.parent === worldContainer) {
+        //     this.parent.removeChild(this);
+        //     bloomContainer.addChild(this);
+        // }
+        // else if(!this.mat?.glows && this.parent === bloomContainer) {
+        //     this.parent.removeChild(this);
+        //     worldContainer.addChild(this);
+        // }
+
+        // Register pixel
+        // let key = `${this.x},${this.y}`;
+        // if('moves' in this.mat || 'despawn_chance' in this.mat || 'reacts' in this.mat) world.ticks[key] = this;
+        // else delete world.ticks[key];
     }
 
     /** Performs a function over a region
@@ -337,7 +366,10 @@ class Pixel extends PIXI.Sprite {
         if(this.fresh) return delete this.fresh;
 
         // Despawn chance
-        if(this.mat?.despawn_chance !== undefined) if(Math.random() <= this.mat.despawn_chance) return this.set(this.mat?.despawn_conversion ?? 'air');
+        if(this.mat?.despawn_chance !== undefined)
+            if(Math.random() <= this.mat.despawn_chance) return this.set(
+                parse(this.mat?.despawn_conversion) ?? 'air'
+            );
 
 
         // Reacts
@@ -359,6 +391,22 @@ class Pixel extends PIXI.Sprite {
                 ) run(x, y, 'set', conversion);
             }, true);
             // console.log('#####');
+        }
+
+
+        // Acid
+        if(this.type === 'acid') {
+            // Dissolve below
+            if(Math.random() < this.mat.reaction_chance) {
+                // Despawn
+                if(Math.random() < 0.3) this.set('air');
+
+                // Move
+                let notAcid = p => p?.type !== 'acid';
+                if(this.move(0, 1, notAcid) !== 0) {
+                    this.set('air');
+                }
+            }
         }
 
 
@@ -398,9 +446,7 @@ class Pixel extends PIXI.Sprite {
 
             // Move checks
             for(let m of this.mat.moves) {
-                let moveX = m.x, moveY = m.y;
-                if(Array.isArray(moveX)) moveX = moveX[Math.floor(Math.random() * moveX.length)];
-                if(Array.isArray(moveY)) moveY = moveY[Math.floor(Math.random() * moveY.length)];
+                let moveX = parse(m.x), moveY = parse(m.y);
 
                 // Test if destination is valid
                 let dest = getPixel(this.x+moveX, this.y+moveY);
@@ -419,17 +465,21 @@ class Pixel extends PIXI.Sprite {
      * @param {number} cx Destination X coordinate
      * @param {number} cy Destination Y coordinate
      */
-    move(cx=0, cy=0) {
+    move(cx=0, cy=0, condition) {
         let dest_x = this.x+cx;
         let dest_y = this.y+cy;
         let dest = world.grid?.[dest_y]?.[dest_x];
+
+        if(condition !== undefined) if(!condition(dest)) return 0;
+
+        if(dest === undefined || dest_y > height || dest_x > width) return 0;
+
         let replacing = dest.type;
-
-        if(dest === undefined) return;
-        if(dest_y > height || dest_x > width) return;
-
         let conversion = dest.mat?.reacts?.[this?.type];
-        if(conversion !== undefined) return run(dest_x, dest_y, 'set', conversion);
+        if(conversion !== undefined) {
+            run(dest_x, dest_y, 'set', conversion);
+            return 0;
+        }
 
         dest.set(this.type, this.tint);
         this.set(replacing);
@@ -508,11 +558,15 @@ app.ticker.add(delta => {
 
     // Tick
     if(elapsed >= last_tick+world.tickrate) {
+        // Loop all
         for(let xi = world.grid.length-1; xi >= 0; xi--) {
             for(let yi = world.grid[xi].length-1; yi >= 0; yi--) {
                 run(Number(yi), Number(xi), 'tick');
             }
         }
+
+        // Loop world.ticks registry
+        // for(let p of Object.values(world.ticks)) p.tick();
 
         last_tick = elapsed;
     }
@@ -584,8 +638,14 @@ function moveHandler(event) {
 
 document.addEventListener('keydown', event => {
     if(event.key === " ") world.playPause();
+
+    // Tickrate
     else if(event.key === 'ArrowDown') world.tickrate += 0.25;
     else if(event.key === 'ArrowUp' && world.tickrate > 0) world.tickrate -= 0.25;
+
+    // Brush size
+    else if(event.key === 'ArrowLeft') ui.actions.brush_down();
+    else if(event.key === 'ArrowRight') ui.actions.brush_up();
     // console.log(world.tickrate);
 })
 
