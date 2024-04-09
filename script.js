@@ -135,6 +135,14 @@ optsContainer.scale.x = 5;
 optsContainer.scale.y = 5;
 UIContainer.addChild(optsContainer);
 
+const moreContainer = new PIXI.Container();
+moreContainer.y = -90;
+moreContainer.scale.x = 5;
+moreContainer.scale.y = 5;
+moreContainer.visible = false;
+moreContainer.ix = 50;
+UIContainer.addChild(moreContainer);
+
 
 /** UI */
 const ui = {
@@ -148,11 +156,19 @@ const ui = {
         clear: () => world.clear(),
         brush_up: () => brush.setSize(brush.size+1),
         brush_down: () => { if(brush.size > 1) brush.setSize(brush.size-1) },
-        options: () => document.body.classList.toggle('show_overlay')
+
+        options: () => {
+            document.body.classList.toggle('show_overlay')
+            moreContainer.visible = !moreContainer.visible;
+            moreContainer.ix = moreContainer.visible ? 0 : 50;
+        },
+
+        ticktime_up: () => world.setTicktime(1),
+        ticktime_down: () => world.setTicktime(-1),
     },
 
-    build(name='options') {
-        let menu = this.data[name];
+    build(name='options', container=optsContainer) {
+        const menu = this.data[name];
         for(let props of menu) {
             let element = !props.text ?
                 PIXI.Sprite.from(props.src) :
@@ -168,7 +184,7 @@ const ui = {
 
             element.x = props.x ?? 0;
             element.y = props.y ?? 0;
-            optsContainer.addChild(element);
+            container.addChild(element);
 
             this.elements[props.id] = element;
 
@@ -204,7 +220,9 @@ const ui = {
         }
     }
 }
-ui.build('options');
+ui.build('options', optsContainer);
+ui.build('overlay', moreContainer);
+
 
 
 
@@ -231,7 +249,19 @@ const world = {
     ticks: {},
 
     paused: false,
-    tickrate: 2,
+
+    tt_options: [12, 4, 3, 2, 1.25, 1, 0],
+    tt_index: 3,
+    ticktime: 2, // Number of frames each tick takes to happen
+    setTicktime(dir) {
+        this.tt_index -= dir;
+        let value = this.tt_options[this.tt_index];
+        if(value === undefined) return this.tt_index += dir;
+
+        this.ticktime = value;
+        if(ui.elements?.ticktime) ui.elements.ticktime.text = value === 0 ? 'Max' : (2 / value).toFixed(1) + 'x';
+        // console.log(value);
+    },
 
     playPause() {
         this.paused = !this.paused;
@@ -246,6 +276,7 @@ const world = {
         for(let yi in world.grid) for(let p of world.grid[yi]) callback(p);
     }
 }
+world.setTicktime(0);
 
 /** Shorthand for running a method on the pixel at the given coordinates
  * @param {number} x Pixel X coordinate
@@ -275,6 +306,9 @@ class Pixel extends PIXI.Sprite {
         this.height = 1; this.width = 1;
         this.x = x;
         this.y = y;
+        this.data = {
+            age:0
+        }; // Data that gets passed around as pixels move
 
         this.set(type);
         worldContainer.addChild(this);
@@ -295,6 +329,8 @@ class Pixel extends PIXI.Sprite {
         this.tint = color;
         this.type = type;
         if(this.mat?.gas === true) this.fresh = true;
+
+        if(preColor === undefined) this.data.age = 0;
 
         // if(this.mat?.glows === true && this.parent === worldContainer) {
         //     this.parent.removeChild(this);
@@ -365,11 +401,21 @@ class Pixel extends PIXI.Sprite {
     tick() {
         if(this.fresh) return delete this.fresh;
 
+        // Track pixel's age
+        if(this.mat?.despawn_timer) this.data.age += 1;
+
         // Despawn chance
         if(this.mat?.despawn_chance !== undefined)
             if(Math.random() <= this.mat.despawn_chance) return this.set(
                 parse(this.mat?.despawn_conversion) ?? 'air'
             );
+
+        // Despawn timer
+        if(this.mat?.despawn_timer !== undefined) {
+            if(this.data.age >= this.mat.despawn_timer) return this.set(
+                parse(this.mat?.despawn_conversion) ?? 'air'
+            );
+        }
 
 
         // Reacts
@@ -428,7 +474,7 @@ class Pixel extends PIXI.Sprite {
 
         // Explosion
         else if(this.type === 'explosion') {
-            this.forRegion(5, (x, y) => {
+            this.forRegion(9, (x, y) => {
                 let type = ['fire', 'smoke'];
                 // this.set(type.random());
                 run(x, y, 'set', type.random());
@@ -450,7 +496,7 @@ class Pixel extends PIXI.Sprite {
 
                 // Test if destination is valid
                 let dest = getPixel(this.x+moveX, this.y+moveY);
-                if(dest === undefined || (dest.mat.replace !== true || dest.type === this.type)) continue;
+                if(dest === undefined || (dest.mat?.replace !== true || dest?.type === this.type)) continue;
                 cx = moveX,
                 cy = moveY;
                 break;
@@ -481,6 +527,7 @@ class Pixel extends PIXI.Sprite {
             return 0;
         }
 
+        [dest.data, this.data] = [this.data, dest.data];
         dest.set(this.type, this.tint);
         this.set(replacing);
     }
@@ -533,12 +580,13 @@ let elapsed = 0; // Time elapsed since page load
 let last_tick = 0; // Time since last world update
 app.ticker.add(delta => {
     // Draw
-    if(pressed['click']) run(mouse.x, mouse.y, 'draw');
+    if(pressed['click'] && !pressed['ui_dragging']) run(mouse.x, mouse.y, 'draw');
     else mouse.drawing = false;
 
 
     // UI
     matsContainer.x = lerp(matsContainer.x, matsContainer.ix, 0.3*delta);
+    moreContainer.x = lerp(moreContainer.x, moreContainer.ix, 0.3*delta);
 
     let max = ( matsContainer.width - app.view.width + ( (ui.elements?.bg.width ?? 0)*5 ) ) * -1;
     if(matsContainer.x > 0) {
@@ -557,7 +605,7 @@ app.ticker.add(delta => {
     if(world.paused) return;
 
     // Tick
-    if(elapsed >= last_tick+world.tickrate) {
+    if(elapsed >= last_tick+world.ticktime) {
         // Loop all
         for(let xi = world.grid.length-1; xi >= 0; xi--) {
             for(let yi = world.grid[xi].length-1; yi >= 0; yi--) {
@@ -640,8 +688,8 @@ document.addEventListener('keydown', event => {
     if(event.key === " ") world.playPause();
 
     // Tickrate
-    else if(event.key === 'ArrowDown') world.tickrate += 0.25;
-    else if(event.key === 'ArrowUp' && world.tickrate > 0) world.tickrate -= 0.25;
+    else if(event.key === 'ArrowDown') world.setTicktime(1);
+    else if(event.key === 'ArrowUp') world.setTicktime(-1);
 
     // Brush size
     else if(event.key === 'ArrowLeft') ui.actions.brush_down();

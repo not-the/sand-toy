@@ -62,10 +62,7 @@
         }
     },
     "ice": {
-        "colors": ["85A6D4", "85ACD8", "7DA1D1"],
-        "reacts": {
-            "water": "ice"
-        }
+        "colors": ["85A6D4", "85ACD8", "7DA1D1"]
     },
     "wood": {
         "colors": [
@@ -319,12 +316,12 @@
         "replaces": ["wire"]
     },
     "bomb": {
-        "colors": ["999999"],
-        "despawn_chance": 0.01,
-        "despawn_conversion": ["explosion"],
+        "colors": ["555b59"],
         "moves": [
             { "x":0, "y":1 }
-        ]
+        ],
+        "despawn_timer": 60,
+        "despawn_conversion": "explosion"
     },
     "explosion": {
         "colors": ["FF0000"]

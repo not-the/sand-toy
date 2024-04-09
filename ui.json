@@ -56,5 +56,44 @@
             "x": 240, "y": 2,
             "action": "options"
         }
+    ],
+    "overlay": [
+        {
+            "id": "overlay_bg",
+            "src": "./assets/ui_small.png",
+            "x": 224,
+            "action": "none"
+        },
+
+        {
+            "id": "ticktime_bg",
+            "src": "./assets/text_box.png",
+            "x": 226, "y": 5
+        },
+        {
+            "id": "ticktime_label",
+            "text": "Game speed",
+            "font_size": 3,
+            "x": 226, "y": 2
+        },
+        {
+            "id": "ticktime",
+            "text": "?",
+            "font_size": 7,
+            "x": 228, "y": 6.2
+        },
+
+        {
+            "id": "ticktime_up",
+            "src": "./assets/arrow_up.png",
+            "x": 245, "y": 2,
+            "action": "ticktime_down", "repeats": true
+        },
+        {
+            "id": "ticktime_down",
+            "src": "./assets/arrow_down.png",
+            "x": 245, "y": 8,
+            "action": "ticktime_up", "repeats": true
+        }
     ]
 }
