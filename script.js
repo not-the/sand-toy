@@ -14,9 +14,9 @@ function get(url, parse=true){
 }
 
 /** Distance between two points
- * @param {object|Pixel} one 
- * @param {object|Pixel} two 
- * @returns 
+ * @param {object|Pixel} one Object one
+ * @param {object|Pixel} two Object two
+ * @returns {Array} Array [distance, distX, distY]
  */
 function distance(one, two) {
     let distX = one.x - two.x;
@@ -39,20 +39,23 @@ Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)]
 }
 
+/** Capitalizes the first character in a string */
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
 
-
-// World Size. Width/height are pulled from URL parameters if available
+// Canvas size
 const viewWidth = 1280, viewHeight = 800, UIHeight = 80;
 
+// World Size. Width/height are pulled from URL parameters if available
 let width = 128, height = 72;
 let params = location.search.substring(1).split(',');
 if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1])];
 
-let gamescale = viewWidth/width;
+
+/** Pixel scale */
+let scale = viewWidth/width;
 
 
 // PIXI.JS setup
@@ -68,7 +71,7 @@ app.renderer.clearBeforeRender = false;
 gamespace.appendChild(app.view);
 let canvas = document.querySelector('canvas');
 
-// Filters
+/** PIXI Filters */
 const filters = {
     'bloom': new PIXI.filters.AdvancedBloomFilter({
         threshold: 0.7,
@@ -78,7 +81,7 @@ const filters = {
         blur: 2,
         quality: 8,
         kernels: null,
-        pixelSize: 0.5*gamescale
+        pixelSize: 0.5*scale
     }),
     'shadow': new PIXI.filters.DropShadowFilter({
         distance: 5,
@@ -89,59 +92,50 @@ const filters = {
     })
 }
 
+/** PIXI.Container shorthand */
+class Container extends PIXI.Container {
+    constructor(properties={}, parent=app.stage) {
+        super();
+
+        // Assign properties
+        for(let [key, value] of Object.entries(properties)) {
+            if(key === 'scale') {
+                this.scale.x = value;
+                this.scale.y = value;
+            }
+            else this[key] = value;
+        }
+
+        parent.addChild(this); // Add to parent
+    }
+}
+
 /** World container */
-const worldContainer = new PIXI.Container();
-worldContainer.interactiveChildren = false;
-worldContainer.width = width;
-worldContainer.height = height;
-worldContainer.scale.x = gamescale;
-worldContainer.scale.y = gamescale;
-app.stage.addChild(worldContainer);
+const worldContainer = new Container({
+    interactiveChildren: false,
+    width, height, scale,
+    filters: [ filters.bloom ]
+}, undefined);
 
-
+/** Bloom filter container */
 // const bloomContainer = new PIXI.Container();
 // bloomContainer.width = width;
 // bloomContainer.height = height;
 // worldContainer.addChild(bloomContainer);
 
-const UIContainer = new PIXI.Container();
-UIContainer.y = viewHeight - UIHeight;
+/** UI container */
+const UIContainer = new Container({ y:viewHeight-UIHeight, eventMode:'static' });
 
-
-
-
+// Click-and-drag to scroll through materials list
 let dragOrigin = 0
-UIContainer.eventMode = 'static';
-UIContainer.on('pointerdown', dragStart);
-function dragStart() {
+UIContainer.on('pointerdown', () => {
     pressed['ui_dragging'] = true;
     dragOrigin = mouse.x;
-}
+});
 
-
-
-app.stage.addChild(UIContainer);
-
-const matsContainer = new PIXI.Container();
-matsContainer.ix = 0;
-matsContainer.scale.x = 5;
-matsContainer.scale.y = 5;
-UIContainer.addChild(matsContainer);
-
-// Options
-const optsContainer = new PIXI.Container();
-// optsContainer.ix = 0;
-optsContainer.scale.x = 5;
-optsContainer.scale.y = 5;
-UIContainer.addChild(optsContainer);
-
-const moreContainer = new PIXI.Container();
-moreContainer.y = -90;
-moreContainer.scale.x = 5;
-moreContainer.scale.y = 5;
-moreContainer.visible = false;
-moreContainer.ix = 50;
-UIContainer.addChild(moreContainer);
+const matsContainer = new Container({ ix:0, scale:5 }, UIContainer);
+const optsContainer = new Container({ scale:5 }, UIContainer);
+const moreContainer = new Container({ y:-90, scale:5, ix:50, visible:false }, UIContainer);
 
 
 /** UI */
@@ -222,13 +216,6 @@ const ui = {
 }
 ui.build('options', optsContainer);
 ui.build('overlay', moreContainer);
-
-
-
-
-
-worldContainer.filters = [ filters.bloom ];
-// bloomContainer.filters = [ filters.bloom ];
 
 
 /** Material data (colors, properties, interaction/movement rules, etc.) */
@@ -665,8 +652,8 @@ function moveHandler(event) {
     lastMouse.x = mouse.x, lastMouse.y = mouse.y, lastMouse.drawing = mouse.drawing;
     
     // scale mouse coordinates to canvas coordinates
-    mouse.x = Math.floor(mouseX * canvas.width / canvas.clientWidth / gamescale);
-    mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / gamescale);
+    mouse.x = Math.floor(mouseX * canvas.width / canvas.clientWidth / scale);
+    mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / scale);
 
     // Indicator
     indicator.x = mouse.x - Math.floor(brush.size/2)-0.5;
