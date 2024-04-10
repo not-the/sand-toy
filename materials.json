@@ -185,6 +185,7 @@
             }
         ],
         "move_chance": 0.3,
+        "despawn_chance": 0.02,
         "replace": true
     },
     "fire": {
