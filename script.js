@@ -125,6 +125,9 @@ const worldContainer = new Container({
 
 /** UI container */
 const UIContainer = new Container({ y:viewHeight-UIHeight, eventMode:'static' });
+const matsContainer = new Container({ ix:0, scale:5 }, UIContainer);                        // Materials container
+const optsContainer = new Container({ scale:5 }, UIContainer);                              // Additional UI      
+const moreContainer = new Container({ y:-90, scale:5, ix:50, visible:false }, UIContainer); // Toggle panel
 
 // Click-and-drag to scroll through materials list
 let dragOrigin = 0
@@ -132,10 +135,6 @@ UIContainer.on('pointerdown', () => {
     pressed['ui_dragging'] = true;
     dragOrigin = mouse.x;
 });
-
-const matsContainer = new Container({ ix:0, scale:5 }, UIContainer);
-const optsContainer = new Container({ scale:5 }, UIContainer);
-const moreContainer = new Container({ y:-90, scale:5, ix:50, visible:false }, UIContainer);
 
 
 /** UI */
