@@ -127,7 +127,7 @@ const worldContainer = new Container({
 const UIContainer = new Container({ y:viewHeight-UIHeight, eventMode:'static' });
 const matsContainer = new Container({ ix:0, scale:5 }, UIContainer);                        // Materials container
 const optsContainer = new Container({ scale:5 }, UIContainer);                              // Additional UI      
-const moreContainer = new Container({ y:-90, scale:5, ix:50, visible:false }, UIContainer); // Toggle panel
+const moreContainer = new Container({ y:-90, scale:5, ix:50, visible:false, filters:[ filters.shadow ] }, UIContainer); // Toggle panel
 
 // Click-and-drag to scroll through materials list
 let dragOrigin = 0
@@ -153,7 +153,7 @@ const ui = {
         options: () => {
             document.body.classList.toggle('show_overlay')
             moreContainer.visible = !moreContainer.visible;
-            moreContainer.ix = moreContainer.visible ? 0 : 50;
+            moreContainer.ix = moreContainer.visible ? -6 : 50;
         },
 
         ticktime_up: () => world.setTicktime(1),
@@ -236,6 +236,7 @@ const world = {
 
     paused: false,
 
+    // tt_options: [12, 4, 3, 2, 1.25, 1, 0, -2, -4, -5, -8, -12],
     tt_options: [12, 4, 3, 2, 1.25, 1, 0],
     tt_index: 3,
     ticktime: 2, // Number of frames each tick takes to happen
@@ -245,7 +246,9 @@ const world = {
         if(value === undefined) return this.tt_index += dir;
 
         this.ticktime = value;
-        if(ui.elements?.ticktime) ui.elements.ticktime.text = value === 0 ? 'Max' : (2 / value).toFixed(1) + 'x';
+        if(ui.elements?.ticktime) ui.elements.ticktime.text =
+            value < 0 ? `${Math.abs(value)}/frame` :
+            value === 0 ? 'Max' : (2 / value).toFixed(1) + 'x';
         // console.log(value);
     },
 
@@ -304,7 +307,7 @@ class Pixel extends PIXI.Sprite {
      * @param {string} type Material name
      * @param {string} preColor If defined this will be used as the color value instead of a random value
      */
-    set(type, preColor) {
+    set(type, preColor, fresh) {
         // let this = grid?.[this.y]?.[this.x];
         if(this === undefined || (this?.type === type && this?.type !== 'air')) return;
 
@@ -314,7 +317,7 @@ class Pixel extends PIXI.Sprite {
 
         this.tint = color;
         this.type = type;
-        if(this.mat?.gas === true) this.fresh = true;
+        if(this.mat?.gas === true || fresh !== undefined) this.fresh = fresh??1;
 
         if(preColor === undefined) this.data.age = 0;
 
@@ -352,7 +355,7 @@ class Pixel extends PIXI.Sprite {
         // Loop region
         for(let mx = size; mx >= 0; mx--)
             for(let my = size; my >= 0; my--)
-                if(callback(x+mx, y+my, x, y) === true) break;
+                if(callback(x+mx, y+my, x, y)) break;
     }
 
     /** Draws using user's brush material */
@@ -385,7 +388,11 @@ class Pixel extends PIXI.Sprite {
 
     /** Updates a pixel be acting out its movement and interaction rules */
     tick() {
-        if(this.fresh) return delete this.fresh;
+        if(this.fresh) {
+            if(this.fresh > 1) this.fresh--;
+            else delete this.fresh;
+            return;
+        }
 
         // Track pixel's age
         if(this.mat?.despawn_timer) this.data.age += 1;
@@ -444,16 +451,18 @@ class Pixel extends PIXI.Sprite {
 
         // Wire/electricity
         if(this.type === 'electricity') {
-            getPixel(this.x-1, this.y-1).forRegion(3, (x, y, ox, oy) => {
+            this.forRegion(3, (x, y, ox, oy) => {
                 const dest = getPixel(x, y);
                 if(
                     dest !== undefined &&
                     // dest?.type === 'wire' &&
-                    x !== ox && y !== oy
+                    x !== this.x || y !== this.y
                 ) {
-                    // this.set(x, y, 'electricity');
-                    this.set(ox+1, oy+1, 'wire');
-                    // return true;
+                    if(dest?.type === 'wire') {
+                        dest.set('electricity', undefined, 2);
+                        this.set('wire', undefined, 1);
+                        return true;
+                    }
                 }
             })
         }
@@ -556,8 +565,8 @@ const brush = {
         ui.elements.brush_size.text = value;
     }
 }
-brush.setSize(3);
-// brush.setSize(1);
+// brush.setSize(3);
+brush.setSize(1);
 
 
 
@@ -592,12 +601,17 @@ app.ticker.add(delta => {
 
     // Tick
     if(elapsed >= last_tick+world.ticktime) {
-        // Loop all
-        for(let xi = world.grid.length-1; xi >= 0; xi--) {
-            for(let yi = world.grid[xi].length-1; yi >= 0; yi--) {
-                run(Number(yi), Number(xi), 'tick');
+
+        // Multiple ticks
+        // for(let mti = 0; mti < (world.ticktime < 0 ? Math.abs(world.ticktime) : 1); mti++) {
+            // Loop all
+            for(let xi = world.grid.length-1; xi >= 0; xi--) {
+                for(let yi = world.grid[xi].length-1; yi >= 0; yi--) {
+                    run(Number(yi), Number(xi), 'tick');
+                }
             }
-        }
+        // }
+
 
         // Loop world.ticks registry
         // for(let p of Object.values(world.ticks)) p.tick();
@@ -667,7 +681,6 @@ function moveHandler(event) {
 
     // End drag
     if(!pressed['click']) delete pressed['ui_dragging'];
-
 }
 
 document.addEventListener('keydown', event => {
