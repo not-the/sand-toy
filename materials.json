@@ -118,7 +118,8 @@
             "lava": "concrete",
             "hot_stone": "steam",
             "acid": "acid"
-        }
+        },
+        "conductive": true
     },
     "lava": {
         "colors": [
@@ -348,7 +349,7 @@
         "reacts": {
             "water": "water"
         },
-        "reaction_chance": 0.01
+        "reaction_chance": 0.001
     },
     "light": {
         "colors": [
@@ -357,14 +358,30 @@
             "cccccc"
         ]
     },
+    "balloons": {
+        "colors": [
+            "dd4433",
+            "dd3038"
+        ],
+        "gas": true,
+        "moves": [
+            { "x":[-1, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  1], "y":-1 },
+            { "x":[-1, 1], "y":-1 }
+        ],
+        "reacts": {
+            "fire": "air",
+            "lava": "air",
+            "acid": "air"
+        }
+    },
 
     "#Tech": 0,
     "wire": {
-        "colors": ["D55D54"]
+        "colors": ["D55D54", "ce5950"],
+        "conductive": true
     },
     "electricity": {
-        "colors": ["EFD231"],
-        "replaces": ["wire"]
+        "colors": ["EFD231", "dcb92b"]
     },
     "bomb": {
         "colors": ["555b59"],

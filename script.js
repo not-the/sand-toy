@@ -392,19 +392,19 @@ class Pixel extends PIXI.Sprite {
      */
     forRegion(size=3, callback, centered=true) {
         if(callback === undefined) return console.warn(new Error('No callback specified'));
-        size -= 1;
+        size -= 1; // Size needs to have 1 subtracted
 
         let {x, y} = this;
         // Center on given pixel
         if(centered) {
-            x-=Math.floor(size/2);
-            y-=Math.floor(size/2);
+            x-=Math.ceil(size/2);
+            y-=Math.ceil(size/2);
         }
 
         // Loop region
-        for(let mx = size; mx >= 0; mx--)
-            for(let my = size; my >= 0; my--)
-                if(callback(x+mx, y+my, x, y)) break;
+        loopX: for(let mx = size; mx >= 0; mx--)
+            loopY: for(let my = size; my >= 0; my--)
+                if(callback(x+mx, y+my, x, y) === true) break loopX;
     }
 
     /** Draws using user's brush material */
@@ -464,18 +464,21 @@ class Pixel extends PIXI.Sprite {
         if(this.mat?.reacts !== undefined) {
             // console.log('#####');
             this.forRegion(3, (x, y) => {
+                // Don't test current pixel
                 if(this.x === x && this.y === y) return;
 
+                // Testing pixel
                 let dest = getPixel(x, y);
-                // console.log(dest.type);
+                // console.log(dest?.type);
                 if(dest === undefined) return;
 
                 // Convert
                 let conversion = dest.mat?.reacts?.[this?.type];
-                if(conversion === undefined) return
+                if(conversion === undefined) return;
+
                 if(
-                    this.mat?.reaction_chance === undefined ||
-                    Math.random() <= this.mat?.reaction_chance
+                    dest.mat?.reaction_chance === undefined ||
+                    Math.random() <= dest.mat?.reaction_chance
                 ) run(x, y, 'set', conversion);
             }, true);
             // console.log('#####');
@@ -508,8 +511,8 @@ class Pixel extends PIXI.Sprite {
                     x !== this.x || y !== this.y
                 ) {
                     if(dest?.type === 'wire') {
-                        dest.set('electricity', undefined, 2);
-                        this.set('wire', undefined, 1);
+                        dest.set('electricity', undefined);
+                        this.set('wire', undefined);
                         return true;
                     }
                 }
