@@ -306,7 +306,8 @@
         "reacts": {
             "water": "concrete",
             "lava": "concrete"
-        }
+        },
+        "float": 2
     },
     "confetti": {
         "colors": [

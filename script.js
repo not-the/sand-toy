@@ -168,6 +168,8 @@ const ui = {
     data: get('./ui.json'),
 
     elements: {},
+    
+    get optionsVisible() { return moreContainer?.visible; },
 
     actions: {
         none: null,
@@ -176,10 +178,19 @@ const ui = {
         brush_up: () => brush.setSize(brush.size+1),
         brush_down: () => { if(brush.size > 1) brush.setSize(brush.size-1) },
 
-        options: () => {
-            document.body.classList.toggle('show_overlay')
+        options: (overlay=true) => {
+            // Make options panel visible
             moreContainer.visible = !moreContainer.visible;
             moreContainer.ix = moreContainer.visible ? -6 : 50;
+
+            // Update options button
+            ui.elements.options.texture = PIXI.Texture.from(ui.optionsVisible ? './assets/options_pressed.png' : './assets/options.png');
+
+            // HTML overlay
+            if(overlay) ui.actions.openOverlay();
+        },
+        openOverlay: () => {
+            document.body.classList.toggle('show_overlay')
         },
 
         ticktime_up: () => world.setTicktime(1),
@@ -280,6 +291,8 @@ const world = {
             value < 0 ? `${Math.abs(value)}/frame` :
             value === 0 ? 'Max' : (2 / value).toFixed(1) + 'x';
         // console.log(value);
+
+        if(!ui.optionsVisible && dir !== 0) ui.actions.options(false);
     },
 
     /** Toggle pause */
@@ -786,12 +799,12 @@ document.addEventListener('keydown', event => {
     if(event.key === " ") world.playPause();
 
     // Tickrate
-    else if(event.key === 'ArrowDown') world.setTicktime(1);
-    else if(event.key === 'ArrowUp') world.setTicktime(-1);
+    else if(event.key === 'ArrowLeft') world.setTicktime(1);
+    else if(event.key === 'ArrowRight') world.setTicktime(-1);
 
     // Brush size
-    else if(event.key === 'ArrowLeft') ui.actions.brush_down();
-    else if(event.key === 'ArrowRight') ui.actions.brush_up();
+    else if(event.key === 'ArrowDown') ui.actions.brush_down();
+    else if(event.key === 'ArrowUp') ui.actions.brush_up();
     // console.log(world.tickrate);
 })
 
