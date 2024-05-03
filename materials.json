@@ -1,7 +1,7 @@
 {
     "air": {
         "colors": ["344457", "344457", "344457", "334454", "344558"],
-        "replace": true
+        "float": 99
     },
 
     "#Solids": 0,
@@ -13,7 +13,7 @@
         ],
         "reaction_chance": 0.01
     },
-    "hot_stone": {
+    "hot stone": {
         "colors": [
             "988585",
             "9A9090",
@@ -113,7 +113,7 @@
                 "y": 0
             }
         ],
-        "replace": true,
+        "float": 2,
         "reacts": {
             "lava": "concrete",
             "hot_stone": "steam",
@@ -138,7 +138,7 @@
             }
         ],
         "move_chance": 0.65,
-        "replace": true,
+        "float": 1,
         "reacts": {
             "water": "concrete"
         }
@@ -165,7 +165,7 @@
         ],
         "despawn_chance": 0.0005,
         "despawn_conversion": "water",
-        "replace": true,
+        "float": 5,
         "reaction_chance": 0.5,
         "reacts": {
             "ice": "water"
@@ -190,7 +190,7 @@
         ],
         "move_chance": 0.3,
         "despawn_chance": 0.02,
-        "replace": true
+        "float": 5
     },
     "fire": {
         "colors": [
@@ -215,7 +215,7 @@
             }
         ],
         "despawn_chance": 0.3,
-        "replace": true,
+        "float": 5,
         "reacts": {
             "wood": "fire",
             "water": "steam",
@@ -242,7 +242,7 @@
                 "y": 0
             }
         ],
-        "replace": true,
+        "float": 1,
         "reaction_chance": 0.1
     },
 
@@ -276,7 +276,7 @@
                 "y": 0
             }
         ],
-        "replace": true,
+        "float": 3,
         "reacts": {
             "fire": "fire",
             "lava": "fire"
@@ -318,7 +318,7 @@
         ],
         "despawn_chance": 0.1,
         "move_chance": 0.9,
-        "replace": true,
+        "float": 5,
         "moves": [
             {
                 "x": [-1, 0, 1],

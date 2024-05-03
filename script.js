@@ -63,7 +63,7 @@ Array.prototype.random = function() {
     return this[Math.floor(Math.random() * this.length)];
 }
 
-/** Capitalizes the first character in a string
+/** Returns the string with the first character capitalized, the original string is unchanged
  * @returns {String}
  */
 String.prototype.capitalize = function() {
@@ -583,7 +583,7 @@ class Pixel extends PIXI.Sprite {
 
                 // Test if destination is valid
                 let dest = getPixel(this.x+moveX, this.y+moveY);
-                if(dest === undefined || (dest.mat?.replace !== true || dest?.type === this.type)) continue;
+                if(dest === undefined || (dest.mat?.float <= this.mat.float || dest.mat?.float === undefined || dest?.type === this.type)) continue;
                 cx = moveX,
                 cy = moveY;
                 break;
