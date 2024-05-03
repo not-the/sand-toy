@@ -97,6 +97,14 @@ app.renderer.clearBeforeRender = false;
 gamespace.appendChild(app.view);
 let canvas = document.querySelector('canvas');
 
+// Spritesheet
+let atlas = get('./assets/sheet.json');
+const spritesheet = new PIXI.Spritesheet(
+	PIXI.BaseTexture.from(`./assets/${atlas.meta.image}`), atlas
+);
+spritesheet.parse();
+
+
 /** PIXI Filters */
 const filters = {
     'bloom': new PIXI.filters.AdvancedBloomFilter({
@@ -184,7 +192,9 @@ const ui = {
             moreContainer.ix = moreContainer.visible ? -6 : 50;
 
             // Update options button
-            ui.elements.options.texture = PIXI.Texture.from(ui.optionsVisible ? './assets/options_pressed.png' : './assets/options.png');
+            ui.elements.options.texture = ui.optionsVisible ?
+                spritesheet.textures['options_pressed.png'] :
+                spritesheet.textures['options.png'];
 
             // HTML overlay
             if(overlay) ui.actions.openOverlay();
@@ -201,7 +211,7 @@ const ui = {
         const menu = this.data[name];
         for(let props of menu) {
             let element = !props.text ?
-                PIXI.Sprite.from(props.src) :
+                new PIXI.Sprite(spritesheet.textures[props.src]) :
                 new PIXI.Text(props.text, {
                     fontFamily: 'Arial',
                     fontSize: props.font_size ?? 3,
@@ -298,7 +308,9 @@ const world = {
     /** Toggle pause */
     playPause() {
         this.paused = !this.paused;
-        ui.elements.pause.texture = PIXI.Texture.from(this.paused ? './assets/play.png' : './assets/pause.png');
+        ui.elements.pause.texture = this.paused ?
+            spritesheet.textures['play.png'] :
+            spritesheet.textures['pause.png'];
     },
 
     /** Sets entire screen to air */
@@ -848,13 +860,25 @@ for(let [key, value] of Object.entries(materials)) {
     }
 
     // Button
-    let button = PIXI.Sprite.from('./assets/tray.png');
+    let button = new PIXI.Sprite(spritesheet.textures['tray.png']);
     button.brush = key;
     button.x = uiX;
     uiX += 16;
 
-    // Icon
-    let icon = PIXI.Sprite.from(`./assets/materials/${key}.png`);
+    // Icon texture
+    let matTexture = spritesheet.textures[`materials/${key}.png`];
+    // Fallback
+    if(matTexture === undefined) {
+        try {
+            matTexture = PIXI.Texture.from(`./artwork/materials/${key}.png`);
+        } catch (error) {
+            console.warn(error);
+            matTexture = spritesheet.textures['materials/question.png'];
+        }
+    }
+
+    // Material icon
+    let icon = new PIXI.Sprite(matTexture);
     icon.scale.x = 0.8, icon.scale.y = 0.8, icon.x = 1;
     icon.filters = [ filters.shadow ];
     button.addChild(icon);
@@ -883,10 +907,10 @@ for(let [key, value] of Object.entries(materials)) {
         brush.setType(element.brush);
 
         if(uiSelection !== undefined) {
-            uiSelection.texture = PIXI.Texture.from('./assets/tray.png');
+            uiSelection.texture = spritesheet.textures['tray.png'];
             uiSelection.children[1].style.fill = 'fff';
         }
-        element.texture = PIXI.Texture.from('./assets/selection.png');
+        element.texture = spritesheet.textures['selection.png'];
         element.children[1].style.fill = '000';
         uiSelection = element;
     }

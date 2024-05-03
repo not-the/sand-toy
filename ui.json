@@ -2,14 +2,14 @@
     "options": [
         {
             "id": "bg",
-            "src": "./assets/options_bg.png",
+            "src": "options_bg.png",
             "x": 170,
             "action": "none"
         },
 
         {
             "id": "brush_size_bg",
-            "src": "./assets/text_box.png",
+            "src": "text_box.png",
             "x": 179, "y": 5
         },
         {
@@ -27,32 +27,32 @@
 
         {
             "id": "brush_size_up",
-            "src": "./assets/arrow_up.png",
+            "src": "arrow_up.png",
             "x": 198, "y": 2,
             "action": "brush_up", "repeats": true
         },
         {
             "id": "brush_size_down",
-            "src": "./assets/arrow_down.png",
+            "src": "arrow_down.png",
             "x": 198, "y": 8,
             "action": "brush_down", "repeats": true
         },
         {
             "id": "pause",
-            "src": "./assets/pause.png",
+            "src": "pause.png",
             "x": 210, "y": 2,
             "action": "pause"
         },
 
         {
             "id": "clear",
-            "src": "./assets/clear.png",
+            "src": "clear.png",
             "x": 225, "y": 2,
             "action": "clear"
         },
         {
             "id": "options",
-            "src": "./assets/options.png",
+            "src": "options.png",
             "x": 240, "y": 2,
             "action": "options"
         }
@@ -60,14 +60,14 @@
     "overlay": [
         {
             "id": "overlay_bg",
-            "src": "./assets/ui_small.png",
+            "src": "ui_small.png",
             "x": 224,
             "action": "none"
         },
 
         {
             "id": "ticktime_bg",
-            "src": "./assets/text_box.png",
+            "src": "text_box.png",
             "x": 226, "y": 5
         },
         {
@@ -85,13 +85,13 @@
 
         {
             "id": "ticktime_up",
-            "src": "./assets/arrow_up.png",
+            "src": "arrow_up.png",
             "x": 245, "y": 2,
             "action": "ticktime_down", "repeats": true
         },
         {
             "id": "ticktime_down",
-            "src": "./assets/arrow_down.png",
+            "src": "arrow_down.png",
             "x": 245, "y": 8,
             "action": "ticktime_up", "repeats": true
         }
