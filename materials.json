@@ -34,7 +34,7 @@
             { "x":0, "y":1 }
         ],
         "reacts": {
-            "water": "gravel"
+            "water": { "to": "gravel", "chance": 0.001 }
         },
         "reaction_chance": 0.01
     },
@@ -62,11 +62,15 @@
             }
         ],
         "reacts": {
-            "water": "sand"
+            "water": { "to": "sand", "chance": 0.001 }
         }
     },
     "ice": {
-        "colors": ["85A6D4", "85ACD8", "7DA1D1"]
+        "colors": ["85A6D4", "85ACD8", "7DA1D1"],
+        "reacts": {
+            "fire": { "to": "water" },
+            "lava": { "to": "steam" }
+        }
     },
     "wood": {
         "colors": [
@@ -75,8 +79,8 @@
             "805d30"
         ],
         "reacts": {
-            "fire": "fire",
-            "lava": "fire"
+            "fire": { "to": "fire" },
+            "lava": { "to": "fire" }
         }
     },
     "foliage": {
@@ -86,8 +90,8 @@
             "6ca338"
         ],
         "reacts": {
-            "fire": "fire",
-            "lava": "fire"
+            "fire": { "to": "fire" },
+            "lava": { "to": "fire" }
         }
     },
 
@@ -115,9 +119,18 @@
         ],
         "float": 2,
         "reacts": {
-            "lava": "concrete",
-            "hot_stone": "steam",
-            "acid": "acid"
+            "hot stone": {
+                "to": "steam",
+                "chance": 0.3
+            },
+            "acid": {
+                "to": "acid",
+                "chance": 0.5
+            },
+            "ice": {
+                "to": "ice",
+                "chance": 0.001
+            }
         },
         "conductive": true
     },
@@ -141,7 +154,7 @@
         "move_chance": 0.65,
         "float": 1,
         "reacts": {
-            "water": "concrete"
+            "water": { "to": "concrete" }
         }
     },
     "steam": {
@@ -167,9 +180,8 @@
         "despawn_chance": 0.0005,
         "despawn_conversion": "water",
         "float": 5,
-        "reaction_chance": 0.5,
         "reacts": {
-            "ice": "water"
+            "ice": { "to": "water", "chance": 0.015 }
         }
     },
 
@@ -218,9 +230,8 @@
         "despawn_chance": 0.3,
         "float": 5,
         "reacts": {
-            "wood": "fire",
-            "water": "steam",
-            "ice": "water"
+            "wood": { "to": "fire" },
+            "water": { "to": "steam" }
         }
     },
     "acid": {
@@ -244,7 +255,7 @@
             }
         ],
         "float": 1,
-        "reaction_chance": 0.1
+        "acid_chance": 0.1
     },
 
     "#Man-made": 0,
@@ -279,8 +290,8 @@
         ],
         "float": 3,
         "reacts": {
-            "fire": "fire",
-            "lava": "fire"
+            "fire": { "to": "fire" },
+            "lava": { "to": "fire" }
         }
     },
     "gunpowder": {
@@ -290,7 +301,7 @@
             {"x":[-1, 1], "y": 1}
         ],
         "reacts": {
-            "fire": "explosion"
+            "fire": { "to": "explosion" }
         }
     },
     "cement": {
@@ -305,8 +316,8 @@
             { "x":1, "y":0 }
         ],
         "reacts": {
-            "water": "concrete",
-            "lava": "concrete"
+            "water": { "to": "concrete" },
+            "lava": { "to": "concrete" }
         },
         "float": 2
     },
@@ -347,9 +358,8 @@
             }
         ],
         "reacts": {
-            "water": "water"
-        },
-        "reaction_chance": 0.001
+            "water": { "to": "water", "chance": 0.005 }
+        }
     },
     "light": {
         "colors": [
@@ -369,9 +379,9 @@
             { "x":[-1, 1], "y":-1 }
         ],
         "reacts": {
-            "fire": "air",
-            "lava": "air",
-            "acid": "air"
+            "fire": { "to": ["air", "air", "air", "air", "fire"] },
+            "lava": { "to": "air" },
+            "acid": { "to": "air" }
         }
     },
 
@@ -392,6 +402,6 @@
         "despawn_conversion": "explosion"
     },
     "explosion": {
-        "colors": ["FF0000"]
+        "colors": ["ffffff"]
     }
 }

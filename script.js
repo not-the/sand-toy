@@ -447,10 +447,11 @@ class Pixel extends PIXI.Sprite {
         if(this.mat?.despawn_timer) this.data.age += 1;
 
         // Despawn chance
-        if(this.mat?.despawn_chance !== undefined)
+        if(this.mat?.despawn_chance !== undefined) {
             if(Math.random() <= this.mat.despawn_chance) return this.set(
                 parse(this.mat?.despawn_conversion) ?? 'air'
             );
+        }
 
         // Despawn timer
         if(this.mat?.despawn_timer !== undefined) {
@@ -476,10 +477,10 @@ class Pixel extends PIXI.Sprite {
                 let conversion = dest.mat?.reacts?.[this?.type];
                 if(conversion === undefined) return;
 
-                if(
-                    dest.mat?.reaction_chance === undefined ||
-                    Math.random() <= dest.mat?.reaction_chance
-                ) run(x, y, 'set', conversion);
+                // Roll chance
+                if(conversion.chance === undefined || Math.random() <= conversion.chance ) {
+                    dest.set(parse(conversion.to));
+                }
             }, true);
             // console.log('#####');
         }
@@ -488,7 +489,7 @@ class Pixel extends PIXI.Sprite {
         // Acid
         if(this.type === 'acid') {
             // Dissolve below
-            if(Math.random() < this.mat.reaction_chance) {
+            if(Math.random() < this.mat.acid_chance) {
                 // Despawn
                 if(Math.random() < 0.3) this.set('air');
 
@@ -522,7 +523,7 @@ class Pixel extends PIXI.Sprite {
         // Explosion
         else if(this.type === 'explosion') {
             this.forRegion(9, (x, y) => {
-                let type = ['fire', 'smoke'];
+                let type = ['fire', 'smoke']
                 // this.set(type.random());
                 run(x, y, 'set', type.random());
             })
@@ -599,7 +600,7 @@ class Pixel extends PIXI.Sprite {
 
                 // Test if destination is valid
                 let dest = getPixel(this.x+moveX, this.y+moveY);
-                if(dest === undefined || (dest.mat?.float <= this.mat.float || dest.mat?.float === undefined || dest?.type === this.type)) continue;
+                if(dest === undefined || (dest.mat?.float < this.mat.float || dest.mat?.float === undefined || dest?.type === this.type)) continue;
                 cx = moveX,
                 cy = moveY;
                 break;
