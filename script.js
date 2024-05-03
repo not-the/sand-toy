@@ -27,6 +27,30 @@ function distance(one, two) {
 /** Interpolation function. Will return target value if values are within 1 of eachother */
 function lerp(a, b, alpha) { return Math.abs(b-a)<1?b : a + alpha * (b - a); }
 
+/** RGB color mix */
+function colorMix(color1, color2, percent=0.5) {
+    percent = Math.min(1, Math.max(0, percent)); // Keep within 0-1 range
+
+    const r = Math.round(color1.r + (color2.r - color1.r) * percent);
+    const g = Math.round(color1.g + (color2.g - color1.g) * percent);
+    const b = Math.round(color1.b + (color2.b - color1.b) * percent);
+
+    return { r, g, b };
+}
+
+function rgbToHex({ r, g, b }) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+
 /** If the value is an array it will return a random item from the array, otherwise returns value */
 function parse(value) {
     return Array.isArray(value) ? value[Math.floor(Math.random() * value.length)] : value;
@@ -36,10 +60,12 @@ function parse(value) {
  * @returns {any}
  */
 Array.prototype.random = function() {
-    return this[Math.floor(Math.random() * this.length)]
+    return this[Math.floor(Math.random() * this.length)];
 }
 
-/** Capitalizes the first character in a string */
+/** Capitalizes the first character in a string
+ * @returns {String}
+ */
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
@@ -232,13 +258,17 @@ let pressed = {};
 const world = {
     /** 2D array where all pixels are stored */
     grid: [],
-    ticks: {},
+    // ticks: {}, // Pixels that need updating (unused)
 
     paused: false,
 
+    // Configuration
+    waterShading: false,
+
+    // Tick time
+    tt_options: [12, 4, 3, 2, 1.25, 1, 0], // Game speed options
     // tt_options: [12, 4, 3, 2, 1.25, 1, 0, -2, -4, -5, -8, -12],
-    tt_options: [12, 4, 3, 2, 1.25, 1, 0],
-    tt_index: 3,
+    tt_index: 3, // Game speed preference index (for array above)
     ticktime: 2, // Number of frames each tick takes to happen
     setTicktime(dir) {
         this.tt_index -= dir;
@@ -252,11 +282,13 @@ const world = {
         // console.log(value);
     },
 
+    /** Toggle pause */
     playPause() {
         this.paused = !this.paused;
         ui.elements.pause.texture = PIXI.Texture.from(this.paused ? './assets/play.png' : './assets/pause.png');
     },
 
+    /** Sets entire screen to air */
     clear() {
         this.forAll(p => p.set('air'));
     },
@@ -315,7 +347,7 @@ class Pixel extends PIXI.Sprite {
         const color = preColor ?? this.mat.colors[Math.floor(Math.random() * this.mat.colors.length)];
         this.alpha = this.mat?.alpha ?? 1;
 
-        this.tint = color;
+        this.setColor(color);
         this.type = type;
         if(this.mat?.gas === true || fresh !== undefined) this.fresh = fresh??1;
 
@@ -334,6 +366,10 @@ class Pixel extends PIXI.Sprite {
         // let key = `${this.x},${this.y}`;
         // if('moves' in this.mat || 'despawn_chance' in this.mat || 'reacts' in this.mat) world.ticks[key] = this;
         // else delete world.ticks[key];
+    }
+
+    setColor(color=0x000000) {
+        this.tint = color;
     }
 
     /** Performs a function over a region
@@ -476,6 +512,62 @@ class Pixel extends PIXI.Sprite {
             })
         }
 
+        // Water waves
+        else if(this.type === 'water' && world.waterShading) {
+            // const colors = this.mat.colors;
+            // let phase = ( (Math.sin(Math.sqrt(elapsed)+elapsed/200 + this.y+(this.x % 8)) ) / 2 + 0.5 ) * Math.abs(Math.cos(elapsed/150 + this.y) * 45);
+            // let phase = Math.sin(elapsed*50 + ((this.y/0.5) / this.x*100));
+
+            // Circles
+            // let phase = distance(this, world.grid[30][Math.round(elapsed/5%10+25)])[0] / 10 % (elapsed/100 % 1);
+
+            // let phase =
+            //     this.x % 5 === 0 &&
+            //     this.y === Math.round(elapsed/3) % world.grid.length - this.x%9
+            //     ? 1 : 0
+
+            // let phase =
+            //     Math.sign(Math.sin(elapsed*5 / this.y)) === 1 &&
+            //     Math.sign(Math.sin(elapsed*5 / this.x)) === 1
+            //     ? 1 : 0;
+
+            let period = 70;
+            // let phase = Math.cos( (-elapsed/period) + this.x + Math.sqrt(this.y*100)*elapsed/100);
+
+            // Godrays
+            // let godrays = Math.sin(elapsed/period + this.x/5) + Math.cos(elapsed/period + this.y/5-(this.x));
+
+            // Horizontal movement
+            let offset = (this.y);
+            offset = offset % 4 !== 0 ? offset + 2 : offset;
+            let h_movement;
+
+            // Normal horizontal
+            if(world.grid?.[this.y+1]?.[this.x]?.type !== "air") {
+                h_movement = Math.sin(elapsed/period + this.y/0.45) + Math.cos(elapsed/period + this.x/6-offset);
+            }
+            // Falling
+            else {
+                h_movement = Math.sin(-elapsed/20 + this.x/0.45) + Math.cos(-elapsed/period + this.y/6-this.x);
+            }
+
+            // let phase = (h_movement+h_movement+h_movement+godrays) / 3; // Average
+            let phase = h_movement;
+            if(phase < 0.3) phase = 0; // Min Threshold
+
+            // let phase = Math.cos(elapsed/period + this.x/5) + Math.cos(elapsed/period + Math.pow(this.y, this.x/50)/5-(this.x));
+
+            // let phase = Math.sin((elapsed/period) + this.x/this.y*20);
+
+            // let color = colorMix({r: 51, g: 136, b: 221}, {r: 68, g: 144, b: 225}, phase);
+            let color = colorMix(
+                {r: 51, g: 136, b: 221},
+                {r: 90, g: 170, b: 225},
+                phase
+            );
+            this.setColor(color);
+        }
+
 
         // Movement
         if(this.mat?.moves !== undefined) {
@@ -507,6 +599,7 @@ class Pixel extends PIXI.Sprite {
      * @param {number} cy Destination Y coordinate
      */
     move(cx=0, cy=0, condition) {
+        // Get destination pixel
         let dest_x = this.x+cx;
         let dest_y = this.y+cy;
         let dest = world.grid?.[dest_y]?.[dest_x];
@@ -565,8 +658,8 @@ const brush = {
         ui.elements.brush_size.text = value;
     }
 }
-// brush.setSize(3);
-brush.setSize(1);
+brush.setSize(3);
+// brush.setSize(1);
 
 
 
@@ -653,6 +746,11 @@ canvas.addEventListener('wheel', event => {
 //     event.preventDefault();
 // })
 
+// Leave page
+document.addEventListener("mouseleave", () => {
+    indicator.visible = false;
+})
+
 // Events
 canvas.addEventListener('pointermove', moveHandler);
 function moveHandler(event) {
@@ -671,6 +769,7 @@ function moveHandler(event) {
     // Indicator
     indicator.x = mouse.x - Math.floor(brush.size/2)-0.5;
     indicator.y = mouse.y+1 - Math.floor(brush.size/2)-0.5;
+    indicator.visible = true;
 
 
     // UI touch scroll
@@ -694,6 +793,29 @@ document.addEventListener('keydown', event => {
     else if(event.key === 'ArrowLeft') ui.actions.brush_down();
     else if(event.key === 'ArrowRight') ui.actions.brush_up();
     // console.log(world.tickrate);
+})
+
+// Options
+document.querySelectorAll("[data-option]").forEach(element => {
+    // Create listener
+    let listener;
+    let handler;
+
+    switch (element.type) {
+        case "checkbox":
+            listener = "change";
+            handler = event => event.target.checked;
+
+            element.checked = world[element.dataset.option];
+            break;
+    
+        default:
+            break;
+    }
+
+    function applyOption(name, value) { world[name] = value; }
+
+    element.addEventListener(listener, event => applyOption(event.target.dataset.option, handler(event)));
 })
 
 
