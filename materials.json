@@ -3,8 +3,6 @@
         "colors": ["344457", "344457", "344457", "334454", "344558"],
         "float": 99
     },
-
-    "#Solids": 0,
     "concrete": {
         "colors": [
             "8b8880",
@@ -14,6 +12,7 @@
         "reaction_chance": 0.01
     },
     "hot stone": {
+        "hidden": true,
         "colors": [
             "988585",
             "9A9090",
@@ -65,6 +64,24 @@
             "water": { "to": "sand", "chance": 0.001 }
         }
     },
+    "dirt": {
+        "colors": ["755432", "7d5a3f", "826244"],
+        "moves": [
+            {"x":0, "y":1},
+            {"x":[-1, 1], "y": 1}
+        ],
+        "reaction_radius": 7,
+        "reacts": {
+            "water": { "to": "mud", "chance": 0.05 }
+        }
+    },
+    "mud": {
+        "colors": ["5c391e", "634125", "704b2c"],
+        "moves": [
+            {"x":0, "y":1},
+            {"x":[-1, 1], "y": 1}
+        ]
+    },
     "ice": {
         "colors": ["85A6D4", "85ACD8", "7DA1D1"],
         "reacts": {
@@ -79,8 +96,31 @@
             "805d30"
         ],
         "reacts": {
-            "fire": { "to": "fire" },
+            "fire": { "to": "ember" },
             "lava": { "to": "fire" }
+        }
+    },
+    "ember": {
+        "hidden": true,
+        "colors": [ "942c17", "781b17" ],
+        "despawn_chance": 0.05,
+        "despawn_timer": 10,
+        "despawn_conversion": ["fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "ash"]
+    },
+    "ash": {
+        "colors": ["343538", "2f2f2f"],
+        "moves": [
+            {
+                "x": [-1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                "y": 1
+            },
+            {
+                "x": [-1, 1],
+                "y": 1
+            }
+        ],
+        "reacts": {
+            "water": { "to": "air", "chance": 0.02 }
         }
     },
     "foliage": {
