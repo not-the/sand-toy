@@ -151,6 +151,11 @@ const worldContainer = new Container({
     filters: [ filters.bloom ]
 }, undefined);
 
+const fgContainer = new Container({
+    interactiveChildren: false,
+    width, height, scale
+})
+
 /** Bloom filter container */
 // const bloomContainer = new PIXI.Container();
 // bloomContainer.width = width;
@@ -170,6 +175,9 @@ UIContainer.on('pointerdown', () => {
     dragOrigin = mouse.x;
 });
 
+
+let uiX = 0;
+let uiSelection;
 
 /** UI */
 const ui = {
@@ -258,10 +266,100 @@ const ui = {
                 }
             }
         }
+    },
+
+    buildMaterials() {
+        for(let [key, value] of Object.entries(materials)) {
+            // Title
+            if(key.startsWith('#')) {
+                uiX += 3;
+                continue;
+            }
+        
+            // Hidden
+            if(value.hidden && location.hash !== "#dev") continue;
+        
+            // Button
+            let button = new PIXI.Sprite(spritesheet.textures['tray.png']);
+            button.brush = key;
+            button.x = uiX;
+            uiX += 16;
+        
+            // Icon texture
+            let matTexture = spritesheet.textures[`materials/${key}.png`];
+            // Fallback
+            if(matTexture === undefined) {
+                try {
+                    matTexture = PIXI.Texture.from(`./artwork/materials/${key}.png`);
+                } catch (error) {
+                    console.warn(error);
+                    matTexture = spritesheet.textures['materials/question.png'];
+                }
+            }
+        
+            // Material icon
+            let icon = new PIXI.Sprite(matTexture);
+            icon.scale.x = 0.8, icon.scale.y = 0.8, icon.x = 1;
+            icon.filters = [ filters.shadow ];
+            button.addChild(icon);
+        
+            // Label
+            let label = new PIXI.Text(key.capitalize(), {
+                fontFamily: 'Arial',
+                fontSize: 3,
+                fontWeight: 700,
+                align: 'center',
+                fill: 'fff'
+            });
+            label.anchor.x = 0.5;
+            label.x = 8;
+            label.y = 13;
+            label.resolution = 16;
+            button.addChild(label);
+
+            // Register
+            this.elements[`material_${key}`] = button;
+
+
+            // Player
+            // if(!player.materials[key] && location.hash !== "#dev") button.visible = false;
+        
+        
+            // Events
+            button.eventMode = 'static';
+            button.buttonMode = true;
+            button.cursor = 'pointer';
+            button.on('pointerdown', selectHandler);
+            function selectHandler(event, element=this) {
+                brush.setType(element.brush);
+        
+                if(uiSelection !== undefined) {
+                    uiSelection.texture = spritesheet.textures['tray.png'];
+                    uiSelection.children[1].style.fill = 'fff';
+                }
+                element.texture = spritesheet.textures['selection.png'];
+                element.children[1].style.fill = '000';
+                uiSelection = element;
+            }
+            if(button.brush === brush.type) selectHandler(undefined, button);
+        
+            matsContainer.addChild(button);
+        }
+    },
+
+    refresh() {
+        ui.destroy();
+        ui.build('options', optsContainer);
+        ui.build('overlay', moreContainer);
+        ui.buildMaterials();
+    },
+
+    destroy() {
+        for(let [id, element] of Object.entries(this.elements)) {
+            element.parent.removeChild(element);
+        }
     }
 }
-ui.build('options', optsContainer);
-ui.build('overlay', moreContainer);
 
 
 /** Material data (colors, properties, interaction/movement rules, etc.) */
@@ -284,7 +382,44 @@ const world = {
     paused: false,
 
     // Configuration
+    brushReplace: true,
     waterShading: false,
+    
+    make(data=Array(width).fill(null).map(()=>Array(height).fill('q'))) {
+        this.grid = [];
+
+        // Populate world with air pixels
+        for(let yi = 0; yi < height; yi++) {
+            world.grid.push([]);
+            for(let xi = 0; xi < width; xi++) {
+                let pixel = new Pixel(xi, yi);
+                world.grid[yi][xi] = pixel;
+            }
+        }
+    },
+
+    import(data) {
+        // Populate world with air pixels
+        for(let yi in data) {
+            let col = data[yi];
+            for(let xi in col) {
+                let pixelType = col[xi];
+                run(xi, yi, 'set', pixelType);
+            }
+        }
+    },
+
+    export() {
+        let output = [];
+        for(let col of world.grid) {
+            output.push([]);
+            for(let p of col) {
+                output.push(p.type);
+            }
+        }
+
+        console.log(output);
+    },
 
     // Tick time
     tt_options: [12, 4, 3, 2, 1.25, 1, 0], // Game speed options
@@ -322,13 +457,13 @@ const world = {
         for(let yi in world.grid) for(let p of world.grid[yi]) callback(p);
     }
 }
-world.setTicktime(0);
+
 
 /** Shorthand for running a method on the pixel at the given coordinates
  * @param {number} x Pixel X coordinate
  * @param {number} y Pixel Y coordinate
- * @param {function} method 
- * @param  {...any} params 
+ * @param {string} method Method name (string)
+ * @param  {...any} params Method parameters
  * @returns 
  */
 function run(x, y, method='set', ...params) {
@@ -391,6 +526,10 @@ class Pixel extends PIXI.Sprite {
         // let key = `${this.x},${this.y}`;
         // if('moves' in this.mat || 'despawn_chance' in this.mat || 'reacts' in this.mat) world.ticks[key] = this;
         // else delete world.ticks[key];
+
+
+        // Player unlock
+        // if(player.materials[type] !== true) player.unlock(type);
     }
 
     setColor(color=0x000000) {
@@ -443,17 +582,20 @@ class Pixel extends PIXI.Sprite {
         // }
 
         this.forRegion(size, (x, y) => {
+            if(!world.brushReplace && brush.type !== 'air') if(getPixel(x, y)?.type !== 'air') return;
             run(x, y, 'set', type);
         })
     }
 
-    /** Updates a pixel be acting out its movement and interaction rules */
+    /** Updates a pixel by acting out its movement and interaction rules */
     tick() {
         if(this.fresh) {
             if(this.fresh > 1) this.fresh--;
             else delete this.fresh;
             return;
         }
+
+        this.moving = false;
 
         // Track pixel's age
         if(this.mat?.despawn_timer) this.data.age += 1;
@@ -474,9 +616,11 @@ class Pixel extends PIXI.Sprite {
 
 
         // Reacts
-        if(this.mat?.reacts !== undefined) {
+        if(/*this.mat?.reacts !== undefined*/ this.type !== 'air') {
             // console.log('#####');
-            this.forRegion(3, (x, y) => {
+
+            let radius = this.mat?.reaction_radius ?? 3;
+            this.forRegion(radius, (x, y) => {
                 // Don't test current pixel
                 if(this.x === x && this.y === y) return;
 
@@ -498,6 +642,34 @@ class Pixel extends PIXI.Sprite {
         }
 
 
+        // Movement
+        if(this.mat?.moves !== undefined) {
+            let cx = 0;
+            let cy = 0;
+
+            // Move chance
+            if(Math.random() >= this.mat.move_chance) return;
+
+            // Move checks
+            for(let m of this.mat.moves) {
+                let moveX = parse(m.x), moveY = parse(m.y);
+
+                // Test if destination is valid
+                let dest = getPixel(this.x+moveX, this.y+moveY);
+                if(dest === undefined || (dest.mat?.float < this.mat.float || dest.mat?.float === undefined || dest?.type === this.type)) continue;
+                cx = moveX,
+                cy = moveY;
+                break;
+            }
+
+            // Move
+            this.move(cx, cy);
+        }
+
+
+
+
+        // MATERIAL SPECIFIC
         // Acid
         if(this.type === 'acid') {
             // Dissolve below
@@ -515,7 +687,7 @@ class Pixel extends PIXI.Sprite {
 
 
         // Wire/electricity
-        if(this.type === 'electricity') {
+        else if(this.type === 'electricity') {
             this.forRegion(3, (x, y, ox, oy) => {
                 const dest = getPixel(x, y);
                 if(
@@ -539,6 +711,34 @@ class Pixel extends PIXI.Sprite {
                 // this.set(type.random());
                 run(x, y, 'set', type.random());
             })
+        }
+
+        // Mud grows grass
+        else if(this.type === 'mud') {
+            // Random chance
+            if(Math.random() >= 0.995) {
+
+                let above = getPixel(this.x, this.y-1);
+                let below = getPixel(this.x, this.y+1);
+
+                if(above !== undefined && above?.type === 'air'/* && !this.moving*/) this.set('seeds');
+            }
+        }
+
+        // Grass seeds
+        else if(this.type === 'seeds') {
+            let above = getPixel(this.x, this.y-1);
+            let below = getPixel(this.x, this.y+1);
+            if(above === undefined || above?.type !== 'air' && below?.type !== 'mud' && below?.type !== 'grass') return;
+
+            // Grow
+            if(Math.random() >= 0.8) {
+                this.move(0, -1);
+            }
+            // Replace
+            this.set('grass');
+
+            if(Math.random() >= 0.6) run(this.x, this.y+1, "set", "grass")
         }
 
         // Water waves
@@ -596,31 +796,6 @@ class Pixel extends PIXI.Sprite {
             );
             this.setColor(color);
         }
-
-
-        // Movement
-        if(this.mat?.moves !== undefined) {
-            let cx = 0;
-            let cy = 0;
-
-            // Move chance
-            if(Math.random() >= this.mat.move_chance) return;
-
-            // Move checks
-            for(let m of this.mat.moves) {
-                let moveX = parse(m.x), moveY = parse(m.y);
-
-                // Test if destination is valid
-                let dest = getPixel(this.x+moveX, this.y+moveY);
-                if(dest === undefined || (dest.mat?.float < this.mat.float || dest.mat?.float === undefined || dest?.type === this.type)) continue;
-                cx = moveX,
-                cy = moveY;
-                break;
-            }
-
-            // console.log(cx, cy);
-            this.move(cx, cy);
-        }
     }
 
     /** Swaps two pixels' positions
@@ -633,30 +808,18 @@ class Pixel extends PIXI.Sprite {
         let dest_y = this.y+cy;
         let dest = world.grid?.[dest_y]?.[dest_x];
 
+        // Invalid move
         if(condition !== undefined) if(!condition(dest)) return 0;
+        if(dest === undefined || dest_y > height || dest_x > width || dest_x < 0 || dest_y < 0) return 0;
 
-        if(dest === undefined || dest_y > height || dest_x > width) return 0;
-
+        // Swap
         let replacing = dest.type;
-        let conversion = dest.mat?.reacts?.[this?.type];
-        if(conversion !== undefined) {
-            run(dest_x, dest_y, 'set', conversion);
-            return 0;
-        }
-
         [dest.data, this.data] = [this.data, dest.data];
         dest.set(this.type, this.tint);
         this.set(replacing);
-    }
-}
 
-
-// Populate world with air pixels
-for(let yi = 0; yi < height; yi++) {
-    world.grid.push([]);
-    for(let xi = 0; xi < width; xi++) {
-        let pixel = new Pixel(xi, yi);
-        world.grid[yi][xi] = pixel;
+        // State
+        this.moving = true;
     }
 }
 
@@ -664,11 +827,13 @@ for(let yi = 0; yi < height; yi++) {
 /** Brush indicator */
 let indicator = new PIXI.Graphics();
 indicator.x = -100; indicator.y = -100
-worldContainer.addChild(indicator);
+fgContainer.addChild(indicator);
 
 
 /** Brush */
 const brush = {
+    get replace() { return world.brushReplace; },
+
     // Type
     type: 'sand',
     setType(type) {
@@ -687,8 +852,34 @@ const brush = {
         ui.elements.brush_size.text = value;
     }
 }
+
+
+// Player
+// let player = {
+//     materials: {
+//         "air": true,
+//         "stone": true,
+//         "water": true,
+//         "dirt": true,
+//         "fire": true
+//     },
+
+//     unlock(type) {
+//         this.materials[type] = true;
+//         ui.elements[`material_${type}`].visible = true;
+//         // ui.refresh();
+//     }
+// }
+
+// Setup
+ui.refresh();
+
 brush.setSize(3);
 // brush.setSize(1);
+
+// Create world
+world.setTicktime(0);
+world.make();
 
 
 
@@ -758,8 +949,13 @@ function pointerHandler(event) {
         delete pressed[id];
 
     if(id === 'middle_click' && event.type === "pointerdown") {
+        let targetPixel = getPixel(mouse.x, mouse.y);
         // Get type
-        console.log(getPixel(mouse.x, mouse.y).type);
+        console.log(`
+${targetPixel.type}
+Moving: ${targetPixel.moving}
+Fresh:  ${targetPixel.fresh}
+        `);
 
         // Pan camera
         panStart.x = mouse.x, panStart.y = mouse.y;
@@ -846,78 +1042,6 @@ document.querySelectorAll("[data-option]").forEach(element => {
 
     element.addEventListener(listener, event => applyOption(event.target.dataset.option, handler(event)));
 })
-
-
-
-// UI
-let uiX = 0;
-let uiSelection;
-for(let [key, value] of Object.entries(materials)) {
-    // Title
-    if(key.startsWith('#')) {
-        uiX += 3;
-        continue;
-    }
-
-    // Button
-    let button = new PIXI.Sprite(spritesheet.textures['tray.png']);
-    button.brush = key;
-    button.x = uiX;
-    uiX += 16;
-
-    // Icon texture
-    let matTexture = spritesheet.textures[`materials/${key}.png`];
-    // Fallback
-    if(matTexture === undefined) {
-        try {
-            matTexture = PIXI.Texture.from(`./artwork/materials/${key}.png`);
-        } catch (error) {
-            console.warn(error);
-            matTexture = spritesheet.textures['materials/question.png'];
-        }
-    }
-
-    // Material icon
-    let icon = new PIXI.Sprite(matTexture);
-    icon.scale.x = 0.8, icon.scale.y = 0.8, icon.x = 1;
-    icon.filters = [ filters.shadow ];
-    button.addChild(icon);
-
-    // Label
-    let label = new PIXI.Text(key.capitalize(), {
-        fontFamily: 'Arial',
-        fontSize: 3,
-        fontWeight: 700,
-        align: 'center',
-        fill: 'fff'
-    });
-    label.anchor.x = 0.5;
-    label.x = 8;
-    label.y = 13;
-    label.resolution = 16;
-    button.addChild(label);
-
-
-    // Events
-    button.eventMode = 'static';
-    button.buttonMode = true;
-    button.cursor = 'pointer';
-    button.on('pointerdown', selectHandler);
-    function selectHandler(event, element=this) {
-        brush.setType(element.brush);
-
-        if(uiSelection !== undefined) {
-            uiSelection.texture = spritesheet.textures['tray.png'];
-            uiSelection.children[1].style.fill = 'fff';
-        }
-        element.texture = spritesheet.textures['selection.png'];
-        element.children[1].style.fill = '000';
-        uiSelection = element;
-    }
-    if(button.brush === brush.type) selectHandler(undefined, button);
-
-    matsContainer.addChild(button);
-}
 
 
 // HTML

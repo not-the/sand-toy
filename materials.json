@@ -12,7 +12,6 @@
         "reaction_chance": 0.01
     },
     "hot stone": {
-        "hidden": true,
         "colors": [
             "988585",
             "9A9090",
@@ -86,7 +85,9 @@
         "colors": ["85A6D4", "85ACD8", "7DA1D1"],
         "reacts": {
             "fire": { "to": "water" },
-            "lava": { "to": "steam" }
+            "lava": { "to": "steam" },
+            "light": { "to": "water", "chance": 0.05 },
+            "hot stone": { "to": "water", "chance": 0.05 }
         }
     },
     "wood": {
@@ -101,10 +102,9 @@
         }
     },
     "ember": {
-        "hidden": true,
         "colors": [ "942c17", "781b17" ],
         "despawn_chance": 0.05,
-        "despawn_timer": 10,
+        "despawn_timer": 15,
         "despawn_conversion": ["fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "ash"]
     },
     "ash": {
@@ -121,6 +121,30 @@
         ],
         "reacts": {
             "water": { "to": "air", "chance": 0.02 }
+        }
+    },
+    "seeds": {
+        "colors": [
+            "bab430",
+            "b6c040",
+            "c3c553"
+        ],
+        "moves": [
+            { "x": 0, "y":1 }
+        ]
+    },
+    "grass": {
+        "colors": [
+            "4f9b23",
+            "78af31",
+            "6ca338"
+        ],
+        "moves": [
+            { "x": 0, "y":1 }
+        ],
+        "reacts": {
+            "fire": { "to": "fire" },
+            "lava": { "to": "fire" }
         }
     },
     "foliage": {
@@ -161,7 +185,11 @@
         "reacts": {
             "hot stone": {
                 "to": "steam",
-                "chance": 0.3
+                "chance": 0.005
+            },
+            "light": {
+                "to": "steam",
+                "chance": 0.001
             },
             "acid": {
                 "to": "acid",
@@ -268,11 +296,7 @@
             }
         ],
         "despawn_chance": 0.3,
-        "float": 5,
-        "reacts": {
-            "wood": { "to": "fire" },
-            "water": { "to": "steam" }
-        }
+        "float": 5
     },
     "acid": {
         "colors": [
@@ -341,7 +365,8 @@
             {"x":[-1, 1], "y": 1}
         ],
         "reacts": {
-            "fire": { "to": "explosion" }
+            "fire": { "to": "explosion" },
+            "lava": { "to": "explosion" }
         }
     },
     "cement": {

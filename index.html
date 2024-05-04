@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SandToy</title>
-    <link rel="icon" type="image/x-icon" href="./assets/materials/sand.png">
+    <link rel="icon" type="image/x-icon" href="./artwork/materials/sand.png">
 
     <!-- JS -->
     <script src="https://pixijs.download/v7.4.0/pixi.min.js"></script>
@@ -28,8 +28,11 @@
                 <br/>
 
                 <h3>Options</h3>
+                <label for="brushReplace">
+                    <input type="checkbox" name="brushReplace" id="brushReplace" data-option="brushReplace"/> Brush replaces pixels
+                </label><br/>
                 <label for="waterShading">
-                    <input type="checkbox" name="waterShading" id="waterShading" data-option="waterShading"/> Dynamic water
+                    <input type="checkbox" name="waterShading" id="waterShading" data-option="waterShading"/> Dynamic water shading
                 </label>
 
                 <button onclick="document.body.classList.toggle('show_overlay')" class="center">Done</button>
