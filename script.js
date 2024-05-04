@@ -582,7 +582,7 @@ class Pixel extends PIXI.Sprite {
         // }
 
         this.forRegion(size, (x, y) => {
-            if(!world.brushReplace && brush.type !== 'air') if(getPixel(x, y)?.type !== 'air') return;
+            if(!world.brushReplace && brush.type !== 'air' || materials[type].brush_replace === false) if(getPixel(x, y)?.type !== 'air') return;
             run(x, y, 'set', type);
         })
     }
@@ -842,8 +842,6 @@ fgContainer.addChild(indicator);
 
 /** Brush */
 const brush = {
-    get replace() { return world.brushReplace; },
-
     // Type
     type: 'sand',
     setType(type) {

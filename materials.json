@@ -208,6 +208,10 @@
         ],
         "float": 2,
         "reacts": {
+            "fire": {
+                "to": "steam",
+                "chance": 0.2
+            },
             "hot stone": {
                 "to": "steam",
                 "chance": 0.005
@@ -299,6 +303,7 @@
         "float": 5
     },
     "fire": {
+        "brush_replace": false,
         "colors": [
             "ff946a",
             "ff6145",
