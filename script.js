@@ -721,7 +721,7 @@ class Pixel extends PIXI.Sprite {
                 let above = getPixel(this.x, this.y-1);
                 let below = getPixel(this.x, this.y+1);
 
-                if(above !== undefined && above?.type === 'air'/* && !this.moving*/) this.set('seeds');
+                if(above !== undefined && above?.type === 'air'/* && !this.moving*/) this.set('grass seeds');
             }
         }
 
@@ -964,10 +964,11 @@ ${targetPixel.type}
 Moving: ${targetPixel.moving}
 Fresh:  ${targetPixel.fresh}
         `);
-
-        // Pan camera
-        panStart.x = mouse.x, panStart.y = mouse.y;
     }
+
+            // Pan camera
+            console.log('bruh');
+            // panStart.x = mouse.x, panStart.y = mouse.y;
 }
 
 canvas.addEventListener('wheel', event => {
