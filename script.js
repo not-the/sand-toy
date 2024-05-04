@@ -726,7 +726,7 @@ class Pixel extends PIXI.Sprite {
         }
 
         // Grass seeds
-        else if(this.type === 'seeds') {
+        else if(this.type === 'grass seeds') {
             let above = getPixel(this.x, this.y-1);
             let below = getPixel(this.x, this.y+1);
             if(above === undefined || above?.type !== 'air' && below?.type !== 'mud' && below?.type !== 'grass') return;

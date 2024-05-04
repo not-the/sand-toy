@@ -148,7 +148,7 @@
             "water": { "to": "air", "chance": 0.02 }
         }
     },
-    "seeds": {
+    "grass seeds": {
         "colors": [
             "bab430",
             "b6c040",
