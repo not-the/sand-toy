@@ -83,12 +83,17 @@
     },
     "ice": {
         "colors": ["85A6D4", "85ACD8", "7DA1D1"],
+        "// reaction_radius": 5,
         "reacts": {
-            "fire": { "to": "water" },
+            "fire": { "to": "water", "chance": 0.2 },
             "lava": { "to": "steam" },
             "light": { "to": "water", "chance": 0.05 },
             "hot stone": { "to": "water", "chance": 0.05 }
         }
+    },
+    "snow": {
+        "hidden": true,
+        "colors": ["f6fbff", "eff6fc", "e2f0f6"]
     },
     "wood": {
         "colors": [
@@ -105,7 +110,27 @@
         "colors": [ "942c17", "781b17" ],
         "despawn_chance": 0.05,
         "despawn_timer": 15,
-        "despawn_conversion": ["fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "ash"]
+        "despawn_conversion": ["fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "fire", "floating ember", "ash"]
+    },
+    "floating ember": {
+        "hidden": true,
+        "colors": ["942c17", "781b17"],
+        "moves": [
+            {
+                "x": [-1, 0, 0, 0, 0, 1],
+                "y": 1
+            },
+            {
+                "x": [-1, 1],
+                "y": 1
+            }
+        ],
+        "despawn_chance": 0.06,
+        "despawn_timer": 45,
+        "despawn_conversion": ["ash", "ash", "ash", "fire"],
+        "reacts": {
+            "water": { "to": "ash" }
+        }
     },
     "ash": {
         "colors": ["343538", "2f2f2f"],
@@ -359,7 +384,7 @@
         }
     },
     "gunpowder": {
-        "colors": ["3f3b3a", "413f3f", "535052"],
+        "colors": ["3f3b3a", "474545", "535052"],
         "moves": [
             {"x":0, "y":1},
             {"x":[-1, 1], "y": 1}

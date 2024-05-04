@@ -732,13 +732,23 @@ class Pixel extends PIXI.Sprite {
             if(above === undefined || above?.type !== 'air' && below?.type !== 'mud' && below?.type !== 'grass') return;
 
             // Grow
-            if(Math.random() >= 0.8) {
+            if(Math.random() >= 0.7) {
                 this.move(0, -1);
             }
             // Replace
             this.set('grass');
 
+            // Grow downward
             if(Math.random() >= 0.6) run(this.x, this.y+1, "set", "grass")
+        }
+
+        // Grass
+        else if(this.type === 'grass') {
+            if(Math.random() >= 0.9) {
+                let above = getPixel(this.x, this.y-1);
+
+                if(above?.type !== 'air' && above?.type !== 'grass') this.set('mud');
+            }
         }
 
         // Water waves
