@@ -964,11 +964,10 @@ ${targetPixel.type}
 Moving: ${targetPixel.moving}
 Fresh:  ${targetPixel.fresh}
         `);
-    }
 
-            // Pan camera
-            console.log('bruh');
-            // panStart.x = mouse.x, panStart.y = mouse.y;
+        // Pan camera
+        // panStart.x = mouse.x, panStart.y = mouse.y;
+    }
 }
 
 canvas.addEventListener('wheel', event => {
@@ -987,6 +986,7 @@ document.addEventListener("mouseleave", () => {
 
 // Events
 canvas.addEventListener('pointermove', moveHandler);
+document.addEventListener('touchend', () => delete pressed['ui_dragging']);
 function moveHandler(event) {
     const marginLeft = (document.body.scrollWidth-canvas.scrollWidth)/2;
 
@@ -1013,6 +1013,7 @@ function moveHandler(event) {
     matsContainer.ix += (dragOrigin - mouse.x)*-0.5;
 
     // End drag
+    console.log(pressed['click']);
     if(!pressed['click']) delete pressed['ui_dragging'];
 }
 
