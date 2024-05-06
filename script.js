@@ -163,9 +163,9 @@ const fgContainer = new Container({
 // worldContainer.addChild(bloomContainer);
 
 /** UI container */
-const UIContainer = new Container({ y:viewHeight-UIHeight, eventMode:'static' });
-const matsContainer = new Container({ ix:0, scale:5 }, UIContainer);                        // Materials container
-const optsContainer = new Container({ scale:5 }, UIContainer);                              // Additional UI      
+const UIContainer   = new Container({ y:viewHeight-UIHeight, eventMode:'static' });
+const matsContainer = new Container({ ix:0, scale:5 }, UIContainer); // Materials container
+const optsContainer = new Container({ scale:5 }, UIContainer); // Additional UI      
 const moreContainer = new Container({ y:-90, scale:5, ix:50, visible:false, filters:[ filters.shadow ] }, UIContainer); // Toggle panel
 
 // Click-and-drag to scroll through materials list
@@ -184,9 +184,10 @@ const ui = {
     data: get('./ui.json'),
 
     elements: {},
-    
+
     get optionsVisible() { return moreContainer?.visible; },
 
+    // Element onclicks
     actions: {
         none: null,
         pause: () => world.playPause(),
@@ -215,6 +216,17 @@ const ui = {
         ticktime_down: () => world.setTicktime(-1),
     },
 
+    // Element specific code, like filling out text
+    fills: {
+        brush_size: (e=ui.elements.brush_size) => e.text = brush.size,
+        ticktime: (e=ui.elements.ticktime) => {
+            let value = world.ticktime;
+            e.text =
+                value < 0 ? `${Math.abs(value)}/frame` :
+                value === 0 ? 'Max' : (2 / value).toFixed(1) + 'x';
+        }
+    },
+
     build(name='options', container=optsContainer) {
         const menu = this.data[name];
         for(let props of menu) {
@@ -236,6 +248,7 @@ const ui = {
 
             this.elements[props.id] = element;
 
+            // Action
             if(props.action !== undefined) {
                 element.eventMode = 'static';
                 element.buttonMode = true;
@@ -265,10 +278,15 @@ const ui = {
                     }
                 }
             }
+
+            // Fill
+            let fill = ui.fills[props.id]
+            if(fill !== undefined) fill(element);
         }
     },
 
     buildMaterials() {
+        uiX = 0;
         for(let [key, value] of Object.entries(materials)) {
             // Title
             if(key.startsWith('#')) {
@@ -423,12 +441,11 @@ const world = {
         let value = this.tt_options[this.tt_index];
         if(value === undefined) return this.tt_index += dir;
 
+        // Set
         this.ticktime = value;
-        if(ui.elements?.ticktime) ui.elements.ticktime.text =
-            value < 0 ? `${Math.abs(value)}/frame` :
-            value === 0 ? 'Max' : (2 / value).toFixed(1) + 'x';
-        // console.log(value);
 
+        // Update UI
+        ui.fills.ticktime();
         if(!ui.optionsVisible && dir !== 0) ui.actions.options(false);
     },
 
@@ -857,7 +874,8 @@ const brush = {
         indicator.clear().lineStyle(1, 0x000000).drawRect(0, -1, brush.size+1, brush.size+1).endFill();
         // document.getElementById("size").value = value;
 
-        ui.elements.brush_size.text = value;
+        // Update UI
+        ui.fills.brush_size();
     }
 }
 
@@ -886,7 +904,7 @@ brush.setSize(3);
 // brush.setSize(1);
 
 // Create world
-world.setTicktime(0);
+// world.setTicktime(0);
 world.make();
 
 
@@ -1015,7 +1033,6 @@ function moveHandler(event) {
     matsContainer.ix += (dragOrigin - mouse.x)*-0.5;
 
     // End drag
-    console.log(pressed['click']);
     if(!pressed['click']) delete pressed['ui_dragging'];
 }
 
@@ -1029,7 +1046,6 @@ document.addEventListener('keydown', event => {
     // Brush size
     else if(event.key === 'ArrowDown') ui.actions.brush_down();
     else if(event.key === 'ArrowUp') ui.actions.brush_up();
-    // console.log(world.tickrate);
 })
 
 // Options

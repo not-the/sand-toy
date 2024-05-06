@@ -176,7 +176,8 @@
             }
         ],
         "reacts": {
-            "water": { "to": "air", "chance": 0.02 }
+            "water": { "to": "air", "chance": 0.02 },
+            "fire": { "to": "floating ember", "chance": 0.5 }
         }
     },
     "grass seeds": {
