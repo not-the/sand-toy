@@ -71,7 +71,10 @@
         ],
         "reaction_radius": 7,
         "reacts": {
-            "water": { "to": "mud", "chance": 0.05 }
+            "water": { "to": "mud_wet3", "chance": 0.05 },
+            "mud_wet3": { "to": "mud_wet2", "chance": 0.05 },
+            "mud_wet2": { "to": "mud_wet1", "chance": 0.05 },
+            "mud_wet1": { "to": "mud", "chance": 0.05 }
         }
     },
     "mud": {
@@ -79,7 +82,35 @@
         "moves": [
             {"x":0, "y":1},
             {"x":[-1, 1], "y": 1}
-        ]
+        ],
+        "grows_grass": true
+    },
+    "mud_wet3": {
+        "hidden": true,
+        "colors": ["5c391e", "634125", "704b2c"],
+        "moves": [
+            {"x":0, "y":1},
+            {"x":[-1, 1], "y": 1}
+        ],
+        "grows_grass": true
+    },
+    "mud_wet2": {
+        "hidden": true,
+        "colors": ["5c391e", "634125", "704b2c"],
+        "moves": [
+            {"x":0, "y":1},
+            {"x":[-1, 1], "y": 1}
+        ],
+        "grows_grass": true
+    },
+    "mud_wet1": {
+        "hidden": true,
+        "colors": ["5c391e", "634125", "704b2c"],
+        "moves": [
+            {"x":0, "y":1},
+            {"x":[-1, 1], "y": 1}
+        ],
+        "grows_grass": true
     },
     "ice": {
         "colors": ["85A6D4", "85ACD8", "7DA1D1"],
@@ -114,7 +145,7 @@
     },
     "floating ember": {
         "hidden": true,
-        "colors": ["942c17", "781b17"],
+        "colors": ["942c17", "781b17", "ff6b4b"],
         "moves": [
             {
                 "x": [-1, 0, 0, 0, 0, 1],
@@ -281,7 +312,6 @@
             "ice": { "to": "water", "chance": 0.015 }
         }
     },
-
     "smoke": {
         "colors": [
             "4b4b4b",
@@ -384,7 +414,7 @@
         ],
         "float": 3,
         "reacts": {
-            "fire": { "to": "fire" },
+            "fire": { "to": ["fire", "fire", "fire", "fire", "fire", "fire", "fire", "smoke"] },
             "lava": { "to": "fire" }
         }
     },

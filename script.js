@@ -332,14 +332,6 @@ const ui = {
             button.on('pointerdown', selectHandler);
             function selectHandler(event, element=this) {
                 brush.setType(element.brush);
-        
-                if(uiSelection !== undefined) {
-                    uiSelection.texture = spritesheet.textures['tray.png'];
-                    uiSelection.children[1].style.fill = 'fff';
-                }
-                element.texture = spritesheet.textures['selection.png'];
-                element.children[1].style.fill = '000';
-                uiSelection = element;
             }
             if(button.brush === brush.type) selectHandler(undefined, button);
         
@@ -648,22 +640,22 @@ class Pixel extends PIXI.Sprite {
             let cy = 0;
 
             // Move chance
-            if(Math.random() >= this.mat.move_chance) return;
+            if(this.mat?.move_chance === undefined || Math.random() < this.mat.move_chance) {
+                // Move checks
+                for(let m of this.mat.moves) {
+                    let moveX = parse(m.x), moveY = parse(m.y);
 
-            // Move checks
-            for(let m of this.mat.moves) {
-                let moveX = parse(m.x), moveY = parse(m.y);
+                    // Test if destination is valid
+                    let dest = getPixel(this.x+moveX, this.y+moveY);
+                    if(dest === undefined || (dest.mat?.float < this.mat.float || dest.mat?.float === undefined || dest?.type === this.type)) continue;
+                    cx = moveX,
+                    cy = moveY;
+                    break;
+                }
 
-                // Test if destination is valid
-                let dest = getPixel(this.x+moveX, this.y+moveY);
-                if(dest === undefined || (dest.mat?.float < this.mat.float || dest.mat?.float === undefined || dest?.type === this.type)) continue;
-                cx = moveX,
-                cy = moveY;
-                break;
+                // Move
+                this.move(cx, cy);
             }
-
-            // Move
-            this.move(cx, cy);
         }
 
 
@@ -714,7 +706,7 @@ class Pixel extends PIXI.Sprite {
         }
 
         // Mud grows grass
-        else if(this.type === 'mud') {
+        else if(this.mat.grows_grass) {
             // Random chance
             if(Math.random() >= 0.995) {
 
@@ -846,8 +838,16 @@ const brush = {
     type: 'sand',
     setType(type) {
         this.type=type;
-        // document.querySelectorAll(`[data-brush]`).forEach(element => element.classList.remove('active'));
-        // document.querySelector(`[data-brush="${type}"]`).classList.add('active');
+
+        let element = ui.elements[`material_${type}`];
+        
+        if(uiSelection !== undefined) {
+            uiSelection.texture = spritesheet.textures['tray.png'];
+            uiSelection.children[1].style.fill = 'fff';
+        }
+        element.texture = spritesheet.textures['selection.png'];
+        element.children[1].style.fill = '000';
+        uiSelection = element;
     },
 
     // Size
@@ -964,6 +964,8 @@ ${targetPixel.type}
 Moving: ${targetPixel.moving}
 Fresh:  ${targetPixel.fresh}
         `);
+
+        brush.setType(targetPixel.type);
 
         // Pan camera
         // panStart.x = mouse.x, panStart.y = mouse.y;
