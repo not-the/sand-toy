@@ -596,6 +596,12 @@ class Pixel extends PIXI.Sprite {
         })
     }
 
+    /** Despawn */
+    despawn() {
+        // if(this.mat?.min_despawn_age > this.data.age) return;
+        this.set(parse(this.mat?.despawn_conversion) ?? 'air')
+    }
+
     /** Updates a pixel by acting out its movement and interaction rules */
     tick() {
         if(this.fresh) {
@@ -611,16 +617,12 @@ class Pixel extends PIXI.Sprite {
 
         // Despawn chance
         if(this.mat?.despawn_chance !== undefined) {
-            if(Math.random() <= this.mat.despawn_chance) return this.set(
-                parse(this.mat?.despawn_conversion) ?? 'air'
-            );
+            if(Math.random() <= this.mat.despawn_chance) return this.despawn();
         }
 
         // Despawn timer
         if(this.mat?.despawn_timer !== undefined) {
-            if(this.data.age >= this.mat.despawn_timer) return this.set(
-                parse(this.mat?.despawn_conversion) ?? 'air'
-            );
+            if(this.data.age >= this.mat.despawn_timer) return this.despawn();
         }
 
 
@@ -720,6 +722,46 @@ class Pixel extends PIXI.Sprite {
                 // this.set(type.random());
                 run(x, y, 'set', type.random());
             })
+        }
+
+        // Lightning
+        else if(this.type === 'lightning') {
+            let seed = this;
+
+            while (seed?.type === 'lightning') {
+                const spread = (dest) => {
+                    if(
+                        dest !== undefined &&
+                        (
+                            dest?.type === 'air' ||
+                            dest?.type === 'lightning' ||
+                            dest?.type === 'lightning plasma')
+                        ) {
+                        seed.set('lightning plasma');
+                        dest.set('lightning');
+                    }
+                    else seed.set('lightning plasma');
+    
+                    seed = dest;
+                }
+    
+                let pos = parse(seed.mat.behavior);
+                let dest = getPixel(seed.x+pos.x, seed.y+pos.y);
+                spread(dest);
+    
+                // Split in two
+                if(Math.random > 0.8) {
+                    let dest2 = getPixel(seed.x - pos.x, seed.y+1);
+                    spread(dest2);
+                }
+
+                // Despawn chance
+                if(Math.random() <= this.mat.despawn_chance) this.despawn();
+            }
+        }
+
+        else if(this.type === 'lightning plasma') {
+            this.alpha = (1 - this.data.age/15) ** 2.2;
         }
 
         // Mud grows grass

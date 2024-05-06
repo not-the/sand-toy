@@ -41,7 +41,10 @@
         "moves": [
             {"x":0, "y":1},
             {"x":[-1, 1], "y": 1}
-        ]
+        ],
+        "reacts": {
+            "lightning plasma": { "to": "glass" }
+        }
     },
     "gravel": {
         "colors": [
@@ -74,7 +77,8 @@
             "water": { "to": "mud_wet3", "chance": 0.05 },
             "mud_wet3": { "to": "mud_wet2", "chance": 0.05 },
             "mud_wet2": { "to": "mud_wet1", "chance": 0.05 },
-            "mud_wet1": { "to": "mud", "chance": 0.05 }
+            "mud_wet1": { "to": "mud", "chance": 0.05 },
+            "lightning plasma": { "to": "ash" }
         }
     },
     "mud": {
@@ -83,6 +87,9 @@
             {"x":0, "y":1},
             {"x":[-1, 1], "y": 1}
         ],
+        "reacts": {
+            "lightning plasma": { "to": "ash" }
+        },
         "grows_grass": true
     },
     "mud_wet3": {
@@ -92,6 +99,9 @@
             {"x":0, "y":1},
             {"x":[-1, 1], "y": 1}
         ],
+        "reacts": {
+            "lightning plasma": { "to": "ash" }
+        },
         "grows_grass": true
     },
     "mud_wet2": {
@@ -101,6 +111,9 @@
             {"x":0, "y":1},
             {"x":[-1, 1], "y": 1}
         ],
+        "reacts": {
+            "lightning plasma": { "to": "ash" }
+        },
         "grows_grass": true
     },
     "mud_wet1": {
@@ -110,6 +123,9 @@
             {"x":0, "y":1},
             {"x":[-1, 1], "y": 1}
         ],
+        "reacts": {
+            "lightning plasma": { "to": "ash" }
+        },
         "grows_grass": true
     },
     "ice": {
@@ -118,6 +134,7 @@
         "reacts": {
             "fire": { "to": "water", "chance": 0.2 },
             "lava": { "to": "steam" },
+            "lightning plasma": { "to": "steam" },
             "light": { "to": "water", "chance": 0.05 },
             "hot stone": { "to": "water", "chance": 0.05 }
         }
@@ -134,7 +151,8 @@
         ],
         "reacts": {
             "fire": { "to": "ember" },
-            "lava": { "to": "fire" }
+            "lava": { "to": "fire" },
+            "lightning plasma": { "to": "fire" }
         }
     },
     "ember": {
@@ -177,7 +195,8 @@
         ],
         "reacts": {
             "water": { "to": "air", "chance": 0.02 },
-            "fire": { "to": "floating ember", "chance": 0.5 }
+            "fire": { "to": "floating ember", "chance": 0.5 },
+            "lightning plasma": { "to": "floating ember" }
         }
     },
     "grass seeds": {
@@ -201,7 +220,8 @@
         ],
         "reacts": {
             "fire": { "to": "fire" },
-            "lava": { "to": "fire" }
+            "lava": { "to": "fire" },
+            "lightning plasma": { "to": "fire" }
         }
     },
     "foliage": {
@@ -212,7 +232,8 @@
         ],
         "reacts": {
             "fire": { "to": "fire" },
-            "lava": { "to": "fire" }
+            "lava": { "to": "fire" },
+            "lightning plasma": { "to": "fire" }
         }
     },
 
@@ -240,26 +261,12 @@
         ],
         "float": 2,
         "reacts": {
-            "fire": {
-                "to": "steam",
-                "chance": 0.2
-            },
-            "hot stone": {
-                "to": "steam",
-                "chance": 0.005
-            },
-            "light": {
-                "to": "steam",
-                "chance": 0.001
-            },
-            "acid": {
-                "to": "acid",
-                "chance": 0.5
-            },
-            "ice": {
-                "to": "ice",
-                "chance": 0.001
-            }
+            "fire":      { "to": "steam", "chance": 0.2   },
+            "lightning plasma": { "to": "steam"                  },
+            "hot stone": { "to": "steam", "chance": 0.005 },
+            "light":     { "to": "steam", "chance": 0.001 },
+            "acid":      { "to": "acid",  "chance": 0.5   },
+            "ice":       { "to": "ice",   "chance": 0.001 }
         },
         "conductive": true
     },
@@ -306,7 +313,7 @@
             }
         ],
         "despawn_chance": 0.0005,
-        "despawn_conversion": "water",
+        "despawn_conversion": ["water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "lightning"],
         "float": 5,
         "reacts": {
             "ice": { "to": "water", "chance": 0.015 }
@@ -381,6 +388,25 @@
         "float": 1,
         "acid_chance": 0.1
     },
+    "lightning": {
+        "colors": [ "ffffff" ],
+        "behavior": [
+            { "x":-1, "y":1 },
+            { "x":0, "y":1 },
+            { "x":1, "y":1 },
+            { "x":-1, "y":0 },
+            { "x":1, "y":0 }
+        ],
+        "despawn_chance": 0.01,
+        "min_despawn_age": 60
+    },
+    "lightning plasma": {
+        "hidden": true,
+        "colors": [ "fffcc5" ],
+        "// colors": [ "aaddff" ],
+
+        "despawn_timer": 10
+    },
 
     "#Man-made": 0,
     "oil": {
@@ -415,7 +441,8 @@
         "float": 3,
         "reacts": {
             "fire": { "to": ["fire", "fire", "fire", "fire", "fire", "fire", "fire", "smoke"] },
-            "lava": { "to": "fire" }
+            "lava": { "to": "fire" },
+            "lightning plasma": { "to": "fire" }
         }
     },
     "gunpowder": {
@@ -426,8 +453,12 @@
         ],
         "reacts": {
             "fire": { "to": "explosion" },
-            "lava": { "to": "explosion" }
+            "lava": { "to": "explosion" },
+            "lightning plasma": { "to": "fire" }
         }
+    },
+    "glass": {
+        "colors": [ "969EA6" ]
     },
     "cement": {
         "colors": [
@@ -506,6 +537,7 @@
         "reacts": {
             "fire": { "to": ["air", "air", "air", "air", "fire"] },
             "lava": { "to": "air" },
+            "lightning plasma": { "to": "fire" },
             "acid": { "to": "air" }
         }
     },
