@@ -504,6 +504,17 @@ class Pixel extends PIXI.Sprite {
         worldContainer.addChild(this);
     }
 
+    // Unique behavior
+    actions = {
+        /** Streaks in glass */
+        glassColoration: p => p.setColor(p.mat.colors[
+            (p.x + p.y) % 16 <= 2 ||
+            (p.x + p.y) % 16 === 5
+            ?
+            1:0
+        ])
+    }
+
     /** Set a pixel to a material
      * @param {string} type Material name
      * @param {string} preColor If defined this will be used as the color value instead of a random value
@@ -512,15 +523,24 @@ class Pixel extends PIXI.Sprite {
         // let this = grid?.[this.y]?.[this.x];
         if(this === undefined || (this?.type === type && this?.type !== 'air')) return;
 
+        // Material data
         this.mat = materials[type];
+
+        // Color
         const color = preColor ?? this.mat.colors[Math.floor(Math.random() * this.mat.colors.length)];
         this.alpha = this.mat?.alpha ?? 1;
-
         this.setColor(color);
+    
+        // State
         this.type = type;
         if(this.mat?.gas === true || fresh !== undefined) this.fresh = fresh??1;
 
+        // Brand new pixel
         if(preColor === undefined) this.data.age = 0;
+
+
+        // Event
+        if(this.mat?.onset !== undefined) this.actions[this.mat.onset](this);
 
         // if(this.mat?.glows === true && this.parent === worldContainer) {
         //     this.parent.removeChild(this);
@@ -748,12 +768,6 @@ class Pixel extends PIXI.Sprite {
                 let pos = parse(seed.mat.behavior);
                 let dest = getPixel(seed.x+pos.x, seed.y+pos.y);
                 spread(dest);
-    
-                // Split in two
-                if(Math.random > 0.8) {
-                    let dest2 = getPixel(seed.x - pos.x, seed.y+1);
-                    spread(dest2);
-                }
 
                 // Despawn chance
                 if(Math.random() <= this.mat.despawn_chance) this.despawn();
@@ -772,7 +786,7 @@ class Pixel extends PIXI.Sprite {
                 let above = getPixel(this.x, this.y-1);
                 let below = getPixel(this.x, this.y+1);
 
-                if(above !== undefined && above?.type === 'air'/* && !this.moving*/) this.set('grass seeds');
+                if(above !== undefined && above?.mat?.air /* && !this.moving*/) this.set('grass seeds');
             }
         }
 
@@ -780,7 +794,7 @@ class Pixel extends PIXI.Sprite {
         else if(this.type === 'grass seeds') {
             let above = getPixel(this.x, this.y-1);
             let below = getPixel(this.x, this.y+1);
-            if(above === undefined || above?.type !== 'air' && below?.type !== 'mud' && below?.type !== 'grass') return;
+            if(above === undefined || !above?.mat?.air && below?.type !== 'mud' && below?.type !== 'grass') return;
 
             // Grow
             if(Math.random() >= 0.7) {
@@ -798,7 +812,7 @@ class Pixel extends PIXI.Sprite {
             if(Math.random() >= 0.9) {
                 let above = getPixel(this.x, this.y-1);
 
-                if(above?.type !== 'air' && above?.type !== 'grass') this.set('mud');
+                if(!above?.mat?.air && above?.type !== 'grass') this.set('mud');
             }
         }
 
@@ -833,7 +847,7 @@ class Pixel extends PIXI.Sprite {
             let h_movement;
 
             // Normal horizontal
-            if(world.grid?.[this.y+1]?.[this.x]?.type !== "air") {
+            if(!world.grid?.[this.y+1]?.[this.x]?.mat?.air) {
                 h_movement = Math.sin(elapsed/period + this.y/0.45) + Math.cos(elapsed/period + this.x/6-offset);
             }
             // Falling

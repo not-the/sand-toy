@@ -1,7 +1,8 @@
 {
     "air": {
         "colors": ["344457", "344457", "344457", "334454", "344558"],
-        "float": 99
+        "float": 99,
+        "air": true
     },
     "concrete": {
         "colors": [
@@ -32,7 +33,8 @@
             { "x":0, "y":1 }
         ],
         "reacts": {
-            "water": { "to": "gravel", "chance": 0.001 }
+            "water": { "to": "gravel", "chance": 0.001 },
+            "lightning plasma": {"to": "lava", "chance": 0.05 }
         },
         "reaction_chance": 0.01
     },
@@ -405,7 +407,8 @@
         "colors": [ "fffcc5" ],
         "// colors": [ "aaddff" ],
 
-        "despawn_timer": 10
+        "despawn_timer": 10,
+        "air": true
     },
 
     "#Man-made": 0,
@@ -515,7 +518,8 @@
         }
     },
     "glass": {
-        "colors": [ "969EA6" ]
+        "colors": [ "969EA6", "a6acb2" ],
+        "onset": "glassColoration"
     },
     "light": {
         "colors": [
@@ -551,7 +555,7 @@
         "colors": ["EFD231", "dcb92b"]
     },
     "bomb": {
-        "colors": ["555b59"],
+        "colors": ["555b59", "626360"],
         "moves": [
             { "x":0, "y":1 }
         ],
