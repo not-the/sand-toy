@@ -20,7 +20,8 @@
 
         <!-- UI -->
         <div id="ui">
-            <div class="inner">
+            <!-- Options -->
+            <div id="options" class="inner">
                 <h3>World Size:</h3>
                 <a href="./?75,42" class="button" data-world-size="75,42">Small</a>
                 <a href="./" class="button" data-world-size="128,72">Medium</a>
@@ -34,9 +35,31 @@
                 <label for="waterShading">
                     <input type="checkbox" name="waterShading" id="waterShading" data-option="waterShading"/> Dynamic water shading
                 </label>
+                <br/><br/>
+
+                <!-- <h3>Custom elements</h3>
+                <button onclick="document.body.classList.toggle('show_overlay'); document.body.classList.toggle('show_element_editor')">Material Editor -></button>
+                <br/> -->
 
                 <button onclick="document.body.classList.toggle('show_overlay')" class="center">Done</button>
             </div>
+
+            <!-- Custom elements -->
+            <!-- <div id="element_editor" class="inner">
+                <label for="custom_name">
+                    Name
+                    <input type="text">
+                </label>
+
+                <label for="custom_name">
+                    Name
+                    <input type="text">
+                </label>
+                <br/><br/>
+
+                <button onclick="console.log('make element')" class="center">Create</button>
+                <button onclick="document.body.classList.toggle('show_element_editor')" class="center">Cancel</button>
+            </div> -->
         </div>
     </div>
 </body>
