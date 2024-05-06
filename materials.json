@@ -457,9 +457,6 @@
             "lightning plasma": { "to": "fire" }
         }
     },
-    "glass": {
-        "colors": [ "969EA6" ]
-    },
     "cement": {
         "colors": [
             "B0AB9F",
@@ -516,6 +513,9 @@
         "reacts": {
             "water": { "to": "water", "chance": 0.005 }
         }
+    },
+    "glass": {
+        "colors": [ "969EA6" ]
     },
     "light": {
         "colors": [
