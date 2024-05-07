@@ -774,8 +774,51 @@ class Pixel extends PIXI.Sprite {
             }
         }
 
-        else if(this.type === 'lightning plasma') {
-            this.alpha = (1 - this.data.age/15) ** 2.2;
+        else if(this.mat?.fade !== undefined) {
+            this.alpha = (1 - this.data.age/this.mat.fade) ** 2.2;
+        }
+
+        else if(this.type === 'laser') {
+            let seed = this;
+
+            while (seed?.type === 'laser') {
+                const spread = (dest) => {
+                    if(
+                        dest !== undefined &&
+                        (
+                            dest?.type === 'air' ||
+                            dest?.type === 'laser' ||
+                            dest?.type === 'laser plasma' ||
+                            dest?.type === 'laser glow')
+                        ) {
+                        seed.set('laser plasma');
+                        dest.set('laser');
+                    }
+                    else seed.set('laser plasma');
+    
+                    seed = dest;
+                }
+    
+                let dir = this.data.direction ?? "down";
+                
+                // const adj = this.getRelative();
+                // if(adj.down?.type === 'glass' && adj.left?.type === 'glass') {
+                //     if(dir === 'down') dir = 'right'; // Right
+                //     else if(dir === 'left') dir = 'up'; // Up
+                // }
+                // if(adj.down?.type === 'glass' && adj.right?.type === 'glass') pos = seed.mat.behavior = 'left'; // Left
+                // if(adj.down?.type === 'glass' && adj.right?.type === 'glass') pos = seed.mat.behavior = 'left'; // Up
+
+                
+                this.data.direction = dir;
+
+                let pos = seed.mat.behavior[dir];
+                let dest = getPixel(seed.x+pos.x, seed.y+pos.y);
+                spread(dest);
+
+                // Despawn chance
+                if(Math.random() <= this.mat.despawn_chance) this.despawn();
+            }
         }
 
         // Mud grows grass
@@ -870,6 +913,15 @@ class Pixel extends PIXI.Sprite {
                 phase
             );
             this.setColor(color);
+        }
+    }
+
+    getRelative() {
+        return {
+            "down":     getPixel(this.x+0, this.y+1),
+            "right":    getPixel(this.x+1, this.y+1),
+            "up":       getPixel(this.x+0, this.y-1),
+            "left":     getPixel(this.x-1, this.y+1),
         }
     }
 

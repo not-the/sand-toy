@@ -2,7 +2,10 @@
     "air": {
         "colors": ["344457", "344457", "344457", "334454", "344558"],
         "float": 99,
-        "air": true
+        "air": true,
+        "reacts": {
+            "laser plasma": { "to": "laser glow" }
+        }
     },
     "concrete": {
         "colors": [
@@ -10,7 +13,7 @@
             "838079",
             "8b807e"
         ],
-        "reaction_chance": 0.01
+        "laser plasma": { "to": "air", "chance": 0.2 }
     },
     "hot stone": {
         "colors": [
@@ -34,7 +37,8 @@
         ],
         "reacts": {
             "water": { "to": "gravel", "chance": 0.001 },
-            "lightning plasma": {"to": "lava", "chance": 0.05 }
+            "lightning plasma": {"to": "lava", "chance": 0.05 },
+            "laser plasma": { "to": "air", "chance": 0.05 }
         },
         "reaction_chance": 0.01
     },
@@ -46,7 +50,8 @@
         ],
         "reacts": {
             "lava": { "to": "glass" },
-            "lightning plasma": { "to": "glass" }
+            "lightning plasma": { "to": "glass" },
+            "laser plasma": { "to": "air" }
         }
     },
     "gravel": {
@@ -66,7 +71,8 @@
             }
         ],
         "reacts": {
-            "water": { "to": "sand", "chance": 0.001 }
+            "water": { "to": "sand", "chance": 0.001 },
+            "laser plasma": { "to": "air", "chance": 0.1 }
         }
     },
     "dirt": {
@@ -81,7 +87,8 @@
             "mud_wet3": { "to": "mud_wet2", "chance": 0.05 },
             "mud_wet2": { "to": "mud_wet1", "chance": 0.05 },
             "mud_wet1": { "to": "mud", "chance": 0.05 },
-            "lightning plasma": { "to": "ash" }
+            "lightning plasma": { "to": "ash" },
+            "laser plasma": { "to": "ash" }
         }
     },
     "mud": {
@@ -91,7 +98,8 @@
             {"x":[-1, 1], "y": 1}
         ],
         "reacts": {
-            "lightning plasma": { "to": "ash" }
+            "lightning plasma": { "to": "ash" },
+            "laser plasma": { "to": "ash" }
         },
         "grows_grass": true
     },
@@ -103,7 +111,8 @@
             {"x":[-1, 1], "y": 1}
         ],
         "reacts": {
-            "lightning plasma": { "to": "ash" }
+            "lightning plasma": { "to": "ash" },
+            "laser plasma": { "to": "ash" }
         },
         "grows_grass": true
     },
@@ -115,7 +124,8 @@
             {"x":[-1, 1], "y": 1}
         ],
         "reacts": {
-            "lightning plasma": { "to": "ash" }
+            "lightning plasma": { "to": "ash" },
+            "laser plasma": { "to": "ash" }
         },
         "grows_grass": true
     },
@@ -127,7 +137,8 @@
             {"x":[-1, 1], "y": 1}
         ],
         "reacts": {
-            "lightning plasma": { "to": "ash" }
+            "lightning plasma": { "to": "ash" },
+            "laser plasma": { "to": "ash" }
         },
         "grows_grass": true
     },
@@ -139,7 +150,8 @@
             "lava": { "to": "steam" },
             "lightning plasma": { "to": "steam" },
             "light": { "to": "water", "chance": 0.05 },
-            "hot stone": { "to": "water", "chance": 0.05 }
+            "hot stone": { "to": "water", "chance": 0.05 },
+            "laser plasma": { "to": "water", "chance": 0.1 }
         }
     },
     "snow": {
@@ -155,7 +167,8 @@
         "reacts": {
             "fire": { "to": "ember" },
             "lava": { "to": "fire" },
-            "lightning plasma": { "to": "fire" }
+            "lightning plasma": { "to": "fire" },
+            "laser plasma": { "to": "ember", "chance": 0.05 }
         }
     },
     "ember": {
@@ -199,7 +212,8 @@
         "reacts": {
             "water": { "to": "air", "chance": 0.02 },
             "fire": { "to": "floating ember", "chance": 0.5 },
-            "lightning plasma": { "to": "floating ember" }
+            "lightning plasma": { "to": "floating ember" },
+            "laser plasma": { "to": "air", "chance": 0.1 }
         }
     },
     "grass seeds": {
@@ -224,7 +238,8 @@
         "reacts": {
             "fire": { "to": "fire" },
             "lava": { "to": "fire" },
-            "lightning plasma": { "to": "fire" }
+            "lightning plasma": { "to": "fire" },
+            "laser plasma": { "to": "fire", "chance": 0.1 }
         }
     },
     "foliage": {
@@ -236,7 +251,8 @@
         "reacts": {
             "fire": { "to": "fire" },
             "lava": { "to": "fire" },
-            "lightning plasma": { "to": "fire" }
+            "lightning plasma": { "to": "fire" },
+            "laser plasma": { "to": "fire", "chance": 0.1 }
         }
     },
 
@@ -265,7 +281,8 @@
         "float": 2,
         "reacts": {
             "fire":      { "to": "steam", "chance": 0.2   },
-            "lightning plasma": { "to": "steam"                  },
+            "lightning plasma": { "to": "steam"           },
+            "laser plasma": { "to": "steam", "chance": 0.1 },
             "hot stone": { "to": "steam", "chance": 0.005 },
             "light":     { "to": "steam", "chance": 0.001 },
             "acid":      { "to": "acid",  "chance": 0.5   },
@@ -400,6 +417,7 @@
             { "x":-1, "y":0 },
             { "x":1, "y":0 }
         ],
+        "despawn_conversion": "lightning plasma",
         "despawn_chance": 0.01,
         "min_despawn_age": 60
     },
@@ -446,7 +464,8 @@
         "reacts": {
             "fire": { "to": ["fire", "fire", "fire", "fire", "fire", "fire", "fire", "smoke"] },
             "lava": { "to": "fire" },
-            "lightning plasma": { "to": "fire" }
+            "lightning plasma": { "to": "fire" },
+            "laser plasma": { "to": "fire", "chance": 0.1 }
         }
     },
     "gunpowder": {
@@ -458,7 +477,8 @@
         "reacts": {
             "fire": { "to": "explosion" },
             "lava": { "to": "explosion" },
-            "lightning plasma": { "to": "fire" }
+            "lightning plasma": { "to": "fire" },
+            "laser plasma": { "to": "explosion", "chance": 0.005 }
         }
     },
     "cement": {
@@ -474,7 +494,8 @@
         ],
         "reacts": {
             "water": { "to": "concrete" },
-            "lava": { "to": "concrete" }
+            "lava": { "to": "concrete" },
+            "laser plasma": { "to": "concrete" }
         },
         "float": 2
     },
@@ -515,12 +536,17 @@
             }
         ],
         "reacts": {
-            "water": { "to": "water", "chance": 0.005 }
+            "water": { "to": "water", "chance": 0.005 },
+            "lightning plasma": { "to": "ash" },
+            "laser plasma": { "to": "air" }
         }
     },
     "glass": {
         "colors": [ "969EA6", "a6acb2" ],
-        "onset": "glassColoration"
+        "onset": "glassColoration",
+        "reacts": {
+            "lava": { "to": "lava", "chance": 0.01 }
+        }
     },
     "light": {
         "colors": [
@@ -543,6 +569,7 @@
             "fire": { "to": ["air", "air", "air", "air", "fire"] },
             "lava": { "to": "air" },
             "lightning plasma": { "to": "fire" },
+            "laser plasma": { "to": "air" },
             "acid": { "to": "air" }
         }
     },
@@ -555,13 +582,44 @@
     "electricity": {
         "colors": ["EFD231", "dcb92b"]
     },
+    "laser": {
+        "colors": [ "ffaa99" ],
+        "while_behavior": true,
+        "behavior": {
+            "down": { "x":0, "y":1 },
+            "right":{ "x":1, "y":0 },
+            "up":   { "x":0, "y":-1 },
+            "left": { "x":-1, "y":0 }
+        },
+        "despawn_conversion": "laser plasma"
+    },
+    "laser plasma": {
+        "hidden": true,
+        "colors": [ "ffaa99" ],
+        "fade": 5,
+        "despawn_timer": 2,
+        "air": true
+    },
+    "laser glow": {
+        "hidden": true,
+        "colors": [ "ffaa99" ],
+        "alpha": 0.5,
+
+        "despawn_timer": 1,
+        "air": true
+    },
     "bomb": {
         "colors": ["555b59", "626360"],
         "moves": [
             { "x":0, "y":1 }
         ],
         "despawn_timer": 60,
-        "despawn_conversion": "explosion"
+        "despawn_conversion": "explosion",
+        "reacts": {
+            "lava": { "to": "explosion" },
+            "lightning plasma": { "to": "explosion" },
+            "laser plasma": { "to": "explosion", "chance":0.1 }
+        }
     },
     "explosion": {
         "colors": ["ffffff"]
