@@ -774,8 +774,8 @@ class Pixel extends PIXI.Sprite {
             }
         }
 
-        else if(this.mat?.fade !== undefined) {
-            this.alpha = (1 - this.data.age/this.mat.fade) ** 2.2;
+        else if(this.type === 'lightning plasma' || this.type === 'laser plasma') {
+            this.alpha = (1 - this.data.age/15) ** 2.2;
         }
 
         else if(this.type === 'laser') {
