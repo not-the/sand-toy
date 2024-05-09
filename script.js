@@ -126,6 +126,65 @@ const filters = {
     })
 }
 
+// PIXI Sounds
+const sounds = {
+    "thunder1": {
+        src: "./assets/sfx/thunder1.mp3",
+        volume: 0.6
+    },
+    "thunder2": {
+        src: "./assets/sfx/thunder2.mp3",
+        volume: 0.6
+    },
+    "thunder3": {
+        src: "./assets/sfx/thunder3.mp3",
+        volume: 0.6
+    },
+    "explosion1": {
+        src: "./assets/sfx/explosion1.mp3",
+        volume: 0.08
+    },
+    // "fire": {
+    //     src: "./assets/sfx/fire.mp3",
+    //     volume: 0.7,
+    //     loop: true,
+    //     type: "fade"
+    // },
+}
+// Register sounds
+for(let [key, {src}] of Object.entries(sounds)) PIXI.sound.add(key, src);
+
+/** Audio methods */
+const sound = {
+    recents: {},
+    play(name, volume) {
+        if(this.recents[name] > Date.now()-100) return; // Already played sound within last 100ms
+
+        let options = {
+            volume: volume ?? sounds[name].volume,
+            loop: sounds[name].loop,
+            complete: () => console.log(name + ' complete')
+        }
+
+        let s;
+
+        // if(options.stereo_x !== undefined) {
+        //     let stereo = (options.stereo_x - (containerGame.x*-1))/1200;
+        //     options.filters = [
+        //         new PIXI.sound.filters.StereoFilter(stereo)
+        //     ];
+        // }
+        try { s = PIXI.sound.play(name, options); }
+        catch (error) { console.error(error); }
+
+        this.recents[name] = Date.now();
+        return s;
+    }
+}
+
+// let SFXFire;
+// sound.play('fire').then(res => SFXFire = res);
+
 /** PIXI.Container shorthand */
 class Container extends PIXI.Container {
     constructor(properties={}, parent=app.stage) {
@@ -538,6 +597,12 @@ class Pixel extends PIXI.Sprite {
         // Brand new pixel
         if(preColor === undefined) this.data.age = 0;
 
+        // SFX
+        if(this.mat?.sfx !== undefined) {
+            let place = this.mat?.sfx?.place;
+            if(place && preColor === undefined) sound.play(parse(place));
+        }
+
 
         // Event
         if(this.mat?.onset !== undefined) this.actions[this.mat.onset](this);
@@ -758,7 +823,7 @@ class Pixel extends PIXI.Sprite {
                             dest?.type === 'lightning plasma')
                         ) {
                         seed.set('lightning plasma');
-                        dest.set('lightning');
+                        dest.set('lightning', seed.tint);
                     }
                     else seed.set('lightning plasma');
     

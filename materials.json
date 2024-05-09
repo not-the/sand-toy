@@ -419,7 +419,11 @@
         ],
         "despawn_conversion": "lightning plasma",
         "despawn_chance": 0.01,
-        "min_despawn_age": 60
+        "min_despawn_age": 60,
+
+        "sfx": {
+            "place": ["thunder1", "thunder2", "thunder3"]
+        }
     },
     "lightning plasma": {
         "hidden": true,
@@ -622,6 +626,10 @@
         }
     },
     "explosion": {
-        "colors": ["ffffff"]
+        "colors": ["ffffff"],
+
+        "sfx": {
+            "place": ["explosion1"]
+        }
     }
 }
