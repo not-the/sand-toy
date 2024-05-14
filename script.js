@@ -211,16 +211,16 @@ const worldContainer = new Container({
     // filters: [ filters.bloom ]
 }, undefined);
 
-const fgContainer = new Container({
-    interactiveChildren: false,
-    width, height, scale
-})
-
 /** Bloom filter container */
 const bloomContainer = new Container({
     width, height, scale,
     filters: [ filters.bloom ]
 }, undefined);
+
+const fgContainer = new Container({
+    interactiveChildren: false,
+    width, height, scale
+})
 
 /** UI container */
 const UIContainer   = new Container({ y:viewHeight-UIHeight, eventMode:'static' });

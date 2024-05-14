@@ -53,7 +53,7 @@
         }
     },
     "sand": {
-        "colors": ["d4c376", "d3c488", "cfb56c"],
+        "colors": ["d4c376", "d3c488", "DBCC91", "cfb56c"],
         "moves": [
             {"x":0, "y":1},
             {"x":[-1, 1], "y": 1}
@@ -531,6 +531,7 @@
             "4080D8",
             "FFE8C7"
         ],
+        "glows": true,
         "despawn_chance": 0.1,
         "move_chance": 0.9,
         "float": 5,
@@ -543,10 +544,10 @@
     },
     "sugar": {
         "colors": [
-            "afafaf",
-            "b2b2b2",
-            "b2b2b2",
-            "A1A1A1"
+            "DADADA",
+            "C9CDD5",
+            "DCD8D9",
+            "D5D2CD"
         ],
         "move_chance": 1,
         "moves": [
@@ -566,7 +567,8 @@
         }
     },
     "glass": {
-        "colors": [ "969EA6", "a6acb2" ],
+        "colors": [ "D5E4F3", "FFFFFF" ],
+        "alpha": 0.7,
         "onset": "glassColoration",
         "reacts": {
             "lava": { "to": "lava", "chance": 0.01 }
