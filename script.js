@@ -125,6 +125,7 @@ const filters = {
         rotation: 90,
     })
 }
+filters.bloom.padding = 100;
 
 // PIXI Sounds
 const sounds = {
@@ -207,7 +208,7 @@ class Container extends PIXI.Container {
 const worldContainer = new Container({
     interactiveChildren: false,
     width, height, scale,
-    filters: [ filters.bloom ]
+    // filters: [ filters.bloom ]
 }, undefined);
 
 const fgContainer = new Container({
@@ -216,10 +217,10 @@ const fgContainer = new Container({
 })
 
 /** Bloom filter container */
-// const bloomContainer = new PIXI.Container();
-// bloomContainer.width = width;
-// bloomContainer.height = height;
-// worldContainer.addChild(bloomContainer);
+const bloomContainer = new Container({
+    width, height, scale,
+    filters: [ filters.bloom ]
+}, undefined);
 
 /** UI container */
 const UIContainer   = new Container({ y:viewHeight-UIHeight, eventMode:'static' });
@@ -448,6 +449,9 @@ const world = {
     grid: [],
     // ticks: {}, // Pixels that need updating (unused)
 
+    get width() { return this.grid[0].length; },
+    get height() { return this.grid.length; },
+
     paused: false,
 
     // Configuration
@@ -464,6 +468,175 @@ const world = {
                 let pixel = new Pixel(xi, yi);
                 world.grid[yi][xi] = pixel;
             }
+        }
+    },
+
+    /** Generate procedural world */
+    procedural(seed=1, easetype='ease') {
+        this.clear();
+
+        /** Get pseudo-random number */
+        const procCeil = (max, seed, min=0) => min + Math.ceil(new MersenneTwister(seed).random() * (max - min));
+        const procFloor = (max, seed, min=0) => min + Math.floor(new MersenneTwister(seed).random() * (max - min));
+
+        /** If the value is an array it will return a random item from the array, otherwise returns value */
+        function procParse(value, seed) {
+            return Array.isArray(value) ? value[procFloor(value.length, seed)] : value;
+        }
+
+        // b - beginning position
+        // e - ending position
+        // a - your current value (0-0.9)
+        function getTween(b, e, a) {
+            return b + ((a/0.9) * (e-b));
+        }
+
+        function ease(b, e, a=0, factor=1.5) {
+            // Calculate the eased value
+            return b + (e - b) * Math.pow(a/0.9, factor);
+        }
+        function easeReverse(b, e, a=0, factor=1.5) {
+            // Calculate the eased value
+            return e + (b - e) * Math.pow((1-a)/0.9, factor);
+        }
+
+
+        // Generate
+        // doLayer({
+        //     type: 'steam', seed: seed*3,
+        //     minY: this.height+10, maxY: this.height,
+        //     minStopLength: 8, maxStopLength: 14
+        // });
+
+        // Layers
+        doLayer({
+            type: 'mud', seed: seed,
+            minY: 26, maxY: procCeil(45, seed+9, 40),
+            minStopLength: 6, maxStopLength: 9
+        });
+        doLayer({
+            type: 'dirt', seed: seed+10,
+            minY: 22, maxY: 30,
+            minStopLength: 4, maxStopLength: 8
+        });
+        doLayer({
+            type: 'gravel', seed: seed*2,
+            minY: 14, maxY: 17,
+            minStopLength: 4, maxStopLength: 9
+        });
+        doLayer({
+            type: 'stone', seed: seed*2,
+            minY: 12, maxY: procCeil(42, seed+11, 15),
+            minStopLength: 10, maxStopLength: 16,
+            scatter: 2
+        });
+        doLayer({
+            type: 'lava', seed: seed*3,
+            minY: 4, maxY: 8,
+            minStopLength: 6, maxStopLength: 10
+        });
+
+        function doLayer({
+            type='glass', seed,
+            minY=0, maxY=10,
+            minStopLength, maxStopLength,
+            scatter=0
+        }) {
+            const stopLength = procCeil(maxStopLength, seed*7, minStopLength);
+
+            let stops = new Array(Math.ceil(world.width/stopLength)+1).fill(0);
+            stops = stops.map((value, index) => (procCeil(maxY, seed*index, minY)));
+            // console.log(stops);
+    
+            // Loop columns
+            for(let x = 0; x < world.width; x++) {
+    
+                const lastStopIndex = Math.floor(x/stopLength);
+                const lastStop = stops[lastStopIndex]; // Last stop
+                const nextStop = stops[lastStopIndex+1]; // Next stop
+                const nextNextStop = stops?.[lastStopIndex+2]??0; // Next stop
+                const progress = (x % stopLength) / stopLength; // Percent between stops
+
+                // let easeType = procCeil(2, seed+2);
+                
+                let height = world.height - Math.round(
+                    lastStop < nextStop && nextStop > nextNextStop ?
+                    // easeType === 1 ?
+                    ease(lastStop, nextStop, progress) :
+                    easeReverse(lastStop, nextStop, progress)
+                );
+    
+                // Set pixels
+                for(let y = 0; y < world.height; y++) {
+                    let p = world.grid[y][x];
+                    // const colors = materials[type].colors;
+                    // let preColor = colors[procCeil(colors.length, seed*p.x*p.y) - 1];
+                    let state = height;
+                    if(scatter !== 0) state = procFloor(height, seed*p.x*p.y, height-scatter)
+                    if(p.y > state) p.set(type);
+                }
+            }
+        }
+
+
+        // Paint
+        const biomes = [
+            {
+                name: 'desert',
+                convert: {
+                    "mud": "sand",
+                    "dirt": "sand",
+                    "grass": "air",
+                    "gravel": "sand",
+                    "stone": "granite"
+                },
+                maxSize: 50,
+                minSize: 24
+            },
+            {
+                name: 'snow',
+                convert: {
+                    "mud": "snow",
+                    "dirt": "snow",
+                    "gravel": "ice",
+                    "stone": "ice",
+                    "lava": "gravel"
+                },
+                maxSize: 60,
+                minSize: 40
+            },
+            {
+                name: 'nolava',
+                convert: {
+                    "lava": "stone"
+                }
+            },
+        ];
+
+        // Determine biomes/locations
+        let blobs = new Array(procFloor(4, seed+101, 1)).fill(null);
+        blobs = blobs.map((value, index) => {
+            let biome = procParse(biomes, seed*index+3);
+            return {
+                biome,
+                x:      procCeil(world.width,       seed*102*index                      ),
+                y:      procCeil(world.height/2,    seed*103*index, world.height        ),
+                size:   procCeil(biome.maxSize??50, seed*104*index, biome.minSize??24   ),
+                skew: 0
+            }
+        });
+
+        console.log(blobs);
+
+        // Paint biomes onto world
+        for(let blob of blobs) {
+            world.forAll(p => {
+                if(distance(p, blob)[0] < procFloor(blob.size, seed*p.x*p.y, blob.size-6)) {
+                    let to = blob.biome.convert?.[p?.type];
+
+                    if(to !== undefined) p.set(to);
+                }
+            })
         }
     },
 
@@ -607,14 +780,16 @@ class Pixel extends PIXI.Sprite {
         // Event
         if(this.mat?.onset !== undefined) this.actions[this.mat.onset](this);
 
-        // if(this.mat?.glows === true && this.parent === worldContainer) {
-        //     this.parent.removeChild(this);
-        //     bloomContainer.addChild(this);
-        // }
-        // else if(!this.mat?.glows && this.parent === bloomContainer) {
-        //     this.parent.removeChild(this);
-        //     worldContainer.addChild(this);
-        // }
+
+        // Glows
+        if(this.mat?.glows === true && this.parent === worldContainer) {
+            this.parent.removeChild(this);
+            bloomContainer.addChild(this);
+        }
+        else if(!this.mat?.glows && this.parent === bloomContainer) {
+            this.parent.removeChild(this);
+            worldContainer.addChild(this);
+        }
 
         // Register pixel
         // let key = `${this.x},${this.y}`;
@@ -1079,6 +1254,7 @@ brush.setSize(3);
 // Create world
 // world.setTicktime(0);
 world.make();
+world.procedural(12);
 
 
 
@@ -1152,6 +1328,7 @@ function pointerHandler(event) {
         // Get type
         console.log(`
 ${targetPixel.type}
+X: ${targetPixel.x}   Y: ${targetPixel.y}
 Moving: ${targetPixel.moving}
 Fresh:  ${targetPixel.fresh}
         `);

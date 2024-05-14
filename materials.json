@@ -21,7 +21,8 @@
             "9A9090",
             "D88A84",
             "9FA4AB"
-        ]
+        ],
+        "glows": true
     },
 
     "#Nature": 0,
@@ -39,8 +40,17 @@
             "water": { "to": "gravel", "chance": 0.001 },
             "lightning plasma": {"to": "lava", "chance": 0.05 },
             "laser plasma": { "to": "air", "chance": 0.05 }
-        },
-        "reaction_chance": 0.01
+        }
+    },
+    "granite": {
+        "colors": ["C2745E", "C18D79", "A96D5A"],
+        "moves": [
+            {"x":0, "y":1}
+        ],
+        "reacts": {
+            "lightning plasma": {"to": "lava", "chance": 0.05 },
+            "laser plasma": { "to": "air", "chance": 0.6 }
+        }
     },
     "sand": {
         "colors": ["d4c376", "d3c488", "cfb56c"],
@@ -49,7 +59,6 @@
             {"x":[-1, 1], "y": 1}
         ],
         "reacts": {
-            "lava": { "to": "glass" },
             "lightning plasma": { "to": "glass" },
             "laser plasma": { "to": "air" }
         }
@@ -155,8 +164,17 @@
         }
     },
     "snow": {
-        "hidden": true,
-        "colors": ["f6fbff", "eff6fc", "e2f0f6"]
+        "colors": ["f6fbff", "eff6fc", "e2f0f6"],
+        "moves": [
+            {
+                "x": [-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+                "y": 1
+            },
+            {
+                "x": [-1, 1],
+                "y": 1
+            }
+        ]
     },
     "wood": {
         "colors": [
@@ -410,6 +428,7 @@
     },
     "lightning": {
         "colors": [ "ffffff" ],
+        "glows": true,
         "behavior": [
             { "x":-1, "y":1 },
             { "x":0, "y":1 },
@@ -429,6 +448,7 @@
         "hidden": true,
         "colors": [ "fffcc5" ],
         "// colors": [ "aaddff" ],
+        "glows": true,
 
         "despawn_timer": 10,
         "air": true
@@ -557,7 +577,8 @@
             "ffffff",
             "f2fff5",
             "cccccc"
-        ]
+        ],
+        "glows": true
     },
     "balloons": {
         "colors": [
@@ -588,6 +609,7 @@
     },
     "laser": {
         "colors": [ "ffaa99" ],
+        "glows": true,
         "while_behavior": true,
         "behavior": {
             "down": { "x":0, "y":1 },
@@ -600,6 +622,7 @@
     "laser plasma": {
         "hidden": true,
         "colors": [ "ffaa99" ],
+        "glows": true,
         "fade": 5,
         "despawn_timer": 2,
         "air": true
@@ -607,6 +630,7 @@
     "laser glow": {
         "hidden": true,
         "colors": [ "ffaa99" ],
+        "glows": true,
         "alpha": 0.5,
 
         "despawn_timer": 1,
@@ -627,6 +651,7 @@
     },
     "explosion": {
         "colors": ["ffffff"],
+        "glows": true,
 
         "sfx": {
             "place": ["explosion1"]
