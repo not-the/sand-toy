@@ -1002,8 +1002,10 @@ class Pixel extends PIXI.Sprite {
                         (
                             dest?.type === 'air' ||
                             dest?.type === 'lightning' ||
-                            dest?.type === 'lightning plasma')
-                        ) {
+                            dest?.type === 'lightning plasma' ||
+                            dest?.mat?.lightning_pass
+                        )
+                    ) {
                         seed.set('lightning plasma');
                         dest.set('lightning', seed.tint);
                     }
@@ -1036,8 +1038,9 @@ class Pixel extends PIXI.Sprite {
                             dest?.type === 'air' ||
                             dest?.type === 'laser' ||
                             dest?.type === 'laser plasma' ||
-                            dest?.type === 'laser glow')
-                        ) {
+                            dest?.type === 'laser glow'
+                        )
+                    ) {
                         seed.set('laser plasma');
                         dest.set('laser');
                     }

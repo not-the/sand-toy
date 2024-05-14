@@ -114,6 +114,7 @@
             "mud_wet3": { "to": "mud_wet2", "chance": 0.05 },
             "mud_wet2": { "to": "mud_wet1", "chance": 0.05 },
             "mud_wet1": { "to": "mud", "chance": 0.05 },
+            "fire": { "to": "ash", "chance": 0.05 },
             "lightning plasma": { "to": "ash" },
             "laser plasma": { "to": "ash" }
         }
@@ -125,6 +126,7 @@
             {"x":[-1, 1], "y": 1}
         ],
         "reacts": {
+            "fire": { "to": "ash", "chance": 0.05 },
             "lightning plasma": { "to": "ash" },
             "laser plasma": { "to": "ash" }
         },
@@ -332,6 +334,7 @@
             "acid":      { "to": "acid",  "chance": 0.02  },
             "ice":       { "to": "ice",   "chance": 0.001 }
         },
+        "lightning_pass": true,
         "conductive": true
     },
     "lava": {
@@ -381,7 +384,8 @@
         "float": 5,
         "reacts": {
             "ice": { "to": "water", "chance": 0.015 }
-        }
+        },
+        "lightning_pass": true
     },
     "smoke": {
         "colors": [
@@ -401,7 +405,8 @@
         ],
         "move_chance": 0.3,
         "despawn_chance": 0.02,
-        "float": 5
+        "float": 5,
+        "lightning_pass": true
     },
     "fire": {
         "brush_replace": false,
@@ -427,7 +432,8 @@
             }
         ],
         "despawn_chance": 0.3,
-        "float": 5
+        "float": 5,
+        "lightning_pass": true
     },
     "acid": {
         "colors": [ "6BC032", "44B136", "5EB857" ],
@@ -564,7 +570,8 @@
                 "x": [-1, 0, 1],
                 "y": 1
             }
-        ]
+        ],
+        "lightning_pass": true
     },
     "sugar": {
         "colors": [
@@ -593,7 +600,8 @@
     "plastic": {
         "colors": [ "f4f3ea", "f0eadc", "efe6e4" ],
         "alpha": 0.8,
-        "acid_proof": true
+        "acid_proof": true,
+        "laser_pass": true
     },
     "glass": {
         "colors": [ "D5E4F3", "FFFFFF" ],
