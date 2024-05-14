@@ -334,7 +334,6 @@
             "acid":      { "to": "acid",  "chance": 0.02  },
             "ice":       { "to": "ice",   "chance": 0.001 }
         },
-        "lightning_pass": true,
         "conductive": true
     },
     "lava": {
