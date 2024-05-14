@@ -955,11 +955,8 @@ class Pixel extends PIXI.Sprite {
         if(this.type === 'acid') {
             // Dissolve below
             if(Math.random() < this.mat.acid_chance) {
-                // Despawn
-                if(Math.random() < 0.3) this.set('air');
-
                 // Move
-                let notAcid = p => p?.type !== 'acid';
+                let notAcid = p => p?.type !== 'acid' && !p?.mat?.acid_proof;
                 if(this.move(0, 1, notAcid) !== 0) {
                     this.set('air');
                 }

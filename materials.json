@@ -43,13 +43,14 @@
         }
     },
     "granite": {
+        "hidden": true,
         "colors": ["C2745E", "C18D79", "A96D5A"],
         "moves": [
             {"x":0, "y":1}
         ],
         "reacts": {
             "lightning plasma": {"to": "lava", "chance": 0.05 },
-            "laser plasma": { "to": "air", "chance": 0.6 }
+            "laser plasma": { "to": "air", "chance": 0.02 }
         }
     },
     "sandstone": {
@@ -62,8 +63,9 @@
             {"x":0, "y":1}
         ],
         "reacts": {
+            "water": { "to": "sand", "chance": 0.001 },
             "lightning plasma": {"to": "lava", "chance": 0.05 },
-            "laser plasma": { "to": "air", "chance": 0.6 }
+            "laser plasma": { "to": "air", "chance": 0.1 }
         },
         "// onset": "sandstoneColoration"
     },
@@ -174,8 +176,8 @@
             "fire": { "to": "water", "chance": 0.2 },
             "lava": { "to": "steam" },
             "lightning plasma": { "to": "steam" },
-            "light": { "to": "water", "chance": 0.05 },
-            "hot stone": { "to": "water", "chance": 0.05 },
+            "light": { "to": "water", "chance": 0.01 },
+            "hot stone": { "to": "water", "chance": 0.03 },
             "laser plasma": { "to": "water", "chance": 0.1 }
         }
     },
@@ -190,7 +192,15 @@
                 "x": [-1, 1],
                 "y": 1
             }
-        ]
+        ],
+        "reacts": {
+            "fire": { "to": "water", "chance": 0.3 },
+            "lava": { "to": "steam" },
+            "lightning plasma": { "to": "steam" },
+            "light": { "to": "water", "chance": 0.002 },
+            "hot stone": { "to": "water", "chance": 0.005 },
+            "laser plasma": { "to": "water", "chance": 0.1 }
+        }
     },
     "wood": {
         "colors": [
@@ -319,7 +329,7 @@
             "laser plasma": { "to": "steam", "chance": 0.1 },
             "hot stone": { "to": "steam", "chance": 0.005 },
             "light":     { "to": "steam", "chance": 0.001 },
-            "acid":      { "to": "acid",  "chance": 0.5   },
+            "acid":      { "to": "acid",  "chance": 0.02  },
             "ice":       { "to": "ice",   "chance": 0.001 }
         },
         "conductive": true
@@ -420,11 +430,7 @@
         "float": 5
     },
     "acid": {
-        "colors": [
-            "6BC032",
-            "44B136",
-            "5EB857"
-        ],
+        "colors": [ "6BC032", "44B136", "5EB857" ],
         "moves": [
             {
                 "x": 0,
@@ -502,6 +508,8 @@
         ],
         "float": 3,
         "reacts": {
+            "acid": { "to": "plastic" },
+
             "fire": { "to": ["fire", "fire", "fire", "fire", "fire", "fire", "fire", "smoke"] },
             "lava": { "to": "fire" },
             "lightning plasma": { "to": "fire" },
@@ -581,6 +589,11 @@
             "lightning plasma": { "to": "ash" },
             "laser plasma": { "to": "air" }
         }
+    },
+    "plastic": {
+        "colors": [ "f4f3ea", "f0eadc", "efe6e4" ],
+        "alpha": 0.8,
+        "acid_proof": true
     },
     "glass": {
         "colors": [ "D5E4F3", "FFFFFF" ],
