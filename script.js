@@ -522,7 +522,7 @@ const world = {
     },
 
     forAll(callback) {
-        for(let yi in world.grid) for(let p of world.grid[yi]) callback(p);
+        for(let col of world.grid) for(let p of col) callback(p);
     }
 }
 
