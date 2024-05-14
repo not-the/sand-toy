@@ -130,19 +130,19 @@ const filters = {
 const sounds = {
     "thunder1": {
         src: "./assets/sfx/thunder1.mp3",
-        volume: 0.6
+        volume: 0.5
     },
     "thunder2": {
         src: "./assets/sfx/thunder2.mp3",
-        volume: 0.6
+        volume: 0.5
     },
     "thunder3": {
         src: "./assets/sfx/thunder3.mp3",
-        volume: 0.6
+        volume: 0.5
     },
     "explosion1": {
         src: "./assets/sfx/explosion1.mp3",
-        volume: 0.08
+        volume: 0.2
     },
     // "fire": {
     //     src: "./assets/sfx/fire.mp3",
