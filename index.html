@@ -30,6 +30,19 @@
                 <a href="./?176,99" class="button" data-world-size="176,99">Large</a>
                 <br/>
 
+                <h3>Procedural Terrain</h3>
+                <p class="alt_text">
+                    Clicking "generate" will clear the screen
+                </p>
+                <br/>
+                <div class="flex">
+                    <label for="seed">
+                        Seed: <input type="number" name="seed" id="seed" value="1" data-option="seed" onkeydown="if(event.key === 'Enter') world.procedural()"/>
+                    </label>
+                    <button style="max-width: min-content" onclick="world.procedural()">Generate</button>
+                </div>
+                <br/>
+
                 <h3>Options</h3>
                 <label for="brushReplace">
                     <input type="checkbox" name="brushReplace" id="brushReplace" data-option="brushReplace"/> Brush replaces pixels

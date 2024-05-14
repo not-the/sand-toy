@@ -1,44 +1,21 @@
 :root {
-    --air1: #344457;
-    --air2: #314155;
-    --air3: #334458;
-
-    --wood1: #7c5a32;
-    --wood2: #7a5231;
-    --wood3: #805d30;
-
-    --sand1: #d4c376;
-    --sand2: #d3c488;
-    --sand3: #cfb56c;
-
-    --gravel1: #878a94;
-    --gravel1: #767a83;
-    --gravel1: #929497;
-
-    --smoke1: #4b4b4b;
-    --gravel1: #575757;
-
-    /* --lava1: #e46330;
-    --lava1: #dd442a;
-    --lava1: #eb792d; */
-
-    --lava1: #ff946a;
-    --lava1: #ff6145;
-    --lava1: #ffbd68;
-
-    --stone1: #8b8880;
-    --stone2: #838079;
-    --stone3: #8b807e;
-
-    --foliage1: #4f9b23;
-    --foliage2: #78af31;
-    --foliage3: #6ca338;
+    --text: white;
+    --alt-text: rgb(200, 200, 200);
+    --bg: black;
 }
 
 * {
     box-sizing: border-box;
     image-rendering: pixelated;
     font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+p {
+    margin-top: 6px;
+}
+.alt_text {
+    color: var(--alt-text);
 }
 .flex {
     display: flex;
@@ -47,8 +24,8 @@
     text-align: center;
 }
 body {
-    background-color: black;
-    color: white;
+    background-color: var(--bg);
+    color: var(--text);
     margin: 0;
 }
 h3 {

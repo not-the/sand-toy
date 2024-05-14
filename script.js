@@ -56,6 +56,15 @@ function parse(value) {
     return Array.isArray(value) ? value[Math.floor(Math.random() * value.length)] : value;
 }
 
+/** Get pseudo-random number */
+const procCeil = (max, seed, min=0) => min + Math.ceil(new MersenneTwister(seed).random() * (max - min));
+const procFloor = (max, seed, min=0) => min + Math.floor(new MersenneTwister(seed).random() * (max - min));
+
+/** If the value is an array it will return a random item from the array, otherwise returns value */
+function procParse(value, seed) {
+    return Array.isArray(value) ? value[procFloor(value.length, seed)] : value;
+}
+
 /** Returns a random item from an array
  * @returns {any}
  */
@@ -455,6 +464,7 @@ const world = {
     paused: false,
 
     // Configuration
+    seed: Math.floor(Math.random() * 1000),
     brushReplace: true,
     waterShading: false,
     
@@ -472,17 +482,8 @@ const world = {
     },
 
     /** Generate procedural world */
-    procedural(seed=1, easetype='ease') {
+    procedural(seed=world.seed??1, easetype='ease') {
         this.clear();
-
-        /** Get pseudo-random number */
-        const procCeil = (max, seed, min=0) => min + Math.ceil(new MersenneTwister(seed).random() * (max - min));
-        const procFloor = (max, seed, min=0) => min + Math.floor(new MersenneTwister(seed).random() * (max - min));
-
-        /** If the value is an array it will return a random item from the array, otherwise returns value */
-        function procParse(value, seed) {
-            return Array.isArray(value) ? value[procFloor(value.length, seed)] : value;
-        }
 
         // b - beginning position
         // e - ending position
@@ -588,7 +589,7 @@ const world = {
                     "dirt": "sand",
                     "grass": "air",
                     "gravel": "sand",
-                    "stone": "granite"
+                    "stone": "sandstone"
                 },
                 maxSize: 50,
                 minSize: 24
@@ -614,12 +615,12 @@ const world = {
         ];
 
         // Determine biomes/locations
-        let blobs = new Array(procFloor(4, seed+101, 1)).fill(null);
+        let blobs = new Array(procFloor(4, seed+101, 0)).fill(null);
         blobs = blobs.map((value, index) => {
-            let biome = procParse(biomes, seed*index+3);
+            let biome = procParse(biomes, seed*index*3);
             return {
                 biome,
-                x:      procCeil(world.width,       seed*102*index                      ),
+                x:      procCeil(world.width,       seed*102+index                      ),
                 y:      procCeil(world.height/2,    seed*103*index, world.height        ),
                 size:   procCeil(biome.maxSize??50, seed*104*index, biome.minSize??24   ),
                 skew: 0
@@ -744,7 +745,16 @@ class Pixel extends PIXI.Sprite {
             (p.x + p.y) % 16 === 5
             ?
             1:0
-        ])
+        ]),
+        // sandstoneColoration: p => {
+        //     const layer =
+        //         (p.y + Math.round(( p.x+ (Math.floor(Math.random()*5)) )/10)) % 8 <= 2
+        //         ?
+        //         1 : 0;
+
+        //     let color = parse(this.mat.layers[layer]);
+        //     p.setColor(color);
+        // }
     }
 
     /** Set a pixel to a material
@@ -778,7 +788,7 @@ class Pixel extends PIXI.Sprite {
 
 
         // Event
-        if(this.mat?.onset !== undefined) this.actions[this.mat.onset](this);
+        if(this.mat?.onset !== undefined && preColor === undefined) this.actions[this.mat.onset](this);
 
 
         // Glows
@@ -1254,7 +1264,7 @@ brush.setSize(3);
 // Create world
 // world.setTicktime(0);
 world.make();
-world.procedural(12);
+// world.procedural(12);
 
 
 
@@ -1406,12 +1416,22 @@ document.querySelectorAll("[data-option]").forEach(element => {
 
     switch (element.type) {
         case "checkbox":
+            // Listener
             listener = "change";
             handler = event => event.target.checked;
 
+            // Fill
             element.checked = world[element.dataset.option];
             break;
-    
+
+        case "number":
+            // Listener
+            listener = "change";
+            handler = event => Number(event.target.value);
+
+            // Fill
+            element.value = world[element.dataset.option];
+            break;
         default:
             break;
     }

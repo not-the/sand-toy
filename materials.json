@@ -52,6 +52,21 @@
             "laser plasma": { "to": "air", "chance": 0.6 }
         }
     },
+    "sandstone": {
+        "colors": ["ceac59", "c49b51", "ba9454", "c48f51"],
+        "layers": {
+            "0": ["ceac59", "c49b51", "ba9454"],
+            "1": ["c4845f", "c76e4b", "c48f51"]
+        },
+        "moves": [
+            {"x":0, "y":1}
+        ],
+        "reacts": {
+            "lightning plasma": {"to": "lava", "chance": 0.05 },
+            "laser plasma": { "to": "air", "chance": 0.6 }
+        },
+        "// onset": "sandstoneColoration"
+    },
     "sand": {
         "colors": ["d4c376", "d3c488", "DBCC91", "cfb56c"],
         "moves": [
@@ -60,7 +75,8 @@
         ],
         "reacts": {
             "lightning plasma": { "to": "glass" },
-            "laser plasma": { "to": "air" }
+            "laser plasma": { "to": "air" },
+            "fire": { "to": "sandstone", "chance": 0.01 }
         }
     },
     "gravel": {
