@@ -1324,6 +1324,7 @@ canvas.addEventListener('pointerdown', pointerHandler);
 document.addEventListener('pointerup', pointerHandler);
 
 function pointerHandler(event) {
+    event.preventDefault();
     moveHandler(event);
 
     const clickIDs = ['click', 'middle_click', 'right_click'];
