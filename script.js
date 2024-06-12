@@ -283,6 +283,9 @@ const ui = {
 
         ticktime_up: () => world.setTicktime(1),
         ticktime_down: () => world.setTicktime(-1),
+
+        mat_scroll_left: () => matsContainer.ix += 200,
+        mat_scroll_right: () => matsContainer.ix -= 200,
     },
 
     // Element specific code, like filling out text
@@ -297,10 +300,16 @@ const ui = {
     },
 
     build(name='options', container=optsContainer) {
+        // Menu data
         const menu = this.data[name];
+
+        // Loop elements
         for(let props of menu) {
             let element = !props.text ?
-                new PIXI.Sprite(spritesheet.textures[props.src]) :
+                new PIXI.Sprite(
+                    spritesheet.textures?.[props.src] ??
+                    PIXI.Texture.from(`./artwork/${props.src}`)
+                ) :
                 new PIXI.Text(props.text, {
                     fontFamily: 'Arial',
                     fontSize: props.font_size ?? 3,
