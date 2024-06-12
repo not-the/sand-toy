@@ -238,10 +238,10 @@ const optsContainer = new Container({ scale:5 }, UIContainer); // Additional UI
 const moreContainer = new Container({ y:-90, scale:5, ix:50, visible:false, filters:[ filters.shadow ] }, UIContainer); // Toggle panel
 
 // Click-and-drag to scroll through materials list
-let dragOrigin = 0
+let dragStart = 0;
 UIContainer.on('pointerdown', () => {
     pressed['ui_dragging'] = true;
-    dragOrigin = mouse.x;
+    dragStart = mouse.x;
 });
 
 
@@ -843,23 +843,24 @@ class Pixel extends PIXI.Sprite {
         let {size, type} = brush;
 
         // Inbetween
-        // let [dist, distX, distY] = distance(mouse, lastMouse);
-        // console.log(dist);
+        const [dist, distX, distY] = distance(lastMouse, mouse);
 
         // Draw line between points
-        // for(let i = 0; i < Math.ceil(dist); i++) {
-        //     let progress = 0.1;
-        //     var p = {
-        //         x: Math.ceil(this.x + distX * progress),
-        //         y: Math.ceil(this.y + distY * progress)
-        //     }
+        const steps = Math.floor(dist);
+        for(let i = 0; i < steps; i++) {
+            const progress = i/steps;
+            const pos = {
+                x: Math.ceil(this.x + distX * progress),
+                y: Math.ceil(this.y + distY * progress)
+            }
 
-        //     let between = getPixel(p.x, p.y);
-        //     between?.forRegion(size, (x, y) => {
-        //         run(x, y, 'set', 'ice');
-        //     })
-        // }
+            const between = getPixel(pos.x, pos.y);
+            between?.forRegion(size, (x, y) => {
+                run(x, y, 'set', type);
+            })
+        }
 
+        // Paint area
         this.forRegion(size, (x, y) => {
             if(!world.brushReplace && brush.type !== 'air' || materials[type].brush_replace === false) if(getPixel(x, y)?.type !== 'air') return;
             run(x, y, 'set', type);
@@ -1351,14 +1352,16 @@ Fresh:  ${targetPixel.fresh}
     }
 }
 
+// Wheel
 canvas.addEventListener('wheel', event => {
     event.preventDefault();
     matsContainer.ix -= event.deltaY;
 })
 
-// canvas.addEventListener('contextmenu', event => {
-//     event.preventDefault();
-// })
+// Context menu
+canvas.addEventListener('contextmenu', event => {
+    event.preventDefault();
+})
 
 // Leave page
 document.addEventListener("mouseleave", () => {
@@ -1391,7 +1394,10 @@ function moveHandler(event) {
     if(!pressed['ui_dragging'] || event.type !== 'pointermove') return;
 
     // Scroll
-    matsContainer.ix += (dragOrigin - mouse.x)*-0.5;
+    matsContainer.ix += (dragStart - mouse.x)*-0.5;
+    // const x = mouse.x + matsContainer.x;
+    // const scroll = x - dragStart;
+    // matsContainer.ix = startXMatsContainer + scroll;
 
     // End drag
     if(!pressed['click']) delete pressed['ui_dragging'];
