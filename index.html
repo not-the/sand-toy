@@ -41,6 +41,7 @@
                     </label>
                     <button style="max-width: min-content" onclick="world.procedural()">Generate</button>
                 </div>
+                <button onclick="document.getElementById('seed').value = Math.floor(Math.random() * 100000); world.procedural();">Generate w/ Random seed</button>
                 <br/>
 
                 <h3>Options</h3>
