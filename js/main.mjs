@@ -1,111 +1,40 @@
+// Libraries
 import * as PIXI from '../lib/pixi.mjs'
 import '../lib/pixi-filters.js'
 // import './lib/pixi-sound.js'
 import MersenneTwister from '../lib/mersenne-twister.js'
 
-
+// Debug
 globalThis.PIXI = PIXI;
 
 
 // DOM
 const gamespace = document.getElementById("game");
 
-/** Get JSON - https://stackoverflow.com/a/22790025/11039898
- * @param {string} url JSON file URL
- * @param {boolean} parse Whether or not to convert into a JS object
- * @returns 
- */
-function get(url, parse=true) {
-    var rq = new XMLHttpRequest(); // a new request
-    rq.open("GET", url, false);
-    rq.send(null);
-    return parse ? JSON.parse(rq.responseText) : rq.responseText;          
+const config = {
+    // Resolution
+    viewWidth: 1280,
+    viewHeight: 800,
+    UIHeight: 80,
+
+    // Pixel world
+    width: 128,
+    height: 72,
+    scale: undefined
 }
-
-/** Distance between two points
- * @param {object|Pixel} one Object one
- * @param {object|Pixel} two Object two
- * @returns {Array} Array [distance, distX, distY]
- */
-function distance(one, two) {
-    let distX = one.x - two.x;
-    let distY = one.y - two.y;
-    return [Math.hypot(distX, distY), distX, distY];
-}
-
-/** Interpolation function. Will return target value if values are within 1 of eachother */
-function lerp(a, b, alpha) { return Math.abs(b-a)<1?b : a + alpha * (b - a); }
-
-/** RGB color mix */
-function colorMix(color1, color2, percent=0.5) {
-    percent = Math.min(1, Math.max(0, percent)); // Keep within 0-1 range
-
-    const r = Math.round(color1.r + (color2.r - color1.r) * percent);
-    const g = Math.round(color1.g + (color2.g - color1.g) * percent);
-    const b = Math.round(color1.b + (color2.b - color1.b) * percent);
-
-    return { r, g, b };
-}
-
-/** Hexidecimal color to RGB
- * @param {String} hex Hex color
- * @returns {Object} Object with r, g, and b properties
- */
-function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
-  }
-
-/** If the value is an array it will return a random item from the array, otherwise returns value */
-function parse(value) {
-    return Array.isArray(value) ? value[Math.floor(Math.random() * value.length)] : value;
-}
-
-/** Get pseudo-random number */
-const randomProceduralCeil = (max, seed, min=0) => min + Math.ceil(new MersenneTwister(seed).random() * (max - min));
-const randomProceduralFloor = (max, seed, min=0) => min + Math.floor(new MersenneTwister(seed).random() * (max - min));
-
-/** If the value is an array it will return a random item from the array, otherwise returns value */
-function proceduralParse(value, seed) {
-    return Array.isArray(value) ? value[randomProceduralFloor(value.length, seed)] : value;
-}
-
-/** Returns a random item from an array
- * @returns {any}
- */
-Array.prototype.random = function() {
-    return this[Math.floor(Math.random() * this.length)];
-}
-
-/** Returns the string with the first character capitalized, the original string is unchanged
- * @returns {String}
- */
-String.prototype.capitalize = function() {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-}
-
-
-// Canvas size
-const viewWidth = 1280, viewHeight = 800, UIHeight = 80;
 
 // World Size. Width/height are pulled from URL parameters if available
-let width = 128, height = 72;
 let params = location.search.substring(1).split(',');
-if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1])];
-
+if(location.search !== '') [config.width, config.height] = [Number(params[0]), Number(params[1])];
 
 /** Pixel scale */
-const scale = viewWidth/width;
+config.scale = config.viewWidth/config.width;
 
 
 // PIXI.JS setup
 const app = new PIXI.Application({
-    width: viewWidth,
-    height: viewHeight,
+    width: config.viewWidth,
+    height: config.viewHeight,
     antialias: false,
     useContextAlpha: false
 });
@@ -124,6 +53,12 @@ const spritesheet = new PIXI.Spritesheet(
 spritesheet.parse();
 
 
+// Game
+import { get, distance, lerp, colorMix, hexToRgb, parse, randomProceduralCeil, randomProceduralFloor, proceduralParse } from './util.mjs'
+import sound from './sound.mjs'
+import ui from './ui.mjs'
+
+
 /** PIXI Filters */
 const filters = {
     'bloom': new PIXI.filters.AdvancedBloomFilter({
@@ -134,7 +69,7 @@ const filters = {
         blur: 2,
         quality: 8,
         kernels: null,
-        pixelSize: 0.5*scale
+        pixelSize: 0.5*config.scale
     }),
     'shadow': new PIXI.filters.DropShadowFilter({
         distance: 5,
@@ -146,64 +81,6 @@ const filters = {
 }
 filters.bloom.padding = 100;
 
-// PIXI Sounds
-const sounds = {
-    "thunder1": {
-        src: "./assets/sfx/thunder1.mp3",
-        volume: 0.5
-    },
-    "thunder2": {
-        src: "./assets/sfx/thunder2.mp3",
-        volume: 0.5
-    },
-    "thunder3": {
-        src: "./assets/sfx/thunder3.mp3",
-        volume: 0.5
-    },
-    "explosion1": {
-        src: "./assets/sfx/explosion1.mp3",
-        volume: 0.2
-    },
-    // "fire": {
-    //     src: "./assets/sfx/fire.mp3",
-    //     volume: 0.7,
-    //     loop: true,
-    //     type: "fade"
-    // },
-}
-// Register sounds
-// for(const [key, {src}] of Object.entries(sounds)) PIXI.sound.add(key, src);
-
-/** Audio methods */
-const sound = {
-    recents: {},
-    play(name, volume) {
-        if(this.recents[name] > Date.now()-100) return; // Already played sound within last 100ms
-
-        let options = {
-            volume: volume ?? sounds[name].volume,
-            loop: sounds[name].loop,
-            complete: () => console.log(name + ' complete')
-        }
-
-        let s;
-
-        // if(options.stereo_x !== undefined) {
-        //     let stereo = (options.stereo_x - (containerGame.x*-1))/1200;
-        //     options.filters = [
-        //         new PIXI.sound.filters.StereoFilter(stereo)
-        //     ];
-        // }
-        try { s = PIXI.sound.play(name, options); }
-        catch (error) { console.error(error); }
-
-        this.recents[name] = Date.now();
-        return s;
-    }
-}
-
-// let SFXFire;
-// sound.play('fire').then(res => SFXFire = res);
 
 /** PIXI.Container shorthand */
 class Container extends PIXI.Container {
@@ -223,241 +100,45 @@ class Container extends PIXI.Container {
     }
 }
 
+const containers = {}
+
 /** World container */
-const worldContainer = new Container({
+containers.world = new Container({
     interactiveChildren: false,
-    width, height, scale,
+    width: config.width,
+    height: config.height,
+    scale: config.scale,
     // filters: [ filters.bloom ]
 }, undefined);
 
 /** Bloom filter container */
-const bloomContainer = new Container({
-    width, height, scale,
+containers.bloom = new Container({
+    width: config.width,
+    height: config.height,
+    scale: config.scale,
     filters: [ filters.bloom ]
 }, undefined);
 
-const fgContainer = new Container({
+containers.fg = new Container({
     interactiveChildren: false,
-    width, height, scale
+    width: config.width,
+    height: config.height,
+    scale: config.scale,
 })
 
 /** UI container */
-const UIContainer   = new Container({ y:viewHeight-UIHeight, eventMode:'static' });
-const matsContainer = new Container({ ix:0, scale:5 }, UIContainer); // Materials container
-const optsContainer = new Container({ scale:5 }, UIContainer); // Additional UI      
-const moreContainer = new Container({ y:-90, scale:5, ix:50, visible:false, filters:[ filters.shadow ] }, UIContainer); // Toggle panel
+containers.ui   = new Container({ y:config.viewHeight-config.UIHeight, eventMode:'static' });
+containers.mats = new Container({ ix:0, scale:5 }, containers.ui); // Materials container
+containers.opts = new Container({ scale:5 }, containers.ui); // Additional UI      
+containers.more = new Container({ y:-90, scale:5, ix:50, visible:false, filters:[ filters.shadow ] }, containers.ui); // Toggle panel
+
 
 // Click-and-drag to scroll through materials list
 let dragStart = 0;
-UIContainer.on('pointerdown', () => {
+containers.ui.on('pointerdown', () => {
     pressed['ui_dragging'] = true;
     dragStart = mouse.x;
 });
-
-
-let uiX = 0;
-let uiSelection;
-
-/** UI */
-const ui = {
-    data: get('./ui.json'),
-
-    elements: {},
-
-    get optionsVisible() { return moreContainer?.visible; },
-
-    // Element onclicks
-    actions: {
-        none: null,
-        pause: () => world.playPause(),
-        clear: () => world.clear(),
-        brush_up: () => brush.setSize(brush.size+1),
-        brush_down: () => { if(brush.size > 1) brush.setSize(brush.size-1) },
-
-        options: (overlay=true) => {
-            // Make options panel visible
-            moreContainer.visible = !moreContainer.visible;
-            moreContainer.ix = moreContainer.visible ? -6 : 50;
-
-            // Update options button
-            ui.elements.options.texture = ui.optionsVisible ?
-                spritesheet.textures['options_pressed.png'] :
-                spritesheet.textures['options.png'];
-
-            // HTML overlay
-            if(overlay) ui.actions.openOverlay();
-        },
-        openOverlay: () => {
-            document.body.classList.toggle('show_overlay')
-        },
-
-        ticktime_up: () => world.setTicktime(1),
-        ticktime_down: () => world.setTicktime(-1),
-
-        mat_scroll_left: () => matsContainer.ix += 200,
-        mat_scroll_right: () => matsContainer.ix -= 200,
-    },
-
-    // Element specific code, like filling out text
-    fills: {
-        brush_size: (e=ui.elements.brush_size) => e.text = brush.size,
-        ticktime: (e=ui.elements.ticktime) => {
-            let value = world.ticktime;
-            e.text =
-                value < 0 ? `${Math.abs(value)}/frame` :
-                value === 0 ? 'Max' : (2 / value).toFixed(1) + 'x';
-        }
-    },
-
-    build(name='options', container=optsContainer) {
-        // Menu data
-        const menu = this.data[name];
-
-        // Loop elements
-        for(let props of menu) {
-            let element = !props.text ?
-                new PIXI.Sprite(
-                    spritesheet.textures?.[props.src] ??
-                    PIXI.Texture.from(`./artwork/${props.src}`)
-                ) :
-                new PIXI.Text(props.text, {
-                    fontFamily: 'Arial',
-                    fontSize: props.font_size ?? 3,
-                    fontWeight: 700,
-                    align: 'center',
-                    fill: 'fff'
-                })
-
-            if(props.text) element.resolution = 24;
-
-            element.x = props.x ?? 0;
-            element.y = props.y ?? 0;
-            container.addChild(element);
-
-            this.elements[props.id] = element;
-
-            // Action
-            if(props.action !== undefined) {
-                element.eventMode = 'static';
-                element.buttonMode = true;
-                let handler = this.actions[props.action];
-                if(handler !== null) {
-                    element.cursor = 'pointer';
-
-                    // Normal click
-                    if(!props.repeats) element.on('pointerdown', handler);
-                    
-                    // Repeats
-                    else {
-                        element.on('pointerdown', () => {
-                            handler();
-                            element.timeout = setTimeout(() => {
-                                element.interval = setInterval(() => {
-                                    handler();
-                                }, 50);
-                            }, 300);
-                        });
-                        element.on('pointerup', endRepeat);
-                        element.on('pointerout', endRepeat);
-                        function endRepeat() {
-                            clearTimeout(element.timeout);
-                            clearInterval(element.interval);
-                        }
-                    }
-                }
-            }
-
-            // Fill
-            let fill = ui.fills[props.id]
-            if(fill !== undefined) fill(element);
-        }
-    },
-
-    buildMaterials() {
-        uiX = 0;
-        for(let [key, value] of Object.entries(materials)) {
-            // Title
-            if(key.startsWith('#')) {
-                uiX += 3;
-                continue;
-            }
-        
-            // Hidden
-            if(value.hidden && location.hash !== "#dev") continue;
-        
-            // Button
-            let button = new PIXI.Sprite(spritesheet.textures['tray.png']);
-            button.brush = key;
-            button.x = uiX;
-            uiX += 16;
-        
-            // Icon texture
-            let matTexture = spritesheet.textures[`materials/${key}.png`];
-            // Fallback
-            if(matTexture === undefined) {
-                try {
-                    matTexture = PIXI.Texture.from(`./artwork/materials/${key}.png`);
-                } catch (error) {
-                    console.warn(error);
-                    matTexture = spritesheet.textures['materials/question.png'];
-                }
-            }
-        
-            // Material icon
-            let icon = new PIXI.Sprite(matTexture);
-            icon.scale.x = 0.8, icon.scale.y = 0.8, icon.x = 1;
-            icon.filters = [ filters.shadow ];
-            button.addChild(icon);
-        
-            // Label
-            let label = new PIXI.Text(key.capitalize(), {
-                fontFamily: 'Arial',
-                fontSize: 3,
-                fontWeight: 700,
-                align: 'center',
-                fill: 'fff'
-            });
-            label.anchor.x = 0.5;
-            label.x = 8;
-            label.y = 13;
-            label.resolution = 16;
-            button.addChild(label);
-
-            // Register
-            this.elements[`material_${key}`] = button;
-
-
-            // Player
-            // if(!player.materials[key] && location.hash !== "#dev") button.visible = false;
-        
-        
-            // Events
-            button.eventMode = 'static';
-            button.buttonMode = true;
-            button.cursor = 'pointer';
-            button.on('pointerdown', selectHandler);
-            function selectHandler(event, element=this) {
-                brush.setType(element.brush);
-            }
-            if(button.brush === brush.type) selectHandler(undefined, button);
-        
-            matsContainer.addChild(button);
-        }
-    },
-
-    refresh() {
-        ui.destroy();
-        ui.build('options', optsContainer);
-        ui.build('overlay', moreContainer);
-        ui.buildMaterials();
-    },
-
-    destroy() {
-        for(let [id, element] of Object.entries(this.elements)) {
-            element.parent.removeChild(element);
-        }
-    }
-}
 
 
 /** Material data (colors, properties, interaction/movement rules, etc.) */
@@ -487,13 +168,13 @@ const world = {
     brushReplace: true,
     waterShading: false,
     
-    make(data=Array(width).fill(null).map(()=>Array(height).fill('q'))) {
+    make(data=Array(config.width).fill(null).map(()=>Array(config.height).fill('q'))) {
         this.grid = [];
 
         // Populate world with air pixels
-        for(let yi = 0; yi < height; yi++) {
+        for(let yi = 0; yi < config.height; yi++) {
             world.grid.push([]);
-            for(let xi = 0; xi < width; xi++) {
+            for(let xi = 0; xi < config.width; xi++) {
                 let pixel = new Pixel(xi, yi);
                 world.grid[yi][xi] = pixel;
             }
@@ -753,7 +434,7 @@ class Pixel extends PIXI.Sprite {
         }; // Data that gets passed around as pixels move
 
         this.set(type);
-        worldContainer.addChild(this);
+        containers.world.addChild(this);
     }
 
     // Unique behavior
@@ -811,13 +492,13 @@ class Pixel extends PIXI.Sprite {
 
 
         // Glows
-        if(this.mat?.glows === true && this.parent === worldContainer) {
+        if(this.mat?.glows === true && this.parent === containers.world) {
             this.parent.removeChild(this);
-            bloomContainer.addChild(this);
+            containers.bloom.addChild(this);
         }
-        else if(!this.mat?.glows && this.parent === bloomContainer) {
+        else if(!this.mat?.glows && this.parent === containers.bloom) {
             this.parent.removeChild(this);
-            worldContainer.addChild(this);
+            containers.world.addChild(this);
         }
 
         // Register pixel
@@ -1208,7 +889,7 @@ class Pixel extends PIXI.Sprite {
 
         // Invalid move
         if(condition !== undefined) if(!condition(dest)) return 0;
-        if(dest === undefined || dest_y > height || dest_x > width || dest_x < 0 || dest_y < 0) return 0;
+        if(dest === undefined || dest_y > config.height || dest_x > config.width || dest_x < 0 || dest_y < 0) return 0;
 
         // Swap
         let replacing = dest.type;
@@ -1225,7 +906,7 @@ class Pixel extends PIXI.Sprite {
 /** Brush indicator */
 let indicator = new PIXI.Graphics();
 indicator.x = -100; indicator.y = -100
-fgContainer.addChild(indicator);
+containers.fg.addChild(indicator);
 
 
 /** Brush */
@@ -1238,13 +919,13 @@ const brush = {
 
         let element = ui.elements[`material_${type}`];
         
-        if(uiSelection !== undefined) {
-            uiSelection.texture = spritesheet.textures['tray.png'];
-            uiSelection.children[1].style.fill = 'fff';
+        if(ui.selection !== undefined) {
+            ui.selection.texture = spritesheet.textures['tray.png'];
+            ui.selection.children[1].style.fill = 'fff';
         }
         element.texture = spritesheet.textures['selection.png'];
         element.children[1].style.fill = '000';
-        uiSelection = element;
+        ui.selection = element;
     },
 
     // Size
@@ -1300,16 +981,16 @@ app.ticker.add(delta => {
 
 
     // UI
-    matsContainer.x = lerp(matsContainer.x, matsContainer.ix, 0.3*delta);
-    moreContainer.x = lerp(moreContainer.x, moreContainer.ix, 0.3*delta);
+    containers.mats.x = lerp(containers.mats.x, containers.mats.ix, 0.3*delta);
+    containers.more.x = lerp(containers.more.x, containers.more.ix, 0.3*delta);
 
-    let max = ( matsContainer.width - app.view.width + ( (ui.elements?.bg.width ?? 0)*5 ) ) * -1;
-    if(matsContainer.x > 0) {
-        matsContainer.ix /= 1.5;
-        if(matsContainer.ix < 0) matsContainer.ix = 0;
+    let max = ( containers.mats.width - app.view.width + ( (ui.elements?.bg.width ?? 0)*5 ) ) * -1;
+    if(containers.mats.x > 0) {
+        containers.mats.ix /= 1.5;
+        if(containers.mats.ix < 0) containers.mats.ix = 0;
     }
-    else if(matsContainer.x < max) {
-        matsContainer.ix = max;
+    else if(containers.mats.x < max) {
+        containers.mats.ix = max;
     }
 
     // Indicator
@@ -1376,7 +1057,7 @@ Fresh:  ${targetPixel.fresh}
 // Wheel
 canvas.addEventListener('wheel', event => {
     event.preventDefault();
-    matsContainer.ix -= event.deltaY;
+    containers.mats.ix -= event.deltaY;
 })
 
 // Context menu
@@ -1402,8 +1083,8 @@ function moveHandler(event) {
     lastMouse.x = mouse.x, lastMouse.y = mouse.y, lastMouse.drawing = mouse.drawing;
     
     // scale mouse coordinates to canvas coordinates
-    mouse.x = Math.floor(mouseX * canvas.width / canvas.clientWidth / scale);
-    mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / scale);
+    mouse.x = Math.floor(mouseX * canvas.width / canvas.clientWidth / config.scale);
+    mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / config.scale);
 
     // Indicator
     indicator.x = mouse.x - Math.floor(brush.size/2)-0.5;
@@ -1415,10 +1096,10 @@ function moveHandler(event) {
     if(!pressed['ui_dragging'] || event.type !== 'pointermove') return;
 
     // Scroll
-    matsContainer.ix += (dragStart - mouse.x)*-0.5;
-    // const x = mouse.x + matsContainer.x;
+    containers.mats.ix += (dragStart - mouse.x)*-0.5;
+    // const x = mouse.x + containers.mats.x;
     // const scroll = x - dragStart;
-    // matsContainer.ix = startXMatsContainer + scroll;
+    // containers.mats.ix = startXcontainers.mats + scroll;
 
     // End drag
     if(!pressed['click']) delete pressed['ui_dragging'];
@@ -1496,7 +1177,17 @@ document.querySelectorAll("[data-option]").forEach(element => {
 
 // Highlight world size button
 try {
-    document.querySelector(`[data-world-size="${width},${height}"`).classList.add('active');
+    document.querySelector(`[data-world-size="${config.width},${config.height}"`).classList.add('active');
 } catch (error) {
     document.querySelector("[data-world-size]").classList.add('active');
 }
+
+
+// Export
+export {
+    spritesheet,
+    world, brush,
+    containers,
+    materials, filters,
+    config, app
+};
