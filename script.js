@@ -839,6 +839,7 @@ class Pixel extends PIXI.Sprite {
 
     /** Draws using user's brush material */
     draw() {
+        if(mouse.drawing && brush.material.placement === 'once') return;
         mouse.drawing = true;
         let {size, type} = brush;
 
@@ -1211,6 +1212,7 @@ fgContainer.addChild(indicator);
 const brush = {
     // Type
     type: 'sand',
+    get material() { return materials[this.type]; },
     setType(type) {
         this.type=type;
 

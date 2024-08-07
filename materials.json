@@ -454,6 +454,8 @@
         "acid_chance": 0.1
     },
     "lightning": {
+        "placement": "once",
+
         "colors": [ "ffffff" ],
         "glows": true,
         "behavior": [
