@@ -1,3 +1,12 @@
+import * as PIXI from '../lib/pixi.mjs'
+import '../lib/pixi-filters.js'
+// import './lib/pixi-sound.js'
+import MersenneTwister from '../lib/mersenne-twister.js'
+
+
+globalThis.PIXI = PIXI;
+
+
 // DOM
 const gamespace = document.getElementById("game");
 
@@ -6,7 +15,7 @@ const gamespace = document.getElementById("game");
  * @param {boolean} parse Whether or not to convert into a JS object
  * @returns 
  */
-function get(url, parse=true){
+function get(url, parse=true) {
     var rq = new XMLHttpRequest(); // a new request
     rq.open("GET", url, false);
     rq.send(null);
@@ -38,16 +47,16 @@ function colorMix(color1, color2, percent=0.5) {
     return { r, g, b };
 }
 
-function rgbToHex({ r, g, b }) {
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-}
-
+/** Hexidecimal color to RGB
+ * @param {String} hex Hex color
+ * @returns {Object} Object with r, g, and b properties
+ */
 function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
     } : null;
   }
 
@@ -57,12 +66,12 @@ function parse(value) {
 }
 
 /** Get pseudo-random number */
-const procCeil = (max, seed, min=0) => min + Math.ceil(new MersenneTwister(seed).random() * (max - min));
-const procFloor = (max, seed, min=0) => min + Math.floor(new MersenneTwister(seed).random() * (max - min));
+const randomProceduralCeil = (max, seed, min=0) => min + Math.ceil(new MersenneTwister(seed).random() * (max - min));
+const randomProceduralFloor = (max, seed, min=0) => min + Math.floor(new MersenneTwister(seed).random() * (max - min));
 
 /** If the value is an array it will return a random item from the array, otherwise returns value */
-function procParse(value, seed) {
-    return Array.isArray(value) ? value[procFloor(value.length, seed)] : value;
+function proceduralParse(value, seed) {
+    return Array.isArray(value) ? value[randomProceduralFloor(value.length, seed)] : value;
 }
 
 /** Returns a random item from an array
@@ -90,7 +99,7 @@ if(location.search !== '') [width, height] = [Number(params[0]), Number(params[1
 
 
 /** Pixel scale */
-let scale = viewWidth/width;
+const scale = viewWidth/width;
 
 
 // PIXI.JS setup
@@ -102,7 +111,8 @@ const app = new PIXI.Application({
 });
 PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 app.renderer.background.color = 0x1A2839;
-app.renderer.clearBeforeRender = false;
+// app.renderer.preserveDrawingBuffer = true;
+// app.renderer.clearBeforeRender = false;
 gamespace.appendChild(app.view);
 let canvas = document.querySelector('canvas');
 
@@ -162,7 +172,7 @@ const sounds = {
     // },
 }
 // Register sounds
-for(let [key, {src}] of Object.entries(sounds)) PIXI.sound.add(key, src);
+// for(const [key, {src}] of Object.entries(sounds)) PIXI.sound.add(key, src);
 
 /** Audio methods */
 const sound = {
@@ -521,7 +531,7 @@ const world = {
         // Layers
         doLayer({
             type: 'mud', seed: seed,
-            minY: 26, maxY: procCeil(45, seed+9, 40),
+            minY: 26, maxY: randomProceduralCeil(45, seed+9, 40),
             minStopLength: 6, maxStopLength: 9
         });
         doLayer({
@@ -536,7 +546,7 @@ const world = {
         });
         doLayer({
             type: 'stone', seed: seed*2,
-            minY: 12, maxY: procCeil(42, seed+11, 15),
+            minY: 12, maxY: randomProceduralCeil(42, seed+11, 15),
             minStopLength: 10, maxStopLength: 16,
             scatter: 2
         });
@@ -552,10 +562,10 @@ const world = {
             minStopLength, maxStopLength,
             scatter=0
         }) {
-            const stopLength = procCeil(maxStopLength, seed*7, minStopLength);
+            const stopLength = randomProceduralCeil(maxStopLength, seed*7, minStopLength);
 
             let stops = new Array(Math.ceil(world.width/stopLength)+1).fill(0);
-            stops = stops.map((value, index) => (procCeil(maxY, seed*index, minY)));
+            stops = stops.map((value, index) => (randomProceduralCeil(maxY, seed*index, minY)));
             // console.log(stops);
     
             // Loop columns
@@ -582,7 +592,7 @@ const world = {
                     // const colors = materials[type].colors;
                     // let preColor = colors[procCeil(colors.length, seed*p.x*p.y) - 1];
                     let state = height;
-                    if(scatter !== 0) state = procFloor(height, seed*p.x*p.y, height-scatter)
+                    if(scatter !== 0) state = randomProceduralFloor(height, seed*p.x*p.y, height-scatter)
                     if(p.y > state) p.set(type);
                 }
             }
@@ -624,14 +634,14 @@ const world = {
         ];
 
         // Determine biomes/locations
-        let blobs = new Array(procFloor(4, seed+101, 0)).fill(null);
+        let blobs = new Array(randomProceduralFloor(4, seed+101, 0)).fill(null);
         blobs = blobs.map((value, index) => {
-            let biome = procParse(biomes, seed*index*3);
+            let biome = proceduralParse(biomes, seed*index*3);
             return {
                 biome,
-                x:      procCeil(world.width,       seed*102+index                      ),
-                y:      procCeil(world.height/2,    seed*103*index, world.height        ),
-                size:   procCeil(biome.maxSize??50, seed*104*index, biome.minSize??24   ),
+                x:      randomProceduralCeil(world.width,       seed*102+index                      ),
+                y:      randomProceduralCeil(world.height/2,    seed*103*index, world.height        ),
+                size:   randomProceduralCeil(biome.maxSize??50, seed*104*index, biome.minSize??24   ),
                 skew: 0
             }
         });
@@ -641,7 +651,7 @@ const world = {
         // Paint biomes onto world
         for(let blob of blobs) {
             world.forAll(p => {
-                if(distance(p, blob)[0] < procFloor(blob.size, seed*p.x*p.y, blob.size-6)) {
+                if(distance(p, blob)[0] < randomProceduralFloor(blob.size, seed*p.x*p.y, blob.size-6)) {
                     let to = blob.biome.convert?.[p?.type];
 
                     if(to !== undefined) p.set(to);
