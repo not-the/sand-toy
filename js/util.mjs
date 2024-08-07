@@ -1,3 +1,6 @@
+import MersenneTwister from '../lib/mersenne-twister'
+
+
 /** Returns a random item from an array
  * @returns {any}
  */

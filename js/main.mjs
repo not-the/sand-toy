@@ -2,7 +2,7 @@
 import * as PIXI from '../lib/pixi.mjs'
 import '../lib/pixi-filters.js'
 // import './lib/pixi-sound.js'
-import MersenneTwister from '../lib/mersenne-twister.js'
+// import MersenneTwister from '../lib/mersenne-twister.js'
 
 // Debug
 globalThis.PIXI = PIXI;
