@@ -1,4 +1,4 @@
-import MersenneTwister from '../lib/mersenne-twister'
+import MersenneTwister from '../lib/mersenne-twister.js'
 
 
 /** Returns a random item from an array
