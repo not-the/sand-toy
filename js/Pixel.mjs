@@ -144,16 +144,16 @@ class Pixel extends PIXI.Sprite {
             }
 
             const between = world.getPixel(pos.x, pos.y);
-            between?.forRegion(size, (x, y) => {
-                world.run(x, y, 'set', type);
-            })
+            between?.forRegion(size, handleDraw)
         }
 
         // Paint area
-        this.forRegion(size, (x, y) => {
+        this.forRegion(size, handleDraw)
+
+        function handleDraw(x, y) {
             if(!world.brushReplace && brush.type !== 'air' || materials[type].brush_replace === false) if(world.getPixel(x, y)?.type !== 'air') return;
             world.run(x, y, 'set', type);
-        })
+        }
     }
 
     /** Despawn */
