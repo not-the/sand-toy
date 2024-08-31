@@ -4,7 +4,7 @@ import world from './world.mjs'
 import config from './config.mjs'
 import sound from './sound.mjs'
 
-import { materials, containers, controls, brush } from './main.mjs'
+import { elapsed, materials, containers, controls, brush } from './main.mjs'
 import { distance, colorMix, parse } from './util.mjs'
 
 /** Pixel class */
@@ -313,10 +313,12 @@ class Pixel extends PIXI.Sprite {
             }
         }
 
+        // Plasma
         else if(this.type === 'lightning plasma' || this.type === 'laser plasma') {
             this.alpha = (1 - this.data.age/15) ** 2.2;
         }
 
+        // Laser
         else if(this.type === 'laser') {
             let seed = this;
 
@@ -397,6 +399,12 @@ class Pixel extends PIXI.Sprite {
 
                 if(!above?.mat?.air && above?.type !== 'grass') this.set('mud');
             }
+        }
+
+        else if(this.type === "firework") {
+            let below = world.getPixel(this.x, this.y+1);
+
+            if(below !== undefined && below?.mat?.air) below.set('exhaust');
         }
 
         // Water waves

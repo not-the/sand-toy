@@ -362,6 +362,6 @@ export {
     spritesheet,                // Spritesheet
     app, containers, filters,   // PIXI
 
-    world, brush, controls,     // Game state
+    elapsed, world, brush, controls,     // Game state
     materials, config,          // Game data
 };
