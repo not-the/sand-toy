@@ -615,8 +615,8 @@
     "light": {
         "colors": [
             "ffffff",
-            "f2fff5",
-            "cccccc"
+            "FFF8CA",
+            "F9F1E4"
         ],
         "glows": true
     },
