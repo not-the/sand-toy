@@ -151,7 +151,13 @@ class Pixel extends PIXI.Sprite {
         this.forRegion(size, handleDraw)
 
         function handleDraw(x, y) {
-            if(!world.brushReplace && brush.type !== 'air' || materials[type].brush_replace === false) if(world.getPixel(x, y)?.type !== 'air') return;
+            // Material brush_replace property is false
+            if(
+                !world.brushReplace && brush.type !== 'air' ||
+                materials[type].brush_replace === false
+            ) {
+                if(world.getPixel(x, y)?.type !== 'air') return;
+            }
             world.run(x, y, 'set', type);
         }
     }

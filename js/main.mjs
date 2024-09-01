@@ -213,13 +213,15 @@ function pointerHandler(event) {
 
     if(id === 'middle_click' && event.type === "pointerdown") {
         let targetPixel = world.getPixel(controls.mouse.x, controls.mouse.y);
-        // Get type
-        console.log(`
-${targetPixel.type}
-X: ${targetPixel.x}   Y: ${targetPixel.y}
-Moving: ${targetPixel.moving}
-Fresh:  ${targetPixel.fresh}
-        `);
+
+        // Log info
+        console.table({
+            "Material":     targetPixel.type,
+            "X":        targetPixel.x,
+            "Y":        targetPixel.y,
+            "Moving":   targetPixel.moving,
+            "Fresh":    targetPixel.fresh
+        })
 
         brush.setType(targetPixel.type);
 
