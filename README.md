@@ -58,7 +58,7 @@ the only required property, all others are optional. */
     will allow it to sink or float  */
     "moves": [
         /* The first move to try, assuming there's nothing in the way.
-        Positive Y moves downward and negative Y upward.
+        Positive Y moves downward and negative Y upward. */
         {
             "x": 0,
             "y": 1
@@ -66,7 +66,7 @@ the only required property, all others are optional. */
         /* If the previous move failed, we'll try this one instead. You can
         also replace the numbers with an array and a random number will be
         picked. In this case, if our material lands on something, it will
-        attempt to flow diagonally down instead in one of two directions
+        instead attempt to flow diagonally down in one of two directions
         (like sand). */
         {
             "x": [-1, 1],
@@ -90,7 +90,7 @@ the only required property, all others are optional. */
     material is allowed to despawn for any reason. */
     "min_despawn_age": 60,
 
-    /* despawn_chance {String or Array} If undefined materials will despawn
+    /* despawn_chance {String or Array} If undefined, materials will convert
     into air by default. Can be either a string, or an array for a random
     material */
     "despawn_conversion": ["ash", "fire"],
