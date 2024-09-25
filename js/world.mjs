@@ -1,6 +1,8 @@
 import config from "./config.mjs"
 import Pixel from "./Pixel.mjs"
 
+import { distance, randomProceduralCeil, randomProceduralFloor, proceduralParse } from "./util.mjs";
+
 /** World state/methods */
 const world = {
     /** 2D array where all pixels are stored */
@@ -13,7 +15,7 @@ const world = {
     paused: false,
 
     // Configuration
-    seed: Math.floor(Math.random() * 1000),
+    get seed() { return document.getElementById("seed")?.value ?? 1; },
     brushReplace: true,
     waterShading: false,
     
@@ -50,7 +52,7 @@ const world = {
     },
 
     /** Generate procedural world */
-    procedural(seed=world.seed??1, easetype='ease') {
+    procedural(seed=this.seed, easetype='ease') {
         this.clear();
 
         // b - beginning position

@@ -327,6 +327,17 @@ document.querySelectorAll("[data-option]").forEach(element => {
 })
 
 
+// Procedural menu
+document.getElementById("button_procedural_generate").addEventListener("click", () => world.procedural());
+document.getElementById("button_procedural_random").addEventListener("click", () => {
+    document.getElementById('seed').value = Math.floor(Math.random() * 100000);
+    world.procedural();
+});
+document.getElementById("seed").addEventListener("keydown", ({ key }) => {
+    if(key === 'Enter') world.procedural();
+})
+
+
 // HTML
 // let html = '';
 // for(let [key, value] of Object.entries(materials)) {
