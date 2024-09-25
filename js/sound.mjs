@@ -1,4 +1,7 @@
-// PIXI Sounds
+import * as PIXI from '../lib/pixi.mjs'
+import { sound as PIXISound } from '../lib/pixi-sound.mjs'
+
+/** Sound effects list */
 const sounds = {
     "thunder1": {
         src: "./assets/sfx/thunder1.mp3",
@@ -24,7 +27,7 @@ const sounds = {
     // },
 }
 // Register sounds
-// for(const [key, {src}] of Object.entries(sounds)) PIXI.sound.add(key, src);
+for(const [key, {src}] of Object.entries(sounds)) PIXISound.add(key, src);
 
 /** Audio methods */
 const sound = {
@@ -43,10 +46,10 @@ const sound = {
         // if(options.stereo_x !== undefined) {
         //     let stereo = (options.stereo_x - (containerGame.x*-1))/1200;
         //     options.filters = [
-        //         new PIXI.sound.filters.StereoFilter(stereo)
+        //         new PIXISound.filters.StereoFilter(stereo)
         //     ];
         // }
-        try { s = PIXI.sound.play(name, options); }
+        try { s = PIXISound.play(name, options); }
         catch (error) { console.error(error); }
 
         this.recents[name] = Date.now();
