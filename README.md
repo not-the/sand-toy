@@ -10,8 +10,8 @@ https://notkal.com/sand-toy
 - `/materials.json` - JSON that defines behavior, colors, etc. for all in-game materials (See below for documentation)
 - `/ui.json` - JSON containing UI data
 <!-- -->
-- `/artwork/` - Individual PNGs. If a material isn't found in the spritesheet, the game will try to use `/artwork/materials/[Material name].png`
-- `/assets/` - Spritesheet exported after giving [TexturePacker](https://www.codeandweb.com/texturepacker) the /artwork folder
+- `/artwork/` - Individual image assets. If a material's sprite isn't found in the spritesheet, the game will try to use `/artwork/materials/[Material name].png`
+- `/assets/` - Spritesheet exported after providing [TexturePacker](https://www.codeandweb.com/texturepacker) with the `/artwork/` folder
 - `/assets/sfx/` - Sound effects
 - `/js/` - Game scripts
 - `/lib/` - Third party JS libraries
