@@ -1,5 +1,6 @@
 import config from "./config.mjs"
 import Pixel from "./Pixel.mjs"
+import ui from "./ui.mjs"
 
 import { distance, randomProceduralCeil, randomProceduralFloor, proceduralParse } from "./util.mjs";
 
