@@ -22,10 +22,22 @@ const brush = {
         element.texture = spritesheet.textures['selection.png'];
         element.children[1].style.fill = '000';
         ui.selection = element;
+
+        // Material brush size
+        const matBrushSize = this.material.brush_size;
+        if(matBrushSize) {
+            this.setSize(matBrushSize);
+            this.sizeWasSetByMaterial = true;
+        }
+        else if(this.sizeWasSetByMaterial) {
+            this.setSize(3);
+            this.sizeWasSetByMaterial = false;
+        }
     },
 
     // Size
     size: 3,
+    sizeWasSetByMaterial: false,
     setSize(value) {
         this.size = value;
         this.indicator.clear().lineStyle(1, 0x000000).drawRect(0, -1, brush.size+1, brush.size+1).endFill();

@@ -13,7 +13,9 @@
             "838079",
             "8b807e"
         ],
-        "laser plasma": { "to": "air", "chance": 0.2 }
+        "reacts": {
+            "laser plasma": { "to": "gravel", "chance": 0.01 }
+        }
     },
     "hot stone": {
         "colors": [
@@ -455,6 +457,7 @@
     },
     "lightning": {
         "placement": "once",
+        "brush_size": 1,
 
         "colors": [ "ffffff" ],
         "glows": true,
@@ -638,6 +641,71 @@
             "acid": { "to": "air" }
         }
     },
+    "firework": {
+        "placement": "once",
+        "brush_size": 1,
+
+        "colors": [
+            "cc4340"
+        ],
+        "gas": true,
+
+        "despawn_timer": 40,
+        "despawn_conversion": "firework explosion",
+        "moves": [
+            { "x": 0, "y": -1 }
+        ]
+    },
+    "firework explosion": {
+        "hidden": true,
+        "colors": [
+            "ffffff"
+        ],
+        "glows": true
+    },
+    "firework plasma": {
+        "hidden": true,
+        "colors": [ "ffffff" ],
+        "all_colors": [
+            [
+                "ceceff",
+                "FFA0B4",
+                "BEF362",
+                "9AD8FF"
+            ],
+            [
+                "D55D54",
+                "EFD231",
+                "4DBC65",
+                "4080D8",
+                "FFE8C7"
+            ],
+            [ "ffffff", "8EDEFF", "94A8FF" ],
+            [ "ffffff", "FF7F71", "FFB26E" ]
+        ],
+
+        "glows": true,
+        "air": true,
+        "gas": true,
+
+        "despawn_timer": 18
+    },
+    "exhaust": {
+        "hidden": true,
+        "colors": [
+            "868895",
+            "959595"
+        ],
+        "despawn_chance": 0.1,
+        "despawn_timer": 30,
+        "move_chance": 0.9,
+        "moves": [
+            {
+                "x": [-1, 0, 0, 0, 0, 0, 1],
+                "y":[1, 1, 1, 0]
+            }
+        ]
+    },
 
     "#Tech": 0,
     "wire": {
@@ -690,6 +758,8 @@
         }
     },
     "explosion": {
+        "placement": "once",
+
         "colors": ["ffffff"],
         "glows": true,
 

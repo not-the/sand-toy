@@ -16,6 +16,14 @@ String.prototype.capitalize = function() {
 }
 
 
+/** Returns a random integer including or between given min/max values */
+export function randomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
 /** Get JSON - https://stackoverflow.com/a/22790025/11039898
  * @param {string} url JSON file URL
  * @param {boolean} parse Whether or not to convert into a JS object
