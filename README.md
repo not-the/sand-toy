@@ -114,9 +114,12 @@ the only required property, all others are optional. */
     /* hidden {Boolean} If set to true, our material won't appear in the list */
     "hidden": true,
 
-    /* brush_replace {String} Defaults to true if undefined. If set to false,
+    /* brush_replace {String} Defaults to true if undefined. If explicity set to false,
     other materials will not be destroyed when drawing. */
     "brush_replace": false,
+
+    /* brush_size {Number} (1-100) Choosing the material will set your brush size to this value. */
+    "brush_size": 1,
 
     /* placement {String} If set to "once" the material will be placed once when
     tapping/clicking instead of continuously. (Like lightning) */
