@@ -2,6 +2,7 @@ import config from "./config.mjs"
 import Pixel from "./Pixel.mjs"
 import ui from "./ui.mjs"
 
+import { spritesheet } from "./main.mjs";
 import { distance, randomProceduralCeil, randomProceduralFloor, proceduralParse } from "./util.mjs";
 
 /** World state/methods */
