@@ -265,6 +265,8 @@
         }
     },
     "grass seeds": {
+        "brush_size": 1,
+
         "colors": [
             "bab430",
             "b6c040",
