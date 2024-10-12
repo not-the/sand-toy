@@ -118,12 +118,11 @@ button.active > .square {
 
 #ui > .inner {
     position: absolute;
-    left:50%;top:0;
-    transform: translateX(-50%) translateY(-100%);
+    top: 0; right: 0;
     pointer-events: all;
-    overflow: auto;
-    border-radius: 0 0 5px 5px;
-    border: 1px solid rgb(255, 255, 255);
+    overflow: visible;
+    border-radius: 0 0 0 15px;
+    /* border: 1px solid rgb(255, 255, 255); */
     border-top: none;
 
     width: 100%;
@@ -132,19 +131,19 @@ button.active > .square {
     padding: 12px 24px 24px;
     
     background-color: rgba(37, 37, 37, 0.8);
-    -webkit-backdrop-filter: blur(24px);
-    backdrop-filter: blur(24px);
+    /* -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px); */
 
     opacity: 0;
     pointer-events: none;
 
     transition: transform 0.25s cubic-bezier(0.075, 0.82, 0.165, 1), opacity 0.25s cubic-bezier(0.075, 0.82, 0.165, 1);
 }
+
 body.show_overlay #ui > #options,
 body.show_element_editor #ui > #element_editor {
     opacity: 1;
     pointer-events: all;
-    transform: translateX(-50%);
 }
 #ui > #element_editor {
     max-width: 600px;
