@@ -359,7 +359,7 @@
         ],
         "move_chance": 0.65,
         "reacts": {
-            "water": { "to": "concrete" }
+            "water": { "to": "stone", "chance": 0.03 }
         }
     },
     "steam": {

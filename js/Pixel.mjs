@@ -23,7 +23,7 @@ class Pixel extends PIXI.Sprite {
         containers.world.addChild(this);
     }
 
-    // Unique behavior
+    /** Unique behaviors. Functions specified as strings within materials.json must be added here */
     actions = {
         /** Streaks in glass */
         glassColoration: p => p.setColor(p.mat.colors[
