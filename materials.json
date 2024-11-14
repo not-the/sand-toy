@@ -383,7 +383,7 @@
             }
         ],
         "despawn_chance": 0.0005,
-        "despawn_conversion": ["water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "lightning"],
+        "despawn_conversion": ["water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "water", "lightning", "lightning plasma"],
         "float": 5,
         "reacts": {
             "ice": { "to": "water", "chance": 0.015 }
@@ -714,8 +714,8 @@
     },
 
     "#Tech": 0,
-    "wire": {
-        "colors": ["D55D54", "ce5950"],
+    "copper": {
+        "colors": ["#995C49FF", "#AA6E52FF", "#AD684CFF", "#BE7F61FF", "#C79B8AFF"],
         "conductive": true
     },
     "electricity": {
