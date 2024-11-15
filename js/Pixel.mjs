@@ -315,18 +315,18 @@ class Pixel extends PIXI.Sprite {
         }
     }
 
-    /** Wire/electricity */
+    /** Copper/electricity */
     tick_electricity() {
         this.forRegion(3, (x, y, ox, oy) => {
             const dest = world.getPixel(x, y);
             if(
                 dest !== undefined &&
-                // dest?.type === 'wire' &&
+                // dest?.type === 'copper' &&
                 x !== this.x || y !== this.y
             ) {
-                if(dest?.type === 'wire') {
+                if(dest?.type === 'copper') {
                     dest.set('electricity', undefined);
-                    this.set('wire', undefined);
+                    this.set('copper', undefined);
                     return true;
                 }
             }
