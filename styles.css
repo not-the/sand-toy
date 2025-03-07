@@ -10,6 +10,9 @@
     font-family: Arial, Helvetica, sans-serif;
     margin: 0;
     padding: 0;
+
+    -webkit-user-select: none;
+    user-select: none;
 }
 p {
     margin-top: 6px;
