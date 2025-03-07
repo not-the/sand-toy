@@ -772,5 +772,18 @@
         "sfx": {
             "place": ["explosion1"]
         }
+    },
+
+    "paper": {
+        "colors": ["fefefe"]
+    },
+    "langton ant": {
+        "placement": "once",
+        "brush_size": 1,
+        "colors": ["ffcccc"],
+        "glows": true,
+        "gas": true,
+
+        "onset": "langtonAntSetup"
     }
 }

@@ -5,7 +5,7 @@ import config from './config.mjs'
 import sound from './sound.mjs'
 
 import { elapsed, materials, containers, controls, brush } from './main.mjs'
-import { randomInt, distance, colorMix, parse } from './util.mjs'
+import { randomInt, distance, colorMix, parse, clamp } from './util.mjs'
 
 /** Pixel class */
 class Pixel extends PIXI.Sprite {
@@ -41,6 +41,8 @@ class Pixel extends PIXI.Sprite {
         //     let color = parse(this.mat.layers[layer]);
         //     p.setColor(color);
         // }
+
+        langtonAntSetup: p => p.data.rotation = 0,
     }
 
     /** Set a pixel to a material
@@ -266,18 +268,22 @@ class Pixel extends PIXI.Sprite {
         }
     }
 
-    getRelative() {
-        return {
-            "down":     world.getPixel(this.x+0, this.y+1),
-            "right":    world.getPixel(this.x+1, this.y+1),
-            "up":       world.getPixel(this.x+0, this.y-1),
-            "left":     world.getPixel(this.x-1, this.y+1),
-        }
+    // getRelative() {
+    //     return {
+    //         "down":     world.getPixel(this.x+0, this.y+1),
+    //         "right":    world.getPixel(this.x+1, this.y+1),
+    //         "up":       world.getPixel(this.x+0, this.y-1),
+    //         "left":     world.getPixel(this.x-1, this.y+1),
+    //     }
+    // }
+
+    getRelativePixel(rx=0, ry=0) {
+        return world.getPixel(this.x+rx, this.y+ry);
     }
 
-    /** Swaps two pixels' positions
-     * @param {number} cx Destination X coordinate
-     * @param {number} cy Destination Y coordinate
+    /** Moves the pixel, swapping with the pixel at the target position
+     * @param {number} cx Relative destination X change
+     * @param {number} cy Relative destination Y change
      */
     move(cx=0, cy=0, condition) {
         // Get destination pixel
@@ -472,6 +478,60 @@ class Pixel extends PIXI.Sprite {
                 move_chance: randomInt(1, 3) / 10
             }
         })
+    }
+
+
+    /*
+    cell is on:   turn right -> move forward -> toggle previous cell
+    cell is off:  turn left -> walk forward -> toggle previous cell
+    */
+    tick_langton_ant() {
+        // Rotate left
+        this.data.on ? this.rotate(-1) : this.rotate(1);
+
+        // Get relative forward coordinate
+        const forward = getForward(this.data.rotation);
+
+        // Get destination
+        const dest = this.getRelativePixel(...forward);
+        const destIsOn = dest?.type === "air";
+        const hereIsOn = this.data.on;
+
+        // Destination
+        if(dest) {
+            dest.set("langton ant");
+
+            // Remember whether destination was on or off
+            dest.data.on = destIsOn;
+
+            // Preserve ant data
+            dest.data.rotation = this.data.rotation
+            dest.fresh = this.fresh ?? 1;
+        }
+
+        // Here
+        this.set(hereIsOn ? "paper" : "air");
+        // this.tint = "0f0f2f";
+
+
+        // 0 = up, 1 = right, 2 = down, 3 = left
+        function getForward(rotation=0) {
+            switch (rotation) {
+                case 0:
+                    return [0, -1];
+                case 1:
+                    return [1, 0];
+                case 2:
+                    return [0, 1];
+                case 3:
+                    return [-1, 0];
+            }
+        }
+    }
+
+    /** Rotates the pixel, if applicable */
+    rotate(amount=1) {
+        this.data.rotation = clamp(this.data.rotation+amount, 4);
     }
 
 
