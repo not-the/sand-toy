@@ -53,7 +53,10 @@ const world = {
         }
     },
 
-    /** Generate procedural world */
+    /** Generate procedural world
+     * @param {Number} seed World seed
+     * @param {*} easetype 
+     */
     procedural(seed=this.seed, easetype='ease') {
         this.clear();
 
@@ -179,6 +182,16 @@ const world = {
                 minSize: 40
             },
             {
+                name: 'copper',
+                convert: {
+                    "gravel": "copper",
+                    "stone": "copper",
+                    "lava": "lava"
+                },
+                maxSize: 15,
+                minSize: 5
+            },
+            {
                 name: 'nolava',
                 convert: {
                     "lava": "stone"
@@ -199,7 +212,7 @@ const world = {
             }
         });
 
-        console.log(blobs);
+        // console.log(blobs);
 
         // Paint biomes onto world
         for(let blob of blobs) {
