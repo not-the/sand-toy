@@ -23,6 +23,11 @@ export function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+/** Uses the modulus operator to keep a value within amount */
+export function clamp(value, max) {
+    return ((value % max) + max) % max;
+}
+
 
 /** Get JSON - https://stackoverflow.com/a/22790025/11039898
  * @param {string} url JSON file URL
