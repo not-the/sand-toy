@@ -171,21 +171,7 @@ app.ticker.add(delta => {
 
     // Tick
     if(elapsed >= last_tick+world.ticktime) {
-
-        // Multiple ticks
-        // for(let mti = 0; mti < (world.ticktime < 0 ? Math.abs(world.ticktime) : 1); mti++) {
-            // Loop all
-            for(let xi = world.grid.length-1; xi >= 0; xi--) {
-                for(let yi = world.grid[xi].length-1; yi >= 0; yi--) {
-                    world.run(Number(yi), Number(xi), 'tick');
-                }
-            }
-        // }
-
-
-        // Loop world.ticks registry
-        // for(let p of Object.values(world.ticks)) p.tick();
-
+        world.tick();
         last_tick = elapsed;
     }
 })

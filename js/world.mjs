@@ -22,6 +22,23 @@ const world = {
     get seed() { return document.getElementById("seed")?.value ?? 1; },
     brushReplace: true,
     waterShading: false,
+
+    /** Ticks all pixels in the world once */
+    tick() {
+        // Multiple ticks
+        // for(let mti = 0; mti < (world.ticktime < 0 ? Math.abs(world.ticktime) : 1); mti++) {
+            // Loop all
+            for(let xi = world.grid.length-1; xi >= 0; xi--) {
+                for(let yi = world.grid[xi].length-1; yi >= 0; yi--) {
+                    world.run(Number(yi), Number(xi), 'tick');
+                }
+            }
+        // }
+
+
+        // Loop world.ticks registry
+        // for(let p of Object.values(world.ticks)) p.tick();
+    },
     
     /** Shorthand for running a method on the pixel at the given coordinates
      * @param {number} x Pixel X coordinate
@@ -33,6 +50,7 @@ const world = {
     run(x, y, method='set', ...params) {
         return this.grid?.[y]?.[x]?.[method]?.(...params);
     },
+
     /** Returns the pixel at the provided coordinates
      * @param {number} x Pixel X coordinate
      * @param {number} y Pixel Y coordinate
