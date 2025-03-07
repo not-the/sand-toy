@@ -775,6 +775,7 @@
     },
 
     "paper": {
+        "hidden": true,
         "colors": ["fefefe"]
     },
     "langton ant": {
