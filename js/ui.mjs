@@ -167,6 +167,12 @@ const ui = {
             label.x = 8;
             label.y = 13;
             label.resolution = 16;
+
+            // Small label
+            if(label.width > 16) {
+                label.anchor.y = -0.15;
+                label.scale.set(0.8);
+            }
             button.addChild(label);
 
             // Register
