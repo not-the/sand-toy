@@ -20,10 +20,19 @@
         <div id="ui">
             <!-- Options -->
             <div id="options" class="inner">
+                <header class="hidden">
+                    <h1>Sand Toy</h1>
+                </header>
+
                 <h3>World Size:</h3>
                 <a href="./?75,42" class="button" data-world-size="75,42">Small</a>
                 <a href="./" class="button" data-world-size="128,72">Medium</a>
                 <a href="./?176,99" class="button" data-world-size="176,99">Large</a>
+                <br/>
+
+                <h3>My Worlds</h3>
+                <button id="button_save_world">Save world</button>
+                <button class="toggle_saves">Load world...</button>
                 <br/>
 
                 <h3>Procedural Terrain (WIP)</h3>
@@ -77,6 +86,17 @@
                 <button onclick="console.log('make element')" class="center">Create</button>
                 <button onclick="document.body.classList.toggle('show_element_editor')" class="center">Cancel</button>
             </div> -->
+
+            <!-- Load world -->
+            <div id="load_world">
+                <h3>Load world</h3>
+
+                <div id="saves_list"></div>
+
+                <button class="toggle_saves margin_top_auto">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
 </body>

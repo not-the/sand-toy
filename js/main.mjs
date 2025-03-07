@@ -4,10 +4,6 @@ import '../lib/pixi-filters.js'
 // import MersenneTwister from '../lib/mersenne-twister.js'
 
 
-// Debug
-globalThis.PIXI = PIXI;
-
-
 // DOM
 const gamespace = document.getElementById("game");
 
@@ -336,6 +332,109 @@ document.getElementById("seed").addEventListener("keydown", ({ key }) => {
     if(key === 'Enter') world.procedural();
 })
 
+function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+
+    // Options
+    const options = { month: 'long', day: 'numeric' };
+    const yearOptions = { year: 'numeric', ...options };
+    const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+
+    // Conditional date format
+    const isToday = date.toDateString() === now.toDateString();
+    const isCurrentYear = date.getFullYear() === now.getFullYear();
+
+    // Date
+    const datePart = date.toLocaleDateString(
+        'en-US', isCurrentYear ? options : yearOptions
+    );
+
+    // Time
+    const timePart = isToday ? date.toLocaleTimeString('en-US', timeOptions).toLowerCase() : '';
+
+    // Result
+    const formattedDate = isToday ? `${timePart}` : `${datePart}${timePart ? ' ' + timePart : ''}`;
+    return formattedDate;
+}
+
+
+// Save/Load
+const button_save_world = document.getElementById("button_save_world")
+button_save_world.addEventListener("click", () => {
+    const label = button_save_world.innerText;
+    button_save_world.disabled = "true";
+    button_save_world.innerText = "Saving...";
+
+    world.save(() => {
+        // Populate saves list
+        populateSaves();
+
+        // Re-enable save button
+        button_save_world.removeAttribute("disabled");
+        button_save_world.innerText = label;
+    });
+})
+document.querySelectorAll(".toggle_saves").forEach(btn => btn.addEventListener("click", event => {
+    // Toggle visibility
+    document.body.classList.toggle("show_load_world");
+
+    // Populate
+    populateSaves();
+}));
+
+const saves_list = document.getElementById("saves_list");
+function populateSaves() {
+    // Only if UI is visible
+    if(!document.body.classList.contains("show_load_world")) return;
+
+    // HTML
+    const html =
+        Object.entries(localStorage)
+            .filter(([key, value]) => key.startsWith("sandtoy_world_"))
+            .sort((a, b) => a[0] > b[0] ? -1 : 1)
+            // .reverse()
+            .map(([key, value]) => {
+                const id = key[key.length-1];
+                const data = JSON.parse(value);
+
+                return `
+                <div class="save" role="button" tabindex="0" data-storage-key="${key}">
+                    <div class="save_info">
+                        <div class="upper flex">
+                            <strong>World ${id}</strong>
+                            <button class="delete_save_button" data-storage-key="${key}">
+                                <img src="/assets/google_icons/delete_forever_24dp_FFFFFF_FILL1_wght400_GRAD0_opsz24.svg" alt="Delete" />
+                            </button>
+                        </div>
+                        <p class="margin_top_auto">
+                            ${formatDate(data.timestamp)}
+                        </p>
+                    </div>
+
+                    <img src="${data.thumb}" alt="">
+                </div>
+                `
+            })
+            .join("\n");
+    
+    // Update page
+    saves_list.innerHTML = html;
+
+    // Click event listeners
+    document.querySelectorAll("[data-storage-key]").forEach(element => element.addEventListener("click", event => {
+        console.log(event.target.tagName);
+        if(event.target.tagName === "BUTTON" || event.target.tagName === "IMG") return;
+        const key = event.currentTarget.dataset.storageKey;
+        world.import(JSON.parse(localStorage.getItem(key)));
+    }))
+
+    document.querySelectorAll("[data-storage-key] .delete_save_button").forEach(element => element.addEventListener("click", event => {
+        const key = event.currentTarget.dataset.storageKey;
+        localStorage.removeItem(key);
+        populateSaves();
+    }))
+}
 
 // HTML
 // let html = '';
@@ -377,3 +476,8 @@ export {
     elapsed, world, brush, controls,     // Game state
     materials, config,          // Game data
 };
+
+
+// Debug
+// globalThis.PIXI = PIXI;
+globalThis.world = world;

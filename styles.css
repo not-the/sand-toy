@@ -65,6 +65,8 @@ button, .button, input:not([type="checkbox"]) {
 
     font-size: 13pt;
     text-decoration: none;
+
+    transition: transform 0.15s ease;
 }
 input {
     background-color: transparent;
@@ -105,10 +107,16 @@ button.active > .square {
     border: 1px solid rgb(70, 70, 70);
 }
 
+button[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+    transform: scale(0.98);
+}
+
 /* UI */
 #ui {
     position: absolute;
-    top:0;right:0;bottom:0;left:0;
+    inset: 0;
     z-index: 1;
     pointer-events: none;
     
@@ -127,12 +135,15 @@ button.active > .square {
 
     width: 100%;
     max-width: 400px;
+    max-height: 100dvh;
+    
+    overflow-y: auto;
 
     padding: 12px 24px 24px;
     
     background-color: rgba(37, 37, 37, 0.8);
-    /* -webkit-backdrop-filter: blur(24px);
-    backdrop-filter: blur(24px); */
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
 
     opacity: 0;
     pointer-events: none;
@@ -141,12 +152,83 @@ button.active > .square {
 }
 
 body.show_overlay #ui > #options,
-body.show_element_editor #ui > #element_editor {
+body.show_element_editor #ui > #element_editor,
+body.show_overlay.show_load_world #ui > #load_world {
     opacity: 1;
     pointer-events: all;
 }
 #ui > #element_editor {
     max-width: 600px;
+}
+
+body.show_load_world #ui > #load_world {
+    transform: unset;
+}
+#load_world {
+    background-color: rgb(20, 20, 20);
+    position: absolute;
+    top: 12px; left: 12px; bottom: 12px;
+
+    padding: 6px 18px;
+    border-radius: 12px;
+
+    overflow-y: auto;
+
+    transform: translateX(calc(-100% - 20px));
+    opacity: 0;
+    pointer-events: none;
+    transition-property: opacity, transform;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+}
+.save {
+    display: block;
+    margin: 6px 0;
+    border-radius: 9px;
+
+    border: 2px solid transparent;
+    max-width: 250px;
+    min-height: 138px;
+    overflow: hidden;
+
+    position: relative;
+    cursor: pointer;
+}
+.save:hover,
+.save:active,
+.save:focus-visible {
+    border-color: white;
+}
+.save .delete_save_button {
+    width: auto;
+    margin-left: auto;
+    margin-top: -4px;
+}
+.save .save_info {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(22, 22, 22, 0.6);
+    backdrop-filter: blur(9px);
+    padding: 15px;
+
+    display: flex;
+    flex-direction: column;
+
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+.margin_top_auto {
+    margin-top: auto;
+}
+.save:hover .save_info,
+.save:active .save_info,
+.save:focus-visible .save_info {
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+.save img {
+    display: block;
+    width: 100%;
 }
 
 

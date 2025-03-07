@@ -1,8 +1,10 @@
+import * as PIXI from '../lib/pixi.mjs'
+
 import config from "./config.mjs"
 import Pixel from "./Pixel.mjs"
 import ui from "./ui.mjs"
 
-import { spritesheet } from "./main.mjs";
+import { app, containers, spritesheet } from "./main.mjs";
 import { distance, randomProceduralCeil, randomProceduralFloor, proceduralParse } from "./util.mjs";
 
 /** World state/methods */
@@ -39,8 +41,8 @@ const world = {
     getPixel(x, y) { return this.grid?.[y]?.[x]; },
 
 
-
-    make(data=Array(config.width).fill(null).map(()=>Array(config.height).fill('q'))) {
+    /** Makes an empty world */
+    make(data=Array(config.width).fill(null).map(()=>Array(config.height).fill(null))) {
         this.grid = [];
 
         // Populate world with air pixels
@@ -226,27 +228,103 @@ const world = {
         }
     },
 
+    /** Takes in a world data Object and loads it
+     * @param {Object} data 
+     */
     import(data) {
+        if(!data) return console.error("No world data parameter provided");
+
+        const { grid, colors } = data;
+
         // Populate world with air pixels
-        for(let yi in data) {
-            let col = data[yi];
-            for(let xi in col) {
-                let pixelType = col[xi];
-                run(xi, yi, 'set', pixelType);
+        for(let yi in grid) {
+            let col = grid[yi];
+            for(let xi = 0; xi < col.length; xi++) {
+                const [type, colorIndex] = col[xi];
+                const color = colors[colorIndex] ?? undefined;
+                if(type === null) continue;
+
+                this.run(xi, yi, 'set', type, color, false);
             }
         }
     },
 
-    export() {
-        let output = [];
-        for(let col of world.grid) {
-            output.push([]);
-            for(let p of col) {
-                output.push(p.type);
+    /** Exports current world as an object
+     * @returns {Array} World data
+     */
+    export(thumb, saveID=0, whenDone) {
+        // If no thumbnail is ready, wait for one
+        if(!thumb) return this.screenshot(function(res) { return world.export(res, saveID, whenDone) });
+
+        // Output
+        const output = {
+            thumb: thumb,
+            timestamp: Date.now(),
+
+            height: world.height,
+            width: world.width,
+            grid: [],
+            colors: []
+        };
+        for(let xi in world.grid) {
+            output.grid.push([]);
+            const col = world.grid[xi];
+            for(let yi in col) {
+                // Get color
+                let colorIndex = output.colors.indexOf(col[yi].tint);
+                if(colorIndex === -1) {
+                    output.colors.push(col[yi].tint);
+                    colorIndex = output.colors.length - 1;
+                }
+
+                // Push
+                output.grid[xi].push(
+                    [col[yi].type, colorIndex]
+                );
             }
         }
 
-        console.log(output);
+        if(saveID !== undefined) {
+            const worldStr = JSON.stringify(output);
+            localStorage.setItem(`sandtoy_world_${saveID}`, worldStr);
+        }
+
+        // whenDone function
+        if(whenDone) whenDone();
+
+        return output;
+    },
+
+    save(whenDone) {
+        let id = 1;
+        while(localStorage[`sandtoy_world_${id}`] !== undefined) {
+            id++;
+            console.log(id);
+        }
+
+        this.export(undefined, id, whenDone);
+    },
+
+    /** Returns a base64 string made from a screenshot of the canvas */
+    screenshot(callback=(res) => console.log(res), jpeg=true) {
+        containers.ui.visible = false;
+        containers.fg.visible = false;
+
+        let target = app.stage, format='image/png', quality=undefined;
+        if(jpeg) format = 'image/jpeg', quality = 0.1;
+
+        // Extract image
+        app.renderer.extract.base64(
+            target, format, quality,
+            new PIXI.Rectangle(
+                0, 0,
+                app.view.width,
+                app.view.height - config.UIHeight
+            )
+        ).then(callback);
+
+        containers.ui.visible = true;
+        containers.fg.visible = true;
     },
 
     // Tick time
