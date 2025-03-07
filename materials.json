@@ -786,5 +786,10 @@
         "gas": true,
 
         "onset": "langtonAntSetup"
+    },
+    "conway cell": {
+        "brush_size": 1,
+        "colors": ["ccddff"],
+        "glows": true
     }
 }

@@ -11,6 +11,10 @@ import { distance, randomProceduralCeil, randomProceduralFloor, proceduralParse 
 const world = {
     /** 2D array where all pixels are stored */
     grid: [],
+
+    /** Grid data the previous tick */
+    previousGrid: [],
+
     // ticks: {}, // Pixels that need updating (unused)
 
     get width() { return this.grid[0].length; },
@@ -25,6 +29,8 @@ const world = {
 
     /** Ticks all pixels in the world once */
     tick() {
+        this.previousGrid = this.grid.map(row => row.map(p => ({ type:p.type, x:p.x, y:p.y })));
+
         // Multiple ticks
         // for(let mti = 0; mti < (world.ticktime < 0 ? Math.abs(world.ticktime) : 1); mti++) {
             // Loop all

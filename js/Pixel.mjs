@@ -42,7 +42,7 @@ class Pixel extends PIXI.Sprite {
         //     p.setColor(color);
         // }
 
-        langtonAntSetup: p => p.data.rotation = 0,
+        langtonAntSetup: p => p.data.rotation = 3,
     }
 
     /** Set a pixel to a material
@@ -486,6 +486,8 @@ class Pixel extends PIXI.Sprite {
     cell is off:  turn left -> walk forward -> toggle previous cell
     */
     tick_langton_ant() {
+        const name = "langton ant";
+
         // Rotate left
         this.data.on ? this.rotate(-1) : this.rotate(1);
 
@@ -499,14 +501,13 @@ class Pixel extends PIXI.Sprite {
 
         // Destination
         if(dest) {
-            dest.set("langton ant");
+            dest.set(name);
 
             // Remember whether destination was on or off
             dest.data.on = destIsOn;
 
             // Preserve ant data
             dest.data.rotation = this.data.rotation
-            dest.fresh = this.fresh ?? 1;
         }
 
         // Here
@@ -527,6 +528,54 @@ class Pixel extends PIXI.Sprite {
                     return [-1, 0];
             }
         }
+    }
+
+    /** Conway's game of life */
+    tick_conway_cell() {
+        const name = "conway cell";
+
+        const neighbors = this.getMooreNeighborhoodArray(); // Neighbors
+        const aliveNeighbors = getAliveCount(neighbors); // Alive neighbor count
+
+        // Rules
+        if(aliveNeighbors < 2 || aliveNeighbors > 3) {
+            this.set("air");
+        }
+
+        // Resurrect nearby air cells if applicable
+        neighbors.forEach(p => {
+            if(p === undefined || p?.type !== "air") return;
+
+            // Number of alive neighbors
+            const aliveNeighbors = getAliveCount(p.getMooreNeighborhoodArray());
+    
+            // If there are 3 alive neighboring cells, convert air into an alive cell
+            if(aliveNeighbors === 3) p.set(name);
+        });
+
+        // Returns the number of alive cells in an array
+        function getAliveCount(neighbors) {
+            return neighbors.reduce((accumulator, current) => {
+                const alive = current?.previous()?.type === name;
+                return accumulator + (alive ? 1 : 0);
+            }, 0);
+        }
+    }
+
+    /** Returns an object containing the pixel's type from the previous tick */
+    previous() {
+        return world.previousGrid?.[this.y]?.[this.x];
+    }
+
+    /** Returns an array of cells within the moore neighborhood (8 cells including ones at a diagonal) */
+    getMooreNeighborhoodArray() {
+        const neighbors = [];
+
+        loop_x: for(let ix = -1; ix <= 1; ix++)
+            loop_y: for(let iy = -1; iy <= 1; iy++)
+                if(ix !== 0 || iy !== 0) neighbors.push(this.getRelativePixel(ix, iy));
+
+        return neighbors;
     }
 
     /** Rotates the pixel, if applicable */
