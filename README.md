@@ -6,6 +6,9 @@ https://notkal.com/sand-toy
 
 ---
 
+### Deployment
+Project can be hosted statically
+
 ### File/Folder descriptions
 - `/materials.json` - JSON that defines behavior, colors, etc. for all in-game materials (See below for documentation)
 - `/ui.json` - JSON containing UI data
