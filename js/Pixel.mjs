@@ -481,6 +481,37 @@ class Pixel extends PIXI.Sprite {
     }
 
 
+    /* Continuously clones the first material it touches. Ignores materials with clonable: false */
+    tick_cloner() {
+        // Needs to copy a material
+        if(this.data.clone_material === undefined) {
+            const neighbors = this.getMooreNeighborhoodArray();
+            neighbors.forEach(p => {
+                if(
+                    p !== undefined && !p?.mat?.air && p?.type !== this.type
+                ) {
+                    this.data.clone_material = p.type;
+                }
+            })
+        }
+
+        // Clone
+        else {
+            for(const step of this.mat.clone_behavior) {
+                const rx = parse(step.x), ry = parse(step.y);
+    
+                // Test if destination is valid
+                const dest = world.getPixel(this.x+rx, this.y+ry);
+                if(dest === undefined || dest?.type !== "air") continue;
+    
+                dest.set(this.data.clone_material);
+    
+                break;
+            }
+        }
+    }
+
+
     /*
     cell is on:   turn right -> move forward -> toggle previous cell
     cell is off:  turn left -> walk forward -> toggle previous cell

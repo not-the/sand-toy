@@ -197,11 +197,12 @@ function pointerHandler(event) {
 
         // Log info
         console.table({
-            "Material":     targetPixel.type,
+            "Material": targetPixel.type,
             "X":        targetPixel.x,
             "Y":        targetPixel.y,
             "Moving":   targetPixel.moving,
-            "Fresh":    targetPixel.fresh
+            "Fresh":    targetPixel.fresh,
+            "Data":     targetPixel.data
         })
 
         brush.setType(targetPixel.type);

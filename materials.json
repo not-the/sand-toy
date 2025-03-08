@@ -480,6 +480,8 @@
     },
     "lightning plasma": {
         "hidden": true,
+        "clonable": false,
+
         "colors": [ "fffcc5" ],
         "// colors": [ "aaddff" ],
         "glows": true,
@@ -660,6 +662,8 @@
     },
     "firework explosion": {
         "hidden": true,
+        "clonable": false,
+
         "colors": [
             "ffffff"
         ],
@@ -671,6 +675,8 @@
     },
     "firework plasma": {
         "hidden": true,
+        "clonable": false,
+
         "colors": [ "ffffff" ],
         "all_colors": [
             [
@@ -735,6 +741,8 @@
     },
     "laser plasma": {
         "hidden": true,
+        "clonable": false,
+
         "colors": [ "ffaa99" ],
         "glows": true,
         "fade": 5,
@@ -743,6 +751,8 @@
     },
     "laser glow": {
         "hidden": true,
+        "clonable": false,
+
         "colors": [ "ffaa99" ],
         "glows": true,
         "alpha": 0.5,
@@ -765,6 +775,7 @@
     },
     "explosion": {
         "placement": "once",
+        "clonable": false,
 
         "colors": ["ffffff"],
         "glows": true,
@@ -777,6 +788,17 @@
     "paper": {
         "hidden": true,
         "colors": ["fefefe"]
+    },
+    "cloner": {
+        "clonable": false,
+
+        "colors": ["9036EC", "9141E2", "7D4AD2"],
+        "clone_behavior": [
+            { "x": 0, "y": 1 },
+            { "x": [-1, 1], "y": 1 },
+            { "x": [-1, 1], "y": 0 },
+            { "x": 0, "y": -1 }
+        ]
     },
     "langton ant": {
         "placement": "once",
