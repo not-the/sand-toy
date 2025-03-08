@@ -51,12 +51,11 @@ class Pixel extends PIXI.Sprite {
      * @param {Boolean} fresh Used to prevent gases from teleporting to the top of the screen
      * @param {String} preMat If a custom material object was defined by the pixel's predecessor it will be inherited
      */
-    set(type, preColor, fresh, preMat) {
-        // let this = grid?.[this.y]?.[this.x];
-        if(this === undefined || (this?.type === type && this?.type !== 'air')) return;
+    set(type, preColor, fresh) {
+        if(this === undefined || this?.type === type) return;
 
         // Material data
-        this.mat = preMat ?? materials[type];
+        this.mat = materials[type];
 
         // Color
         const color = preColor ?? this.mat.colors[Math.floor(Math.random() * this.mat.colors.length)];
@@ -68,7 +67,7 @@ class Pixel extends PIXI.Sprite {
         if(this.mat?.gas === true || fresh !== undefined) this.fresh = fresh??1;
 
         // Brand new pixel
-        if(preColor === undefined) this.data.age = 0;
+        if(preColor === undefined) this.data = { age: 0 };
 
         // SFX
         if(this.mat?.sfx !== undefined) {
@@ -287,19 +286,26 @@ class Pixel extends PIXI.Sprite {
      */
     move(cx=0, cy=0, condition) {
         // Get destination pixel
-        let dest_x = this.x+cx;
-        let dest_y = this.y+cy;
-        let dest = world.grid?.[dest_y]?.[dest_x];
+        const dest_x = this.x+cx;
+        const dest_y = this.y+cy;
+
+        /** @type {Pixel} */
+        const dest = world.grid?.[dest_y]?.[dest_x];
 
         // Invalid move
         if(condition !== undefined) if(!condition(dest)) return 0;
         if(dest === undefined || dest_y > config.height || dest_x > config.width || dest_x < 0 || dest_y < 0) return 0;
 
         // Swap
-        let replacing = dest.type;
+        [dest.mat, this.mat] = [this.mat, dest.mat];
         [dest.data, this.data] = [this.data, dest.data];
-        dest.set(this.type, this.tint, undefined, this.mat);
-        this.set(replacing);
+
+        // Set
+        const { type, tint } = dest;
+        dest.set(this.type, this.tint);
+        this.set(type, tint);
+
+
 
         // State
         this.moving = true;
