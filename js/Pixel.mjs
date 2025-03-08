@@ -5,7 +5,7 @@ import config from './config.mjs'
 import sound from './sound.mjs'
 
 import { elapsed, materials, containers, controls, brush } from './main.mjs'
-import { randomInt, distance, colorMix, parse, clamp } from './util.mjs'
+import { randomInt, distance, colorMix, parse, clamp, hexToRgb } from './util.mjs'
 
 /** Pixel class */
 class Pixel extends PIXI.Sprite {
@@ -492,13 +492,15 @@ class Pixel extends PIXI.Sprite {
         // Needs to copy a material
         if(this.data.clone_material === undefined) {
             const neighbors = this.getMooreNeighborhoodArray();
-            neighbors.forEach(p => {
-                if(
-                    p !== undefined && !p?.mat?.air && p?.type !== this.type
-                ) {
+            for(const p of neighbors) {
+                if(p !== undefined && !p?.mat?.air && p?.type !== this.type) {
                     this.data.clone_material = p.type;
+
+                    // Alter color
+                    this.setColor(colorMix(hexToRgb(this.tint), hexToRgb(p.tint), 0.3));
+                    break;
                 }
-            })
+            }
         }
 
         // Clone
