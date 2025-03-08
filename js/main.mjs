@@ -35,8 +35,7 @@ spritesheet.parse();
 
 
 // Game modules
-import { get, distance, lerp, colorMix, hexToRgb, parse, randomProceduralCeil, randomProceduralFloor, proceduralParse } from './util.mjs'
-import sound from './sound.mjs'
+import { get, lerp } from './util.mjs'
 import ui from './ui.mjs'
 import filters from './filters.mjs'
 import world from './world.mjs'
