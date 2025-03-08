@@ -612,6 +612,8 @@
         "laser_pass": true
     },
     "glass": {
+        "acid_proof": true,
+
         "colors": [ "D5E4F3", "FFFFFF" ],
         "alpha": 0.7,
         "onset": "glassColoration",
@@ -791,13 +793,15 @@
     },
     "cloner": {
         "clonable": false,
+        "acid_proof": true,
 
         "colors": ["9036EC", "9141E2", "7D4AD2"],
         "clone_behavior": [
             { "x": 0, "y": 1 },
             { "x": [-1, 1], "y": 1 },
             { "x": [-1, 1], "y": 0 },
-            { "x": 0, "y": -1 }
+            { "x": 0, "y": -1 },
+            { "x": [-1, 1], "y": -1 }
         ]
     },
     "langton ant": {
