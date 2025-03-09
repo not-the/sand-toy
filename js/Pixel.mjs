@@ -54,7 +54,7 @@ class Pixel extends PIXI.Sprite {
     set(type, preColor, fresh) {
         if(this === undefined || this?.type === type) return;
 
-        // Material data
+        // Material reference
         this.mat = materials[type];
 
         // Color
@@ -100,14 +100,17 @@ class Pixel extends PIXI.Sprite {
         // if(player.materials[type] !== true) player.unlock(type);
     }
 
+    /** Sets the pixel's color
+     * @param {Number} color Hex number or RGB object
+     */
     setColor(color=0x000000) {
         this.tint = color;
     }
 
     /** Performs a function over a region
-     * @param {number} size Size of the area
-     * @param {function} callback Function to run on each pixel. Example: (x, y) => { }. Returning true from the callback will break the loop early.
-     * @param {boolean} centered If falsy the current pixel will be the region's top left instead of center
+     * @param {Number} size Size of the area
+     * @param {Function} callback Function to run on each pixel. Example: (x, y) => { }. Returning true from the callback will break the loop early.
+     * @param {Boolean} centered If falsy the current pixel will be the region's top left instead of center
      */
     forRegion(size=3, callback, centered=true) {
         if(callback === undefined) return console.warn(new Error('No callback specified'));
@@ -130,7 +133,7 @@ class Pixel extends PIXI.Sprite {
     draw() {
         if(controls.mouse.drawing && brush.material.placement === 'once') return;
         controls.mouse.drawing = true;
-        let {size, type} = brush;
+        const {size, type} = brush;
 
         // Inbetween
         const [dist, distX, distY] = distance(controls.lastMouse, controls.mouse);
@@ -177,7 +180,7 @@ class Pixel extends PIXI.Sprite {
             return;
         }
 
-        this.moving = false;
+        // this.moving = false;
 
         // Track pixel's age
         if(this.mat?.despawn_timer) this.data.age += 1;
@@ -255,7 +258,7 @@ class Pixel extends PIXI.Sprite {
 
                     // Test if destination is valid
                     let dest = world.getPixel(this.x+moveX, this.y+moveY);
-                    if(dest === undefined || (dest.mat?.float < this.mat.float || dest.mat?.float === undefined || dest?.type === this.type)) continue;
+                    // Choose destination and end loop
                     cx = moveX,
                     cy = moveY;
                     break;
@@ -276,6 +279,11 @@ class Pixel extends PIXI.Sprite {
     //     }
     // }
 
+    /** Returns a Pixel relative to this
+     * @param {Number} rx Relative x position
+     * @param {Number} ry Relative y position
+     * @returns {Pixel}
+     */
     getRelativePixel(rx=0, ry=0) {
         return world.getPixel(this.x+rx, this.y+ry);
     }
@@ -308,7 +316,7 @@ class Pixel extends PIXI.Sprite {
 
 
         // State
-        this.moving = true;
+        // this.moving = true;
     }
 
 
@@ -354,9 +362,11 @@ class Pixel extends PIXI.Sprite {
         })
     }
 
+    /** Lightning */
     tick_lightning() {
         let seed = this;
 
+        // Loop until lightning bolt is complete
         while (seed?.type === 'lightning') {
             const spread = (dest) => {
                 if(
@@ -385,7 +395,7 @@ class Pixel extends PIXI.Sprite {
         }
     }
 
-
+    /** Laser - Create laser beam */
     tick_laser() {
         let seed = this;
 
@@ -430,7 +440,7 @@ class Pixel extends PIXI.Sprite {
         }
     }
 
-
+    /** Grass seeds - Grow into grass */
     tick_grass_seeds() {
         let above = world.getPixel(this.x, this.y-1);
         let below = world.getPixel(this.x, this.y+1);
