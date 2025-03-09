@@ -302,9 +302,9 @@ const world = {
                 }
 
                 // Push
-                output.grid[xi].push(
-                    [col[yi].type, colorIndex]
-                );
+                let entry = [col[yi].type, colorIndex];
+                if(Object.keys(col[yi]?.data ?? {}).length > 1 || col[yi]?.data?.age > 0) entry.push(col[yi].data);
+                output.grid[xi].push(entry);
             }
         }
 

@@ -41,8 +41,6 @@ class Pixel extends PIXI.Sprite {
         //     let color = parse(this.mat.layers[layer]);
         //     p.setColor(color);
         // }
-
-        langtonAntSetup: p => p.data.rotation = 3,
     }
 
     /** Set a pixel to a material
@@ -56,6 +54,9 @@ class Pixel extends PIXI.Sprite {
 
         // Material reference
         this.mat = materials[type];
+        
+        // Brand new pixel
+        if(preColor === undefined) this.data = { age: 0, rotation:this.mat.rotation };
 
         // Color
         const color = preColor ?? this.mat.colors[Math.floor(Math.random() * this.mat.colors.length)];
@@ -65,9 +66,6 @@ class Pixel extends PIXI.Sprite {
         // State
         this.type = type;
         if(this.mat?.gas === true || fresh !== undefined) this.fresh = fresh??1;
-
-        // Brand new pixel
-        if(preColor === undefined) this.data = { age: 0 };
 
         // SFX
         if(this.mat?.sfx !== undefined) {
@@ -198,8 +196,6 @@ class Pixel extends PIXI.Sprite {
 
         // Reacts
         if(/*this.mat?.reacts !== undefined*/ this.type !== 'air') {
-            // console.log('#####');
-
             let radius = this.mat?.reaction_radius ?? 3;
             this.forRegion(radius, (x, y) => {
                 // Don't test current pixel
@@ -219,7 +215,6 @@ class Pixel extends PIXI.Sprite {
                     dest.set(parse(conversion.to));
                 }
             }, true);
-            // console.log('#####');
         }
 
 
@@ -258,6 +253,12 @@ class Pixel extends PIXI.Sprite {
 
                     // Test if destination is valid
                     let dest = world.getPixel(this.x+moveX, this.y+moveY);
+                    if(
+                        dest === undefined || // Out of bounds
+                        (dest.mat?.float < this.mat.float || dest.mat?.float === undefined || dest?.type === this.type) && // Bouyancy check
+                        !dest?.mat?.non_solid // Non solids can be passed through anyway
+                    ) continue;
+
                     // Choose destination and end loop
                     cx = moveX,
                     cy = moveY;
@@ -312,8 +313,7 @@ class Pixel extends PIXI.Sprite {
         const { type, tint } = dest;
         dest.set(this.type, this.tint);
         this.set(type, tint);
-
-
+        if(this?.mat?.non_solid) dest.set("air");
 
         // State
         // this.moving = true;
@@ -399,44 +399,67 @@ class Pixel extends PIXI.Sprite {
     tick_laser() {
         let seed = this;
 
-        while (seed?.type === 'laser') {
+        let strength = 2000;
+
+        // Loop until beam is complete
+        while (seed?.type === 'laser' || seed?.mat?.laser_pass && strength > 0) {
+            strength--;
+
             const spread = (dest) => {
+                // Valid move
                 if(
                     dest !== undefined &&
+                    strength > 0 &&
                     (
                         dest?.type === 'air' ||
                         dest?.type === 'laser' ||
                         dest?.type === 'laser plasma' ||
-                        dest?.type === 'laser glow'
+                        dest?.mat?.laser_pass
                     )
                 ) {
-                    seed.set('laser plasma');
-                    dest.set('laser');
+                    // Swap
+                    const rotation = seed.data.rotation;
+                    const travelled = (seed.data.travelled ?? 0) + 1;
+                    if(!seed?.mat?.laser_pass) {
+                        seed.set('laser plasma');
+                        if(strength < 20) seed.alpha = (strength/20) + 0.3;
+                    }
+                    if(!dest?.mat?.laser_pass) dest.set('laser');
+
+                    // Data
+                    dest.data.rotation = rotation ?? 2;
+                    seed.data.travelled = travelled;
                 }
-                else seed.set('laser plasma');
+
+                // End of the laser
+                else {
+                    seed.set('laser plasma');
+                    if(strength < 20) seed.alpha = (strength/20) + 0.3;
+                    return;
+                }
 
                 seed = dest;
             }
 
-            let dir = this.data.direction ?? "down";
-            
-            // const adj = this.getRelative();
-            // if(adj.down?.type === 'glass' && adj.left?.type === 'glass') {
-            //     if(dir === 'down') dir = 'right'; // Right
-            //     else if(dir === 'left') dir = 'up'; // Up
-            // }
-            // if(adj.down?.type === 'glass' && adj.right?.type === 'glass') pos = seed.mat.behavior = 'left'; // Left
-            // if(adj.down?.type === 'glass' && adj.right?.type === 'glass') pos = seed.mat.behavior = 'left'; // Up
+            // Get forward pixel
+            let forward;
+            let dest;
 
-            
-            this.data.direction = dir;
+            // Change direction if glass is in the way
+            let rotations = 0;
+            do {
+                seed.rotate(rotations === 0 ? 0 : rotations === 2 ? 2 : 1);
+                forward = seed.getForward();
+                dest = seed.getRelativePixel(...forward);
+                rotations++;
+            }
+            while (dest?.type === "glass" && rotations < 3)
 
-            let pos = seed.mat.behavior[dir];
-            let dest = world.getPixel(seed.x+pos.x, seed.y+pos.y);
+            // Iterate beam forward
             spread(dest);
 
             // Despawn chance
-            if(Math.random() <= this.mat.despawn_chance) this.despawn();
+            // if(Math.random() <= this.mat.despawn_chance) this.despawn();
         }
     }
 
@@ -497,14 +520,14 @@ class Pixel extends PIXI.Sprite {
     }
 
 
-    /* Continuously clones the first material it touches. Ignores materials with clonable: false */
+    /* Continuously clones the first material it touches. Ignores materials with the { "clone_proof": true } property */
     tick_cloner() {
         // Needs to copy a material
         if(this.data.clone_material === undefined) {
             const neighbors = this.getMooreNeighborhoodArray();
             for(const p of neighbors) {
-                if(p !== undefined && !p?.mat?.air && p?.type !== this.type) {
-                    this.data.clone_material = p.type;
+                if(p !== undefined && !p?.mat?.clone_proof && p?.type !== "air" && p?.type !== this.type) {
+                    this.data.clone_material = p?.mat?.clone_type ?? p.type;
 
                     // Alter color
                     this.setColor(colorMix(hexToRgb(this.tint), hexToRgb(p.tint), 0.3));
@@ -520,13 +543,24 @@ class Pixel extends PIXI.Sprite {
     
                 // Test if destination is valid
                 const dest = world.getPixel(this.x+rx, this.y+ry);
-                if(dest === undefined || dest?.type !== "air") continue;
+                if(dest === undefined || !dest?.mat?.air) continue;
     
+                // Spawn
                 dest.set(this.data.clone_material);
     
                 break;
             }
         }
+    }
+
+
+    tick_deleter() {
+        const neighbors = this.getMooreNeighborhoodArray();
+            for(const p of neighbors) {
+                if(p !== undefined && !p?.mat?.delete_proof && !p?.type !== "air" && p?.type !== this.type) {
+                    p.set("air");
+                }
+            }
     }
 
 
@@ -541,7 +575,7 @@ class Pixel extends PIXI.Sprite {
         this.data.on ? this.rotate(-1) : this.rotate(1);
 
         // Get relative forward coordinate
-        const forward = getForward(this.data.rotation);
+        const forward = this.getForward();
 
         // Get destination
         const dest = this.getRelativePixel(...forward);
@@ -562,21 +596,6 @@ class Pixel extends PIXI.Sprite {
         // Here
         this.set(hereIsOn ? "paper" : "air");
         // this.tint = "0f0f2f";
-
-
-        // 0 = up, 1 = right, 2 = down, 3 = left
-        function getForward(rotation=0) {
-            switch (rotation) {
-                case 0:
-                    return [0, -1];
-                case 1:
-                    return [1, 0];
-                case 2:
-                    return [0, 1];
-                case 3:
-                    return [-1, 0];
-            }
-        }
     }
 
     /** Conway's game of life */
@@ -625,6 +644,25 @@ class Pixel extends PIXI.Sprite {
                 if(ix !== 0 || iy !== 0) neighbors.push(this.getRelativePixel(ix, iy));
 
         return neighbors;
+    }
+
+    /** Returns relative forward coordinates base on Pixel.data.rotation
+     * @param {Number} rotation Number 0-3 representing the four cardinal directions (0 = up, 1 = right, 2 = down, 3 = left)
+     * @returns {Array} Array [rx, ry]
+     */
+    getForward(rotation=this.data.rotation) {
+        switch (rotation) {
+            case 0:
+                return [0, -1];
+            case 1:
+                return [1, 0];
+            case 2:
+                return [0, 1];
+            case 3:
+                return [-1, 0];
+            default:
+                return [0, 1]; // Down
+        }
     }
 
     /** Rotates the pixel, if applicable */

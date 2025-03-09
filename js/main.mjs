@@ -192,7 +192,7 @@ function pointerHandler(event) {
         delete controls.pressed[id];
 
     if(id === 'middle_click' && event.type === "pointerdown") {
-        let targetPixel = world.getPixel(controls.mouse.x, controls.mouse.y);
+        const targetPixel = world.getPixel(controls.mouse.x, controls.mouse.y);
 
         // Log info
         console.table({
@@ -202,9 +202,10 @@ function pointerHandler(event) {
             "Moving":   targetPixel.moving,
             "Fresh":    targetPixel.fresh,
             "Data":     targetPixel.data
-        })
+        });
+        console.log(targetPixel);
 
-        brush.setType(targetPixel.type);
+        brush.setType(targetPixel.mat.clone_type ?? targetPixel.type);
 
         // Pan camera
         // controls.panStart.x = controls.mouse.x, controls.panStart.y = controls.mouse.y;
@@ -409,7 +410,6 @@ function populateSaves() {
 
     // Click event listeners
     document.querySelectorAll("[data-storage-key]").forEach(element => element.addEventListener("click", event => {
-        console.log(event.target.tagName);
         if(event.target.tagName === "BUTTON" || event.target.tagName === "IMG") return;
         const key = event.currentTarget.dataset.storageKey;
         world.import(JSON.parse(localStorage.getItem(key)));

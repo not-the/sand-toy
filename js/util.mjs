@@ -71,6 +71,8 @@ export function colorMix(color1, color2, percent=0.5) {
  * @returns {Object} Object with r, g, and b properties
  */
 export function hexToRgb(hex) {
+    if(typeof hex === 'object') return hex;
+
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
         r: parseInt(result[1], 16),

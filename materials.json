@@ -2,10 +2,7 @@
     "air": {
         "colors": ["344457", "344457", "344457", "334454", "344558"],
         "float": 99,
-        "air": true,
-        "reacts": {
-            "laser plasma": { "to": "laser glow" }
-        }
+        "air": true
     },
     "concrete": {
         "colors": [
@@ -388,7 +385,8 @@
         "reacts": {
             "ice": { "to": "water", "chance": 0.015 }
         },
-        "lightning_pass": true
+        "lightning_pass": true,
+        "laser_pass": true
     },
     "smoke": {
         "colors": [
@@ -409,7 +407,8 @@
         "move_chance": 0.3,
         "despawn_chance": 0.02,
         "float": 5,
-        "lightning_pass": true
+        "lightning_pass": true,
+        "laser_pass": true
     },
     "fire": {
         "brush_replace": false,
@@ -436,7 +435,8 @@
         ],
         "despawn_chance": 0.3,
         "float": 5,
-        "lightning_pass": true
+        "lightning_pass": true,
+        "laser_pass": true
     },
     "acid": {
         "colors": [ "6BC032", "44B136", "5EB857" ],
@@ -480,7 +480,7 @@
     },
     "lightning plasma": {
         "hidden": true,
-        "clonable": false,
+        "clone_type": "lightning",
 
         "colors": [ "fffcc5" ],
         "// colors": [ "aaddff" ],
@@ -579,7 +579,8 @@
                 "y": 1
             }
         ],
-        "lightning_pass": true
+        "lightning_pass": true,
+        "laser_pass": true
     },
     "sugar": {
         "colors": [
@@ -627,6 +628,7 @@
             "FFF8CA",
             "F9F1E4"
         ],
+        "rgb_color_wheel": ["ff7a7a", "ffab7a", "ffd47a", "d9ff7a", "7aff91", "7afff1", "7ac0ff", "8a7aff", "e87aff", "ff7a7a"],
         "glows": true
     },
     "balloons": {
@@ -664,7 +666,7 @@
     },
     "firework explosion": {
         "hidden": true,
-        "clonable": false,
+        "clone_proof": true,
 
         "colors": [
             "ffffff"
@@ -677,7 +679,7 @@
     },
     "firework plasma": {
         "hidden": true,
-        "clonable": false,
+        "clone_proof": true,
 
         "colors": [ "ffffff" ],
         "all_colors": [
@@ -720,48 +722,6 @@
             }
         ]
     },
-
-    "#Tech": 0,
-    "copper": {
-        "colors": ["#995C49FF", "#AA6E52FF", "#AD684CFF", "#BE7F61FF", "#C79B8AFF"],
-        "conductive": true
-    },
-    "electricity": {
-        "colors": ["EFD231", "dcb92b"]
-    },
-    "laser": {
-        "colors": [ "ffaa99" ],
-        "glows": true,
-        "while_behavior": true,
-        "behavior": {
-            "down": { "x":0, "y":1 },
-            "right":{ "x":1, "y":0 },
-            "up":   { "x":0, "y":-1 },
-            "left": { "x":-1, "y":0 }
-        },
-        "despawn_conversion": "laser plasma"
-    },
-    "laser plasma": {
-        "hidden": true,
-        "clonable": false,
-
-        "colors": [ "ffaa99" ],
-        "glows": true,
-        "fade": 5,
-        "despawn_timer": 2,
-        "air": true
-    },
-    "laser glow": {
-        "hidden": true,
-        "clonable": false,
-
-        "colors": [ "ffaa99" ],
-        "glows": true,
-        "alpha": 0.5,
-
-        "despawn_timer": 1,
-        "air": true
-    },
     "bomb": {
         "colors": ["555b59", "626360"],
         "moves": [
@@ -777,7 +737,7 @@
     },
     "explosion": {
         "placement": "once",
-        "clonable": false,
+        "clone_proof": true,
 
         "colors": ["ffffff"],
         "glows": true,
@@ -787,12 +747,48 @@
         }
     },
 
+    "#Tech": 0,
+    "copper": {
+        "colors": ["#995C49", "#AA6E52", "#AD684C", "#BE7F61", "#C79B8A"],
+        "conductive": true
+    },
+    "electricity": {
+        "colors": ["EFD231", "dcb92b"],
+        "rotation": 0
+    },
+    "laser": {
+        "colors": [ "ffaa99" ],
+        "non_solid": true,
+
+        "glows": true,
+        "while_behavior": true,
+        "behavior": {
+            "down": { "x":0, "y":1 },
+            "right":{ "x":1, "y":0 },
+            "up":   { "x":0, "y":-1 },
+            "left": { "x":-1, "y":0 }
+        },
+        "despawn_conversion": "laser plasma",
+        "rotation": 2
+    },
+    "laser plasma": {
+        "hidden": true,
+        "clone_type": "laser",
+        "non_solid": true,
+
+        "colors": [ "ffaa99" ],
+        "glows": true,
+        "fade": 5,
+        "despawn_timer": 2,
+        "air": true
+    },
+
     "paper": {
         "hidden": true,
         "colors": ["fefefe"]
     },
     "cloner": {
-        "clonable": false,
+        "clone_proof": true,
         "acid_proof": true,
 
         "colors": ["9036EC", "9141E2", "7D4AD2"],
@@ -804,6 +800,12 @@
             { "x": [-1, 1], "y": -1 }
         ]
     },
+    "deleter": {
+        "clone_proof": true,
+        "acid_proof": true,
+
+        "colors": ["7A0900", "891300", "87060F"]
+    },
     "langton ant": {
         "placement": "once",
         "brush_size": 1,
@@ -811,7 +813,7 @@
         "glows": true,
         "gas": true,
 
-        "onset": "langtonAntSetup"
+        "rotation": 3
     },
     "conway cell": {
         "brush_size": 1,
