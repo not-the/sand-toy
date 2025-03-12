@@ -77,7 +77,8 @@
         "reacts": {
             "lightning plasma": { "to": "glass" },
             "laser plasma": { "to": "air" },
-            "fire": { "to": "sandstone", "chance": 0.01 }
+            "fire": { "to": "sandstone", "chance": 0.01 },
+            "acid": { "to": "sandstone", "chance": 0.01 }
         }
     },
     "gravel": {
