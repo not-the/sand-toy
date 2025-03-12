@@ -771,15 +771,11 @@
         "colors": [ "ffaa99" ],
         "non_solid": true,
 
+        "clone_behavior": [
+            { "x": 0, "y": 1 }
+        ],
+
         "glows": true,
-        "while_behavior": true,
-        "behavior": {
-            "down": { "x":0, "y":1 },
-            "right":{ "x":1, "y":0 },
-            "up":   { "x":0, "y":-1 },
-            "left": { "x":-1, "y":0 }
-        },
-        "despawn_conversion": "laser plasma",
         "rotation": 2
     },
     "laser plasma": {

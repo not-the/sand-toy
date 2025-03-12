@@ -526,10 +526,14 @@ class Pixel extends PIXI.Sprite {
         if(this.data.clone_material === undefined) {
             const neighbors = this.getMooreNeighborhoodArray();
             for(const p of neighbors) {
-                if(p !== undefined && !p?.mat?.clone_proof && p?.type !== "air" && p?.type !== this.type) {
+                if(p !== undefined && !p?.mat?.clone_proof && p?.type !== "air") {
+                    // Copy material
                     this.data.clone_material = p?.mat?.clone_type ?? p.type;
 
-                    // Alter color
+                    // If the material has a clone behavior array, use that. Otherwise use the default order.
+                    this.data.clone_behavior = materials[this.data.clone_material]?.clone_behavior ?? this.mat.clone_behavior;
+
+                    // Take on color
                     this.setColor(colorMix(hexToRgb(this.tint), hexToRgb(p.tint), 0.3));
                     break;
                 }
@@ -538,7 +542,7 @@ class Pixel extends PIXI.Sprite {
 
         // Clone
         else {
-            for(const step of this.mat.clone_behavior) {
+            for(const step of this.data.clone_behavior) {
                 const rx = parse(step.x), ry = parse(step.y);
     
                 // Test if destination is valid
