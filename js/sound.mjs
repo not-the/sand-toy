@@ -42,7 +42,7 @@ const sound = {
         const options = {
             volume: (volume ?? sounds?.[name]?.volume ?? 1) * this.volume_master,
             loop: sounds[name].loop,
-            complete: () => console.log(name + ' complete')
+            // complete: () => console.log(name + ' complete')
         }
 
         let s;
