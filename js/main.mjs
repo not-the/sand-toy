@@ -115,21 +115,28 @@ containers.fg.addChild(brush.indicator);
 
 
 // Player
-// let player = {
-//     materials: {
-//         "air": true,
-//         "stone": true,
-//         "water": true,
-//         "dirt": true,
-//         "fire": true
-//     },
+const player = null;
+// const player = {
+//     materials: new Set([
+//         "air",
+//         "concrete",
+//         "stone",
+//         "water",
+//         "dirt",
+//         "fire"
+//     ]),
 
 //     unlock(type) {
-//         this.materials[type] = true;
-//         ui.elements[`material_${type}`].visible = true;
+//         this.materials.add(type);
+//         try {
+//             ui.elements[`material_${type}`].visible = true;
+//         } catch (error) {
+            
+//         }
 //         // ui.refresh();
 //     }
 // }
+
 
 
 // Setup
@@ -459,7 +466,7 @@ export {
     spritesheet,                // Spritesheet
     app, containers, filters,   // PIXI
 
-    elapsed, world, brush, controls,     // Game state
+    elapsed, world, brush, controls, player,     // Game state
     materials, config,          // Game data
 };
 

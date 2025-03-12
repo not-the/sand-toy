@@ -1,6 +1,6 @@
 import * as PIXI from '../lib/pixi.mjs'
 import { get } from "./util.mjs"
-import { world, containers, spritesheet, brush, materials, filters } from "./main.mjs"
+import { world, containers, spritesheet, brush, materials, filters, player } from "./main.mjs"
 
 /** UI */
 const ui = {
@@ -121,7 +121,7 @@ const ui = {
 
     buildMaterials() {
         this.x = 0;
-        for(let [key, value] of Object.entries(materials)) {
+        for(const [key, value] of Object.entries(materials)) {
             // Title
             if(key.startsWith('#')) {
                 this.x += 3;
@@ -180,7 +180,7 @@ const ui = {
 
 
             // Player
-            // if(!player.materials[key] && location.hash !== "#dev") button.visible = false;
+            // if(!player.materials.has(key) && location.hash !== "#dev") button.visible = false;
         
         
             // Events

@@ -4,7 +4,7 @@ import world from './world.mjs'
 import config from './config.mjs'
 import sound from './sound.mjs'
 
-import { elapsed, materials, containers, controls, brush } from './main.mjs'
+import { elapsed, materials, containers, controls, brush, player } from './main.mjs'
 import { randomInt, distance, colorMix, parse, clamp, hexToRgb } from './util.mjs'
 
 /** Pixel class */
@@ -95,7 +95,7 @@ class Pixel extends PIXI.Sprite {
 
 
         // Player unlock
-        // if(player.materials[type] !== true) player.unlock(type);
+        // if(!player.materials.has(type)) player.unlock(type);
     }
 
     /** Sets the pixel's color
