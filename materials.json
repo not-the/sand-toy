@@ -52,6 +52,11 @@
             "laser plasma": { "to": "air", "chance": 0.02 }
         }
     },
+    "copper": {
+        "hidden": true,
+        "colors": ["#995C49", "#AA6E52", "#AD684C", "#BE7F61", "#C79B8A"],
+        "conductive": true
+    },
     "sandstone": {
         "colors": ["ceac59", "c49b51", "ba9454", "c48f51"],
         "layers": {
@@ -749,12 +754,17 @@
     },
 
     "#Tech": 0,
-    "copper": {
+    "wire": {
+        "brush_size": 1,
         "colors": ["#995C49", "#AA6E52", "#AD684C", "#BE7F61", "#C79B8A"],
         "conductive": true
     },
     "electricity": {
-        "colors": ["EFD231", "dcb92b"],
+        "brush_size": 1,
+        "placement": "once",
+
+        "colors": ["fffcc5"],
+        "glows": true,
         "rotation": 0
     },
     "laser": {
