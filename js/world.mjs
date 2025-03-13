@@ -4,7 +4,7 @@ import config from "./config.mjs"
 import Pixel from "./Pixel.mjs"
 import ui from "./ui.mjs"
 
-import { app, containers, spritesheet } from "./main.mjs";
+import { app, containers, materials, spritesheet } from "./main.mjs";
 import { distance, randomProceduralCeil, randomProceduralFloor, proceduralParse } from "./util.mjs";
 
 /** World state/methods */
@@ -12,7 +12,7 @@ const world = {
     /** 2D array where all pixels are stored */
     grid: [],
 
-    /** Grid data the previous tick */
+    /** Grid data from the previous tick */
     previousGrid: [],
 
     // ticks: {}, // Pixels that need updating (unused)
@@ -29,21 +29,20 @@ const world = {
 
     /** Ticks all pixels in the world once */
     tick() {
-        this.previousGrid = this.grid.map(row => row.map(p => ({ type:p.type, x:p.x, y:p.y })));
+        this.previousGrid = this.grid.map(row => row.map(p => ({ type:p.type, /*mat:materials[p.type], x:p.x, y:p.y*/ })));
 
         // Multiple ticks
         // for(let mti = 0; mti < (world.ticktime < 0 ? Math.abs(world.ticktime) : 1); mti++) {
             // Loop all
             for(let xi = world.grid.length-1; xi >= 0; xi--) {
                 for(let yi = world.grid[xi].length-1; yi >= 0; yi--) {
-                    world.run(Number(yi), Number(xi), 'tick');
+                    const p = this.grid?.[xi]?.[yi];
+                    if(p === undefined) continue;
+                    // p.lastTick = { type:p.type, mat:materials[p.type]/*, x:p.x, y:p.y*/ };
+                    p.tick();
                 }
             }
         // }
-
-
-        // Loop world.ticks registry
-        // for(let p of Object.values(world.ticks)) p.tick();
     },
     
     /** Shorthand for running a method on the pixel at the given coordinates

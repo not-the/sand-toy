@@ -312,8 +312,11 @@ class Pixel extends PIXI.Sprite {
         // Set
         const { type, tint } = dest;
         dest.set(this.type, this.tint);
-        this.set(type, tint);
-        if(this?.mat?.non_solid) dest.set("air");
+        const preserveDest = this?.mat?.non_solid;
+        this.set(
+            preserveDest ? "air" : type,
+            preserveDest ? undefined : tint
+        );
 
         // State
         // this.moving = true;

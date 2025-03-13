@@ -138,14 +138,6 @@ const player = null;
 // }
 
 
-
-// Setup
-ui.refresh();       // Build UI
-brush.setSize(3);   // Set brush size
-world.make();       // Create world
-
-
-
 // Ticker
 let elapsed = 0; // Time elapsed since page load
 let last_tick = 0; // Time since last world update
@@ -180,7 +172,13 @@ app.ticker.add(delta => {
         world.tick();
         last_tick = elapsed;
     }
-})
+});
+
+
+// Setup
+ui.refresh();       // Build UI
+brush.setSize(3);   // Set brush size
+world.make();       // Create world
 
 
 // ----- Event Listeners ----- //
@@ -208,9 +206,10 @@ function pointerHandler(event) {
             "Y":        targetPixel.y,
             "Moving":   targetPixel.moving,
             "Fresh":    targetPixel.fresh,
-            "Data":     targetPixel.data
+            "Data":     targetPixel.data,
         });
-        console.log(targetPixel);
+        console.log("pixel", targetPixel);
+        console.log("pixel.previous", targetPixel.lastTick); 
 
         brush.setType(targetPixel.mat.clone_type ?? targetPixel.type);
 
