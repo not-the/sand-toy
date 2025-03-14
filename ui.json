@@ -69,6 +69,12 @@
             "src": "arrow_right.png",
             "x": 16, "y": -16,
             "action": "mat_scroll_right", "repeats": true
+        },
+
+        {
+            "id": "debug",
+            "text": " ", "align": "left", "fontFamily": "consolas", "font_size": 3.3,
+            "x": 4, "y": -140
         }
     ],
     "overlay": [

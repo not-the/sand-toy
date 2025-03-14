@@ -67,11 +67,11 @@ const ui = {
                     PIXI.Texture.from(`./artwork/${props.src}`)
                 ) :
                 new PIXI.Text(props.text, {
-                    fontFamily: 'Arial',
-                    fontSize: props.font_size ?? 3,
+                    fontFamily: props.fontFamily ?? 'Arial',
+                    fontSize:   props.font_size ?? 3,
                     fontWeight: 700,
-                    align: 'center',
-                    fill: 'fff'
+                    align:      props.align ?? 'center',
+                    fill:       'fff'
                 })
 
             if(props.text) element.resolution = 24;
@@ -111,6 +111,10 @@ const ui = {
                         }
                     }
                 }
+            }
+            // Not interactive
+            else {
+                element.eventMode = "none";
             }
 
             // Fill
@@ -169,7 +173,11 @@ const ui = {
             label.resolution = 16;
 
             // Small label
-            if(label.width > 16) {
+            if(label.width > 24) {
+                label.anchor.y = -0.2;
+                label.scale.set(0.6);
+            }
+            else if(label.width > 16) {
                 label.anchor.y = -0.15;
                 label.scale.set(0.8);
             }

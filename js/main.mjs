@@ -197,21 +197,35 @@ function pointerHandler(event) {
         delete controls.pressed[id];
 
     if(id === 'middle_click' && event.type === "pointerdown") {
-        const targetPixel = world.getPixel(controls.mouse.x, controls.mouse.y);
+        /** Clicked pixel */
+        const p = world.getPixel(controls.mouse.x, controls.mouse.y);
 
-        // Log info
-        console.table({
-            "Material": targetPixel.type,
-            "X":        targetPixel.x,
-            "Y":        targetPixel.y,
-            "Moving":   targetPixel.moving,
-            "Fresh":    targetPixel.fresh,
-            "Data":     targetPixel.data,
-        });
-        console.log("pixel", targetPixel);
-        console.log("pixel.previous", targetPixel.lastTick); 
+        // Debug
+        console.log("pixel", p); // Log Pixel
 
-        brush.setType(targetPixel.mat.clone_type ?? targetPixel.type);
+        // Set type
+        brush.setType(p.mat.clone_type ?? p.type);
+
+
+
+        // Debug bar
+        const arrows = {
+            0: "⬆",
+            1: "⮕",
+            2: "⬇",
+            3: "⬅"
+        }
+        const facing = p.data.rotation === undefined ? "•" : arrows[p.data.rotation];
+        ui.elements["debug"].text =
+`${p.type} | ${facing}
+x${p.x} y${p.y}
+Background type: ${p.background}
+⌁ Powered: ${p.isPowered()}
+Last tick: ${p.lastTick().type}
+Last last tick: ${p.lastLastTick().type}
+
+${Object.entries(p?.data??{}).map(([key, value]) => `${key.padEnd(10, " ")} : ${value}`).join("\n")}
+`;
 
         // Pan camera
         // controls.panStart.x = controls.mouse.x, controls.panStart.y = controls.mouse.y;
