@@ -143,7 +143,7 @@ let elapsed = 0; // Time elapsed since page load
 let last_tick = 0; // Time since last world update
 app.ticker.add(delta => {
     // Draw
-    if(controls.pressed['click'] && !controls.pressed['ui_dragging']) world.run(controls.mouse.x, controls.mouse.y, 'draw');
+    if(controls.pressed['click'] && !controls.pressed['ui_dragging']) brush.draw(controls.mouse.x, controls.mouse.y);
     else controls.mouse.drawing = false;
 
 

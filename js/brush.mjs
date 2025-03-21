@@ -1,7 +1,8 @@
 import * as PIXI from '../lib/pixi.mjs'
 
-import { spritesheet, materials } from "./main.mjs"
+import { spritesheet, materials, controls } from "./main.mjs"
 import ui from "./ui.mjs"
+import { distance } from './util.mjs';
 
 /** Brush */
 const brush = {
@@ -45,6 +46,51 @@ const brush = {
 
         // Update UI
         ui.fills.brush_size();
+    },
+
+    /** Draws using user's brush material (brush.type) */
+    draw(x, y) {
+        // Get pixel
+        const pixel = world.getPixel(x, y);
+        if(!pixel) return;
+
+        // Check
+        if(controls.mouse.drawing && brush.material.placement === 'once') return;
+        controls.mouse.drawing = true;
+        const {size, type} = brush;
+
+        // Line drawing algorithm
+        if(!brush.material.placement !== 'once') {
+            const [dist, distX, distY] = distance(controls.lastMouse, controls.mouse);
+
+            // Draw line between points
+            const steps = Math.floor(dist);
+            for(let i = 0; i < steps; i++) {
+                const progress = i/steps;
+                const pos = {
+                    x: Math.ceil(pixel.x + distX * progress),
+                    y: Math.ceil(pixel.y + distY * progress)
+                }
+
+                const between = world.getPixel(pos.x, pos.y);
+                between?.forRegion(size, handleDraw)
+            }
+        }
+
+        // Paint area
+        pixel.forRegion(size, handleDraw);
+
+        /** Draw handler function */
+        function handleDraw(x, y) {
+            // Material brush_replace property is false
+            if(
+                !world.brushReplace && brush.type !== 'air' ||
+                materials[type].brush_replace === false
+            ) {
+                if(world.getPixel(x, y)?.type !== 'air') return;
+            }
+            world.run(x, y, 'set', type, undefined, undefined, true);
+        }
     }
 }
 

@@ -4,8 +4,8 @@ import world from './world.mjs'
 import config from './config.mjs'
 import sound from './sound.mjs'
 
-import { elapsed, materials, containers, controls, brush, player } from './main.mjs'
-import { randomInt, distance, colorMix, parse, clamp, hexToRgb } from './util.mjs'
+import { elapsed, materials, containers, brush } from './main.mjs'
+import { randomInt, colorMix, parse, clamp, hexToRgb } from './util.mjs'
 
 /** Pixel class */
 class Pixel extends PIXI.Sprite {
@@ -141,43 +141,6 @@ class Pixel extends PIXI.Sprite {
         loopX: for(let mx = size; mx >= 0; mx--)
             loopY: for(let my = size; my >= 0; my--)
                 if(callback(x+mx, y+my, x, y) === true) break loopX;
-    }
-
-    /** Draws using user's brush material */
-    draw() {
-        if(controls.mouse.drawing && brush.material.placement === 'once') return;
-        controls.mouse.drawing = true;
-        const {size, type} = brush;
-
-        // Inbetween
-        const [dist, distX, distY] = distance(controls.lastMouse, controls.mouse);
-
-        // Draw line between points
-        const steps = Math.floor(dist);
-        for(let i = 0; i < steps; i++) {
-            const progress = i/steps;
-            const pos = {
-                x: Math.ceil(this.x + distX * progress),
-                y: Math.ceil(this.y + distY * progress)
-            }
-
-            const between = world.getPixel(pos.x, pos.y);
-            between?.forRegion(size, handleDraw)
-        }
-
-        // Paint area
-        this.forRegion(size, handleDraw)
-
-        function handleDraw(x, y) {
-            // Material brush_replace property is false
-            if(
-                !world.brushReplace && brush.type !== 'air' ||
-                materials[type].brush_replace === false
-            ) {
-                if(world.getPixel(x, y)?.type !== 'air') return;
-            }
-            world.run(x, y, 'set', type, undefined, undefined, true);
-        }
     }
 
     /** Despawn */
