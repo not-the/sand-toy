@@ -44,13 +44,22 @@ class Pixel extends PIXI.Sprite {
     }
 
     /** Set a pixel to a material
-     * @param {String} type Material name
+     * @param {String} typeArg Material name
      * @param {String} preColor If defined this will be used as the color value instead of a random value
      * @param {Boolean} fresh Used to prevent gases from teleporting to the top of the screen
      * @param {String} preMat If a custom material object was defined by the pixel's predecessor it will be inherited
      */
-    set(type, preColor, fresh) {
-        if(this === undefined || this?.type === type) return;
+    set(typeArg, preColor, fresh, clearBackground=false) {
+        if(this === undefined || this?.type === typeArg) return;
+
+        // Background
+        let type = typeArg;
+        if(type === "air" && this.background && !clearBackground) {
+            type = this.background;
+            delete this.background;
+            preColor = undefined;
+        }
+        if(clearBackground) delete this.background;
 
         // Remember previous state
         // this.previous = {
@@ -62,7 +71,7 @@ class Pixel extends PIXI.Sprite {
         this.mat = materials[type];
         
         // Brand new pixel
-        if(preColor === undefined) this.data = { age:0, rotation:this.mat.rotation, timestamp:elapsed };
+        if(preColor === undefined) this.data = { age:0, rotation:parse(this.mat.rotation), timestamp:elapsed };
 
         // Color
         const color = preColor ?? this.mat.colors[Math.floor(Math.random() * this.mat.colors.length)];
@@ -72,6 +81,7 @@ class Pixel extends PIXI.Sprite {
         // State
         this.type = type;
         if(this.mat?.gas === true || fresh !== undefined) this.fresh = fresh??1;
+        if(this.mat?.background === true) this.background = this.type;
 
         // SFX
         if(this.mat?.sfx !== undefined) {
@@ -166,7 +176,7 @@ class Pixel extends PIXI.Sprite {
             ) {
                 if(world.getPixel(x, y)?.type !== 'air') return;
             }
-            world.run(x, y, 'set', type);
+            world.run(x, y, 'set', type, undefined, undefined, true);
         }
     }
 
@@ -248,31 +258,40 @@ class Pixel extends PIXI.Sprite {
 
         // Movement
         if(this.mat?.moves !== undefined) {
-            let cx = 0;
-            let cy = 0;
-
             // Move chance
             if(this.mat?.move_chance === undefined || Math.random() < this.mat.move_chance) {
                 // Move checks
-                for(let m of this.mat.moves) {
-                    let moveX = parse(m.x), moveY = parse(m.y);
+                for(const m of this.mat.moves) {
+                    const moveX = parse(m.x);
+                    const moveY = parse(m.y);
 
                     // Test if destination is valid
-                    let dest = world.getPixel(this.x+moveX, this.y+moveY);
+                    const dest = world.getPixel(this.x+moveX, this.y+moveY);
                     if(
                         dest === undefined || // Out of bounds
                         (dest.mat?.float < this.mat.float || dest.mat?.float === undefined || dest?.type === this.type) && // Bouyancy check
                         !dest?.mat?.non_solid // Non solids can be passed through anyway
                     ) continue;
 
-                    // Choose destination and end loop
-                    cx = moveX,
-                    cy = moveY;
+                    // Move and end loop
+                    this.move(moveX, moveY);
                     break;
                 }
+            }
+        }
 
-                // Move
-                this.move(cx, cy);
+        // Power
+        if(this.mat?.powerable !== undefined) {
+            const powered = this.isPowered();
+
+            // State
+            const wasPowered = this.data.powered;
+            this.data.powered = powered;
+    
+            // Power
+            if(!wasPowered && powered) {
+                this.power();
+                this.data.powered = powered;
             }
         }
     }
@@ -293,6 +312,28 @@ class Pixel extends PIXI.Sprite {
      */
     getRelativePixel(rx=0, ry=0) {
         return world.getPixel(this.x+rx, this.y+ry);
+    }
+
+    /** Returns an array of contigious pixels (touching within von Neumann neighborhood and of the same type) */
+    getContiguous(contiguous=[], origin=this) {
+        const neighbors = this.getVonNeumannNeighborArray();
+
+        // Add self
+        neighbors.push(this);
+
+        // Iterate over neighbors
+        for(const p of neighbors) {
+            if(contiguous.includes(p)) continue; // Ignore if already in list
+            if(
+                p?.type === origin.type || // Same type
+                (origin.background !== undefined && p?.background !== undefined && p?.background === origin.background)
+            ) {
+                contiguous.push(p);
+                p.getContiguous(contiguous, origin);
+            }
+        }
+
+        return contiguous;
     }
 
     /** Moves the pixel, swapping with the pixel at the target position
@@ -318,10 +359,10 @@ class Pixel extends PIXI.Sprite {
         // Set
         const { type, tint } = dest;
         dest.set(this.type, this.tint);
-        const preserveDest = this?.mat?.non_solid;
+        const preserveDest = !this?.mat?.non_solid;
         this.set(
-            preserveDest ? "air" : type,
-            preserveDest ? undefined : tint
+            preserveDest ? type : "air",
+            preserveDest ? tint : undefined
         );
 
         // State
@@ -349,17 +390,23 @@ class Pixel extends PIXI.Sprite {
         // Already ticked this frame
         if(this.data.timestamp === elapsed) return;
 
+        // Remove self
+        this.set("wire");
+
         // Checks whole neighborhood with potential for multiplying (doesnt work as intended rn)
+        const neighbors = this.getMooreNeighborArray();
+        for(const p of neighbors) {
+            if(p === undefined) continue;
+            if(
+                !p.mat?.conductive || // Must be wire
+                p.lastLastTick().type === "electricity" // Must not have been electricity last tick
+            ) continue; 
 
-        // for(const p of neighbors) {
-        //     if(p === undefined) continue;
-        //     if(!p.mat?.conductive || p.type ==="electricity" || p.lastTick().type === "electricity") continue;
+            // const type = p.type;
+            p.set("electricity");
+            // p.background = type;
+        }
 
-        //     this.move(p.x-this.x, p.y-this.y);
-        //     // p.fresh = 1;
-        // }
-
-        // this.set("copper");
 
         // Duplicate at diagonals
         // const diagonals = this.getDiagonalNeighborArray();
@@ -372,34 +419,89 @@ class Pixel extends PIXI.Sprite {
         // }
 
 
-        // Get destination
-        let forward = this.getForward();
-        let dest = this.getRelativePixel(...forward);
-
 
         // Can't move
-        let rotations = 0;
-        let rotateOrder = {
-            0: 0,
-            1: 1, // Try going right
-            2: -2, // Try going left
-            3: -1 // Try going backward
-        }
-        do {
-            this.rotate(rotateOrder[rotations]);
-            forward = this.getForward();
-            dest = this.getRelativePixel(...forward);
-            rotations++;
+        // let rotations = 0;
+        // const rotateOrder = {
+        //     0: 0,
+        //     1: 1, // Try going right
+        //     2: -2, // Try going left
+        //     3: -1 // Try going backward
+        // }
+        // do {
+        //     // Rotate if needed
+        //     this.rotate(rotateOrder[rotations]);
 
-            if(dest !== undefined && dest?.type === 'wire') {
-                const rotation = this.data.rotation;
-                dest.set('electricity', undefined);
-                this.set('wire', undefined);
-                dest.data.rotation = rotation;
-                break;
-            }
+        //     // Get destination
+        //     const forward = this.getForward();
+        //     const dest = this.getRelativePixel(...forward);
+        //     rotations++;
+
+        //     if(dest !== undefined && dest?.type === 'wire') {
+        //         const rotation = this.data.rotation;
+        //         dest.set('electricity', undefined);
+        //         this.set('wire', undefined);
+        //         dest.data.rotation = rotation;
+        //         break;
+        //     }
+        // }
+        // while (rotations < 3);
+    }
+
+    /** Toggle light */
+    power_light() {
+        this.set("light off");
+    }
+
+    power_light_off() {
+        this.set("light");
+    }
+
+    power_hatch() {
+        this.set("hatch off");
+    }
+
+    power_hatch_off() {
+        this.set("hatch");
+    }
+
+    tick_light_sensor() {
+        const neighbors = this.getVonNeumannNeighborArray();
+        const active = neighbors.some(p => p?.mat?.sensor_type === "light");
+
+        // State
+        const wasActive = this.data.power_source;
+        this.data.power_source = active;
+
+        // Power
+        if(!wasActive && active) {
+            this.tint = this.mat.color_active;
+            for(const n of neighbors) if(n?.type === "wire") n?.set?.("electricity");
         }
-        while (rotations < 3);
+        // Unpower
+        else if(wasActive && !active) {
+            this.tint = this.mat.colors[0];
+        }
+    }
+
+    /** copy of light sensor with water instead of laser */
+    tick_fluid_sensor() {
+        const neighbors = this.getVonNeumannNeighborArray();
+        const active = neighbors.some(p => p?.type === "water");
+
+        // State
+        const wasActive = this.data.power_source;
+        this.data.power_source = active;
+
+        // Power
+        if(!wasActive && active) {
+            this.tint = this.mat.color_active;
+            for(const n of neighbors) if(n?.type === "wire") n?.set?.("electricity");
+        }
+        // Unpower
+        else if(wasActive && !active) {
+            this.tint = this.mat.colors[0];
+        }
     }
 
     /** Explosion */
@@ -424,7 +526,8 @@ class Pixel extends PIXI.Sprite {
                         dest?.type === 'air' ||
                         dest?.type === 'lightning' ||
                         dest?.type === 'lightning plasma' ||
-                        dest?.mat?.lightning_pass
+                        dest?.mat?.lightning_pass ||
+                        dest?.mat?.non_solid
                     )
                 ) {
                     seed.set('lightning plasma');
@@ -463,7 +566,8 @@ class Pixel extends PIXI.Sprite {
                         dest?.type === 'air' ||
                         dest?.type === 'laser' ||
                         dest?.type === 'laser plasma' ||
-                        dest?.mat?.laser_pass
+                        dest?.mat?.laser_pass ||
+                        dest?.mat?.non_solid
                     )
                 ) {
                     // Swap
@@ -588,15 +692,22 @@ class Pixel extends PIXI.Sprite {
 
         // Clone
         else {
+            // Slow cloning when placement is "once"
+            // if(materials[this.data.clone_material]?.placement === "once") {
+            //     if(this.data.timestamp > elapsed - 15) return;
+            // }
+
             for(const step of this.data.clone_behavior) {
                 const rx = parse(step.x), ry = parse(step.y);
     
                 // Test if destination is valid
                 const dest = world.getPixel(this.x+rx, this.y+ry);
-                if(dest === undefined || !dest?.mat?.air) continue;
+                if(dest === undefined || (!dest?.mat?.air && !dest?.mat?.non_solid)) continue;
     
                 // Spawn
                 dest.set(this.data.clone_material);
+
+                this.data.timestamp = elapsed;
     
                 break;
             }
@@ -662,7 +773,7 @@ class Pixel extends PIXI.Sprite {
 
         // Resurrect nearby air cells if applicable
         neighbors.forEach(p => {
-            if(p === undefined || p?.type !== "air") return;
+            if(p === undefined || (p?.type !== "air" && !p?.mat?.non_solid)) return;
 
             // Number of alive neighbors
             const aliveNeighbors = getAliveCount(p.getMooreNeighborArray());
@@ -685,7 +796,33 @@ class Pixel extends PIXI.Sprite {
         return world.previousGrid?.[this.y]?.[this.x];
     }
 
-    /** Returns an array of cells within the moore neighborhood (8 cells including ones at a diagonal) */
+    /** Returns an object containing the pixel's type from the previous tick */
+    lastLastTick() {
+        return world.previousPreviousGrid?.[this.y]?.[this.x];
+    }
+
+    /** Returns a boolean depending on if the pixel is touching a power source
+     * @returns {Boolean} Based on whether the pixel is touching a power source
+     */
+    isPowered() {
+        const neighbors = this.getVonNeumannNeighborArray();
+        return neighbors.some(p => p?.type === "electricity" || p?.data?.power_source);
+    }
+
+    /** Powers the pixel */
+    power() {
+        const matToggleString = `power_${this.type.replace(' ', '_')}`;
+        if(this?.[matToggleString] !== undefined) {
+            // Contiguous
+            if(this.mat?.power_contiguous) {
+                this.getContiguous().forEach(p => p[matToggleString]());
+            }
+            // Single
+            else this?.[matToggleString]();
+        }
+    }
+
+    /** Returns an array of pixels within the moore neighborhood (8 pixels including ones at a diagonal) */
     getMooreNeighborArray() {
         const neighbors = [];
 
@@ -696,7 +833,19 @@ class Pixel extends PIXI.Sprite {
         return neighbors;
     }
 
-    /** Returns an array of cells within the moore neighborhood (8 cells including ones at a diagonal) */
+    /** Returns an array of 4 pixels within the von Neumann neighborhood */
+    getVonNeumannNeighborArray() {
+        const neighbors = [
+            this.getRelativePixel( 0, -1),
+            this.getRelativePixel( 0,  1),
+            this.getRelativePixel(-1,  0),
+            this.getRelativePixel( 1,  0)
+        ];
+
+        return neighbors;
+    }
+
+    /** Returns an array of 4 pixels at a diagonal */
     getDiagonalNeighborArray() {
         const neighbors = [
             this.getRelativePixel(-1, -1),
@@ -733,7 +882,9 @@ class Pixel extends PIXI.Sprite {
     }
 
 
+    /** Water */
     tick_water() {
+        // Shading
         if(!world.waterShading) return;
 
         // const colors = this.mat.colors;

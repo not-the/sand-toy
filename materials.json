@@ -1,6 +1,6 @@
 {
     "air": {
-        "colors": ["344457", "344457", "344457", "334454", "344558"],
+    "colors": ["344457", "344457", "344457", "334454", "344558"],
         "float": 99,
         "air": true
     },
@@ -54,8 +54,7 @@
     },
     "copper": {
         "hidden": true,
-        "colors": ["#995C49", "#AA6E52", "#AD684C", "#BE7F61", "#C79B8A"],
-        "conductive": true
+        "colors": ["#995C49", "#AA6E52", "#AD684C", "#BE7F61", "#C79B8A"]
     },
     "sandstone": {
         "colors": ["ceac59", "c49b51", "ba9454", "c48f51"],
@@ -344,7 +343,7 @@
             "acid":      { "to": "acid",  "chance": 0.02  },
             "ice":       { "to": "ice",   "chance": 0.001 }
         },
-        "conductive": true
+        "rotation": 1
     },
     "lava": {
         "colors": [
@@ -552,6 +551,7 @@
         "reacts": {
             "fire": { "to": "explosion" },
             "lava": { "to": "explosion" },
+            "electricity": { "to": "explosion" },
             "lightning plasma": { "to": "fire" },
             "laser plasma": { "to": "explosion", "chance": 0.005 }
         }
@@ -641,7 +641,19 @@
             "F9F1E4"
         ],
         "rgb_color_wheel": ["ff7a7a", "ffab7a", "ffd47a", "d9ff7a", "7aff91", "7afff1", "7ac0ff", "8a7aff", "e87aff", "ff7a7a"],
-        "glows": true
+        "glows": true,
+
+        "powerable": true,
+        "power_contiguous": true,
+        "colors_off": ["534330","4E3B2B"],
+
+        "sensor_type": "light"
+    },
+    "light off": {
+        "colors": ["534330","4E3B2B"],
+
+        "powerable": true,
+        "power_contiguous": true
     },
     "balloons": {
         "colors": [
@@ -679,6 +691,7 @@
     "firework explosion": {
         "hidden": true,
         "clone_proof": true,
+        "non_solid": true,
 
         "colors": [
             "ffffff"
@@ -743,6 +756,7 @@
         "despawn_conversion": "explosion",
         "reacts": {
             "lava": { "to": "explosion" },
+            "electricity": { "to": "explosion" },
             "lightning plasma": { "to": "explosion" },
             "laser plasma": { "to": "explosion", "chance":0.1 }
         }
@@ -758,21 +772,6 @@
             "place": ["explosion1"]
         }
     },
-
-    "#Tech": 0,
-    "wire": {
-        "brush_size": 1,
-        "colors": ["#C77753", "#C57550"],
-        "conductive": true
-    },
-    "electricity": {
-        "brush_size": 1,
-        "placement": "once",
-
-        "colors": ["fffcc5"],
-        "glows": true,
-        "rotation": 0
-    },
     "laser": {
         "colors": [ "ffaa99" ],
         "glows": true,
@@ -783,7 +782,9 @@
         
         "non_solid": true,
         "lightning_pass": true,
-        "rotation": 2
+        "rotation": 2,
+
+        "sensor_type": "light"
     },
     "laser plasma": {
         "hidden": true,
@@ -794,13 +795,12 @@
         "glows": true,
         "fade": 5,
         "despawn_timer": 2,
-        "air": true
+        "air": true,
+
+        "sensor_type": "light"
     },
 
-    "paper": {
-        "hidden": true,
-        "colors": ["fefefe"]
-    },
+    "#Tech": 0,
     "cloner": {
         "clone_proof": true,
         "acid_proof": true,
@@ -820,6 +820,69 @@
 
         "colors": ["7A0900", "891300", "87060F"]
     },
+    "wire": {
+        "brush_size": 1,
+        "colors": ["#C77753", "#C57550"],
+        "conductive": true,
+
+        "reacts": {
+            "lightning plasma": { "to": "electricity" }
+        }
+    },
+    "electricity": {
+        "brush_size": 1,
+        "placement": "once",
+
+        "colors": ["fffcc5"],
+        "glows": true,
+        "// rotation": 0
+    },
+    "optic cable": {
+        "hidden": true,
+        "brush_size": 1,
+        "colors": ["#588EA7", "#78BBDA"]
+    },
+    "light sensor": {
+        "brush_size": 1,
+        "placement": "once",
+
+        "colors": ["861D1D"],
+        "color_active": "FF87AC"
+    },
+    "fluid sensor": {
+        "brush_size": 1,
+        "placement": "once",
+
+        "colors": ["3424A8"],
+        "color_active": "7C6AFF"
+    },
+    "hatch": {
+        "colors": ["6981CD", "637ECC"],
+        "powerable": true,
+        "power_contiguous": true
+    },
+    "hatch off": {
+        "colors": ["171C2B", "161A2A"],
+        "powerable": true,
+        "power_contiguous": true,
+        "non_solid": true,
+        "background": true
+    },
+    "wireless transmitter": {
+        "placement": "once",
+        "brush_size": 1,
+
+        "colors": ["55DE1F"],
+        "powerable": true,
+        "onset": "setupWireless"
+    },
+
+    "#Cellular Automata": 0,
+    "conway cell": {
+        "brush_size": 1,
+        "colors": ["ccddff"],
+        "glows": true
+    },
     "langton ant": {
         "placement": "once",
         "brush_size": 1,
@@ -829,9 +892,8 @@
 
         "rotation": 3
     },
-    "conway cell": {
-        "brush_size": 1,
-        "colors": ["ccddff"],
-        "glows": true
+    "paper": {
+        "hidden": true,
+        "colors": ["fefefe"]
     }
 }

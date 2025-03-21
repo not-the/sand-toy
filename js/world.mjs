@@ -29,7 +29,8 @@ const world = {
 
     /** Ticks all pixels in the world once */
     tick() {
-        this.previousGrid = this.grid.map(row => row.map(p => ({ type:p.type, /*mat:materials[p.type], x:p.x, y:p.y*/ })));
+        const previous = this.grid.map(row => row.map(p => ({ type:p.type, /*mat:materials[p.type], x:p.x, y:p.y*/ })));
+        this.previousGrid = previous;
 
         // Multiple ticks
         // for(let mti = 0; mti < (world.ticktime < 0 ? Math.abs(world.ticktime) : 1); mti++) {
@@ -43,6 +44,8 @@ const world = {
                 }
             }
         // }
+
+        this.previousPreviousGrid = previous;
     },
     
     /** Shorthand for running a method on the pixel at the given coordinates
@@ -267,7 +270,7 @@ const world = {
                 const color = colors[colorIndex] ?? undefined;
                 if(type === null) continue;
 
-                this.run(xi, yi, 'set', type, color, false);
+                this.run(xi, yi, 'set', type, color, false, true);
             }
         }
     },
@@ -378,7 +381,10 @@ const world = {
 
     /** Sets entire screen to air */
     clear() {
-        this.forAll(p => p.set('air'));
+        this.forAll(p => {
+            delete p.background;
+            p.set('air', undefined, undefined, true);
+        });
     },
 
     /** Runs a callback function on every pixel
