@@ -54,9 +54,21 @@ const brush = {
         const pixel = world.getPixel(x, y);
         if(!pixel) return;
 
-        // Check
+        // Draw state
         if(controls.mouse.drawing && brush.material.placement === 'once') return;
         controls.mouse.drawing = true;
+
+        // Waiting for player to click a pixel for something other than drawing
+        if(this.inputFunc) {
+            this.inputFunc(pixel);
+            delete this.inputFunc;
+            delete this.inputCancelFunc;
+
+            delete controls.pressed['click'];
+            return;
+        }
+
+
         const {size, type} = brush;
 
         // Line drawing algorithm
@@ -91,6 +103,25 @@ const brush = {
             }
             world.run(x, y, 'set', type, undefined, undefined, true);
         }
+    },
+
+    /** The next time the user clicks a callback function will be run
+     * @param {Function} callback Function to run the next time the player clicks a pixel
+     */
+    awaitInput(callback, cancel) {
+        if(!callback || typeof callback !== 'function') throw new Error("brush.awaitInput() requires a callback function");
+        this.inputFunc = callback;
+        this.inputCancelFunc = cancel;
+    },
+
+    /** Cancels awaitInput */
+    cancelInput() {
+        // Run cancel function
+        if(typeof this.inputCancelFunc === 'function') this.inputCancelFunc();
+
+        // Delete
+        delete this.inputFunc;
+        delete this.inputCancelFunc;
     }
 }
 

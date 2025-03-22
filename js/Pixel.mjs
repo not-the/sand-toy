@@ -6,6 +6,7 @@ import sound from './sound.mjs'
 
 import { elapsed, materials, containers, brush } from './main.mjs'
 import { randomInt, colorMix, parse, clamp, hexToRgb } from './util.mjs'
+import ui from './ui.mjs'
 
 /** Pixel class */
 class Pixel extends PIXI.Sprite {
@@ -41,6 +42,25 @@ class Pixel extends PIXI.Sprite {
         //     let color = parse(this.mat.layers[layer]);
         //     p.setColor(color);
         // }
+        setupWireless: p => {
+            // UI
+            containers.chooseTarget.visible = true;
+
+            // Setup
+            brush.awaitInput(callback, cancel);
+
+            /** Callback */
+            function callback(clickedPixel) {
+                p.data.target = [clickedPixel.x, clickedPixel.y];
+                containers.chooseTarget.visible = false;
+            }
+
+            /** On cancel */
+            function cancel() {
+                containers.chooseTarget.visible = false;
+                p.set("smoke");
+            }
+        }
     }
 
     /** Set a pixel to a material
@@ -426,6 +446,12 @@ class Pixel extends PIXI.Sprite {
 
     power_hatch_off() {
         this.set("hatch");
+    }
+
+    power_wireless_transmitter() {
+        if(!this.data?.target) return console.warn("Wireless transmitter has no destination specified");
+        const target = world.getPixel(...this.data.target);
+        target.power();
     }
 
     tick_light_sensor() {

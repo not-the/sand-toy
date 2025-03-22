@@ -91,6 +91,7 @@ containers.ui   = new Container({ y:config.viewHeight-config.UIHeight, eventMode
 containers.mats = new Container({ ix:0, scale:5 }, containers.ui); // Materials container
 containers.opts = new Container({ scale:5 }, containers.ui); // Additional UI      
 containers.more = new Container({ y:-90, scale:5, ix:50, visible:false, filters:[ filters.shadow ] }, containers.ui); // Toggle panel
+containers.chooseTarget = new Container({ scale:5, visible:false }, containers.ui); // Toggle panel
 
 
 // Click-and-drag to scroll through materials list

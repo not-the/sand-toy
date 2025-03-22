@@ -115,5 +115,25 @@
             "x": 245, "y": 8,
             "action": "ticktime_up", "repeats": true
         }
+    ],
+
+    "choose_target": [
+        {
+            "id": "cancel_brush_action",
+            "src": "wide_button.png",
+            "x": 102, "y": -16,
+            "action": "brush_cancel_input"
+        },
+        {
+            "id": "cancel_brush_action",
+            "src": "materials/wireless transmitter.png",
+            "x": 101, "y": -20
+        },
+        {
+            "id": "choose_text",
+            "text": "Choose a target\nClick to cancel",
+            "align": "left",
+            "x": 116, "y": -13
+        }
     ]
 }

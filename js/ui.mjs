@@ -15,11 +15,17 @@ const ui = {
     // Element onclicks
     actions: {
         none: null,
+
+        // World
         pause: () => world.playPause(),
         clear: () => world.clear(),
+
+        // Brush
         brush_up: () => brush.setSize(brush.size+1),
         brush_down: () => { if(brush.size > 1) brush.setSize(brush.size-1) },
+        brush_cancel_input: () => brush.cancelInput(),
 
+        // UI
         options: (overlay=true) => {
             // Make options panel visible
             containers.more.visible = !containers.more.visible;
@@ -48,7 +54,7 @@ const ui = {
     fills: {
         brush_size: (e=ui.elements.brush_size) => e.text = brush.size,
         ticktime: (e=ui.elements.ticktime) => {
-            let value = world.ticktime;
+            const value = world.ticktime;
             e.text =
                 value < 0 ? `${Math.abs(value)}/frame` :
                 value === 0 ? 'Max' : (2 / value).toFixed(1) + 'x';
@@ -60,24 +66,30 @@ const ui = {
         const menu = this.data[name];
 
         // Loop elements
-        for(let props of menu) {
-            let element = !props.text ?
+        for(const props of menu) {
+            const element = !props.text ?
+                // Sprite
                 new PIXI.Sprite(
                     spritesheet.textures?.[props.src] ??
                     PIXI.Texture.from(`./artwork/${props.src}`)
                 ) :
+                // Text
                 new PIXI.Text(props.text, {
                     fontFamily: props.fontFamily ?? 'Arial',
                     fontSize:   props.font_size ?? 3,
                     fontWeight: 700,
                     align:      props.align ?? 'center',
-                    fill:       'fff'
+                    fill:       'fff',
+                    lineHeight:  props.lineHeight ?? 3.5
                 })
 
+            // Text elements have increased resolution
             if(props.text) element.resolution = 24;
 
+            // Position
             element.x = props.x ?? 0;
             element.y = props.y ?? 0;
+            element.visible = props.visible ?? true;
             container.addChild(element);
 
             this.elements[props.id] = element;
@@ -86,7 +98,7 @@ const ui = {
             if(props.action !== undefined) {
                 element.eventMode = 'static';
                 element.buttonMode = true;
-                let handler = this.actions[props.action];
+                const handler = this.actions[props.action];
                 if(handler !== null) {
                     element.cursor = 'pointer';
 
@@ -118,7 +130,7 @@ const ui = {
             }
 
             // Fill
-            let fill = ui.fills[props.id]
+            const fill = ui.fills[props.id]
             if(fill !== undefined) fill(element);
         }
     },
@@ -136,7 +148,7 @@ const ui = {
             if(value.hidden && location.hash !== "#dev") continue;
         
             // Button
-            let button = new PIXI.Sprite(spritesheet.textures['tray.png']);
+            const button = new PIXI.Sprite(spritesheet.textures['tray.png']);
             button.brush = key;
             button.x = this.x;
             this.x += 16;
@@ -154,13 +166,13 @@ const ui = {
             }
         
             // Material icon
-            let icon = new PIXI.Sprite(matTexture);
+            const icon = new PIXI.Sprite(matTexture);
             icon.scale.x = 0.8, icon.scale.y = 0.8, icon.x = 1;
             icon.filters = [ filters.shadow ];
             button.addChild(icon);
         
             // Label
-            let label = new PIXI.Text(key.capitalize(), {
+            const label = new PIXI.Text(key.capitalize(), {
                 fontFamily: 'Arial',
                 fontSize: 3,
                 fontWeight: 700,
@@ -205,15 +217,18 @@ const ui = {
         }
     },
 
+    /** Destroys all UI sprites and re-builds them */
     refresh() {
-        ui.destroy();
-        ui.build('options', containers.opts);
-        ui.build('overlay', containers.more);
-        ui.buildMaterials();
+        this.destroy();
+        this.build('options', containers.opts);
+        this.build('overlay', containers.more);
+        this.build('choose_target', containers.chooseTarget);
+        this.buildMaterials();
     },
 
+    /** Destroys all UI sprites */
     destroy() {
-        for(let [id, element] of Object.entries(this.elements)) {
+        for(const [id, element] of Object.entries(this.elements)) {
             element.parent.removeChild(element);
         }
     }
