@@ -180,7 +180,7 @@ class Pixel extends PIXI.Sprite {
         // this.moving = false;
 
         // Track pixel's age
-        if(this.mat?.despawn_timer) this.data.age += 1;
+        if(this?.mat?.track_age || this.mat?.despawn_timer) this.data.age += 1;
 
         // Despawn chance
         if(this.mat?.despawn_chance !== undefined) {
@@ -703,14 +703,40 @@ class Pixel extends PIXI.Sprite {
         }
     }
 
-
+    /** Deleter */
     tick_deleter() {
         const neighbors = this.getMooreNeighborArray();
-            for(const p of neighbors) {
-                if(p !== undefined && !p?.mat?.delete_proof && !p?.type !== "air" && p?.type !== this.type) {
-                    p.set("air");
+        for(const p of neighbors) {
+            if(p !== undefined && !p?.mat?.delete_proof && p?.type !== "air" && p?.type !== this.type) {
+                p.set("air");
+            }
+        }
+    }
+
+    /** Grey Goo */
+    tick_gray_goo() {
+        const neighbors = this.getVonNeumannNeighborArray();
+        for(const p of neighbors) {
+            if(p !== undefined && p?.type !== "air" && !p?.mat?.non_solid && !p?.mat?.clone_proof && p?.type !== this.type) {
+                // Spread
+                if(Math.random() < this?.mat?.goo_chance) {
+                    const copiedMat = structuredClone(p?.mat);
+                    p.set("gray goo");
+
+                    p.mat = {
+                        ...structuredClone(materials["gray goo"]),
+                        moves: copiedMat.moves,
+                        gas: copiedMat.gas,
+                        float: copiedMat.float
+                    }
                 }
             }
+        }
+
+        // Ditch inhertied physics and switch to normal goo movement
+        if(this.data.age > 60 && this.mat !== materials["gray goo"]) {
+            this.mat = materials["gray goo"];
+        }
     }
 
 
@@ -811,7 +837,9 @@ class Pixel extends PIXI.Sprite {
         }
     }
 
-    /** Returns an array of pixels within the moore neighborhood (8 pixels including ones at a diagonal) */
+    /** Returns an array of pixels within the moore neighborhood (8 pixels including ones at a diagonal)
+     * @returns {Array.<Pixel>}
+     */
     getMooreNeighborArray() {
         const neighbors = [];
 

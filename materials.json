@@ -820,6 +820,21 @@
 
         "colors": ["7A0900", "891300", "87060F"]
     },
+    "gray goo": {
+        "colors": ["#9AACB6", "#8E9EA7", "#8F9CA8"],
+
+        "track_age": true,
+        "goo_chance": 0.1,
+
+        "moves": [
+            {"x":0, "y":1},
+            {"x":[-1, 1], "y": 1}
+        ],
+        "reacts": {
+            "lightning plasma": {"to": "smoke", "chance": 0.9 },
+            "laser plasma": { "to": "smoke", "chance": 0.1 }
+        }
+    },
     "wire": {
         "brush_size": 1,
         "colors": ["#C77753", "#C57550"],
