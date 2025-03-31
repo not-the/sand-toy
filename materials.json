@@ -618,6 +618,20 @@
             "laser plasma": { "to": "air", "chance": 0.1 }
         }
     },
+    "art sand": {
+        "colors": ["#E98585", "#ffab7a", "#ffd47a", "#D8F78A", "#8CE79C", "#9DE2D1", "#96CADF", "#B0AADB", "#D8A3C8", "#E98585"],
+        "moves": [
+            {"x":0, "y":1},
+            {"x":[-1, 1], "y": 1}
+        ],
+        "reacts": {
+            "lightning plasma": { "to": "glass" },
+            "laser plasma": { "to": "air" },
+            "fire": { "to": "sandstone", "chance": 0.01 },
+            "acid": { "to": "sandstone", "chance": 0.01 }
+        },
+        "onset": "artSand"
+    },
     "plastic": {
         "colors": [ "f4f3ea", "f0eadc", "efe6e4" ],
         "alpha": 0.8,

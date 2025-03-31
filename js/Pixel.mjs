@@ -60,6 +60,22 @@ class Pixel extends PIXI.Sprite {
                 containers.chooseTarget.visible = false;
                 p.set("smoke");
             }
+        },
+
+        artSand: p => {
+            const timeframe = elapsed/50;
+            const elapsedFloor  = Math.floor(timeframe);
+            const elapsedCeil   = Math.ceil(timeframe);
+            const percent       = 1 - (elapsedCeil - timeframe);
+            const low           = hexToRgb(p.mat.colors[clamp(elapsedFloor, p.mat.colors.length)]);
+            const high          = hexToRgb(p.mat.colors[clamp(elapsedCeil, p.mat.colors.length)]);
+
+            // Set tint
+            p.tint = colorMix(
+                colorMix(low, high, percent), // (1) Main color
+                { r:randomInt(0, 4), g:randomInt(0, 6), b:randomInt(0, 10) }, // (1) Color variation
+                randomInt(0, 2)/10 // Percent
+            );
         }
     }
 
