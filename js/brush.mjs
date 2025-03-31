@@ -40,12 +40,20 @@ const brush = {
     size: 3,
     sizeWasSetByMaterial: false,
     setSize(value) {
+        // Update size
         this.size = value;
         this.indicator.clear().lineStyle(1, 0x000000).drawRect(0, -1, brush.size+1, brush.size+1).endFill();
-        // document.getElementById("size").value = value;
+
+        // Update position
+        this.updateIndicatorPosition();
 
         // Update UI
         ui.fills.brush_size();
+    },
+
+    updateIndicatorPosition() {
+        this.indicator.x = controls.mouse.x - Math.floor(this.size/2)-0.5;
+        this.indicator.y = controls.mouse.y+1 - Math.floor(this.size/2)-0.5;
     },
 
     /** Draws using user's brush material (brush.type) */

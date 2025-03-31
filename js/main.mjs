@@ -266,8 +266,7 @@ function moveHandler(event) {
     controls.mouse.y = Math.floor(mouseY * canvas.height / canvas.clientHeight / config.scale);
 
     // Indicator
-    brush.indicator.x = controls.mouse.x - Math.floor(brush.size/2)-0.5;
-    brush.indicator.y = controls.mouse.y+1 - Math.floor(brush.size/2)-0.5;
+    brush.updateIndicatorPosition();
     brush.indicator.visible = true;
 
 
