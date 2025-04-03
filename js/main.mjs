@@ -35,7 +35,7 @@ spritesheet.parse();
 
 
 // Game modules
-import { get, lerp } from './util.mjs'
+import { formatDate, get, lerp } from './util.mjs'
 import ui from './ui.mjs'
 import filters from './filters.mjs'
 import world from './world.mjs'
@@ -225,7 +225,7 @@ Background type: ${p.background}
 Last tick: ${p.lastTick().type}
 Last last tick: ${p.lastLastTick().type}
 
-${Object.entries(p?.data??{}).map(([key, value]) => `${key.padEnd(10, " ")} : ${value}`).join("\n")}
+${Object.entries(p?.data??{}).filter(([key, value]) => value !== undefined).map(([key, value]) => `${key.padEnd(10, " ")} : ${value}`).join("\n")}
 `;
 
         // Pan camera
@@ -338,32 +338,6 @@ document.getElementById("button_procedural_random").addEventListener("click", ()
 document.getElementById("seed").addEventListener("keydown", ({ key }) => {
     if(key === 'Enter') world.procedural();
 })
-
-function formatDate(timestamp) {
-    const date = new Date(timestamp);
-    const now = new Date();
-
-    // Options
-    const options = { month: 'long', day: 'numeric' };
-    const yearOptions = { year: 'numeric', ...options };
-    const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
-
-    // Conditional date format
-    const isToday = date.toDateString() === now.toDateString();
-    const isCurrentYear = date.getFullYear() === now.getFullYear();
-
-    // Date
-    const datePart = date.toLocaleDateString(
-        'en-US', isCurrentYear ? options : yearOptions
-    );
-
-    // Time
-    const timePart = isToday ? date.toLocaleTimeString('en-US', timeOptions).toLowerCase() : '';
-
-    // Result
-    const formattedDate = isToday ? `${timePart}` : `${datePart}${timePart ? ' ' + timePart : ''}`;
-    return formattedDate;
-}
 
 
 // Save/Load

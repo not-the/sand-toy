@@ -95,3 +95,32 @@ export { randomProceduralCeil, randomProceduralFloor }
 export function proceduralParse(value, seed) {
     return Array.isArray(value) ? value[randomProceduralFloor(value.length, seed)] : value;
 }
+
+/** Take UNIX timestamp and format it into a readable string
+ * @param {Number} timestamp 
+ * @returns {String} Will either be "<Month> <Day>" (January 10), or only the time if the timestamp is from today
+ */
+export function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+
+    // Options
+    const options = { month: 'long', day: 'numeric' };
+    const yearOptions = { year: 'numeric', ...options };
+    const timeOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
+
+    // Conditional date format
+    const isToday = date.toDateString() === now.toDateString();
+    const isCurrentYear = date.getFullYear() === now.getFullYear();
+
+    // Date
+    const datePart = date.toLocaleDateString(
+        'en-US', isCurrentYear ? options : yearOptions
+    );
+
+    // Time
+    const timePart = isToday ? date.toLocaleTimeString('en-US', timeOptions).toLowerCase() : '';
+
+    // Result
+    return isToday ? `${timePart}` : `${datePart}${timePart ? ' ' + timePart : ''}`;
+}
