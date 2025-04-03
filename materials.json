@@ -837,7 +837,7 @@
         "colors": ["7A0900", "891300", "87060F"]
     },
     "gray goo": {
-        "colors": ["#9AACB6", "#8E9EA7", "#8F9CA8"],
+        "colors": ["#9AACB6", "#93A7B3", "#8E9EA7", "#8F9CA8"],
 
         "track_age": true,
         "goo_chance": 0.1,

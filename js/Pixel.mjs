@@ -737,27 +737,58 @@ class Pixel extends PIXI.Sprite {
 
     /** Grey Goo */
     tick_gray_goo() {
+        // Spread to touching pixels
         const neighbors = this.getVonNeumannNeighborArray();
         for(const p of neighbors) {
+            // Must be gray goo-able
             if(p !== undefined && p?.type !== "air" && !p?.mat?.non_solid && !p?.mat?.clone_proof && p?.type !== this.type) {
-                // Spread
+                // Random chance
                 if(Math.random() < this?.mat?.goo_chance) {
+                    // Remember material & color
                     const copiedMat = structuredClone(p?.mat);
+                    const copiedColor = p?.tint;
                     p.set("gray goo");
 
+                    // Inherit material physics of the replaced pixel temporarily
                     p.mat = {
                         ...structuredClone(materials["gray goo"]),
                         moves: copiedMat.moves,
                         gas: copiedMat.gas,
                         float: copiedMat.float
-                    }
+                    };
+
+                    // Color fade
+                    p.data.color = p.tint;
+                    p.data.copiedColor = copiedColor;
+
+                    p.tint = copiedColor;
                 }
             }
         }
 
-        // Ditch inhertied physics and switch to normal goo movement
+        // Ditch inhertied physics (after 1 second) and switch to normal goo movement
         if(this.data.age > 60 && this.mat !== materials["gray goo"]) {
             this.mat = materials["gray goo"];
+        }
+
+        // Fade colors
+        if(this.data.copiedColor) {
+            // Progress
+            const progress = (this.data.age/60) + 0.55;
+            // End fade
+            if(progress > 1) {
+                this.tint = this.data.color;
+                delete this.data.color;
+                delete this.data.copiedColor;
+                return;
+            }
+
+            // Set color
+            this.tint = colorMix(
+                hexToRgb(this.data.color),
+                hexToRgb(this.data.copiedColor),
+                1-progress
+            )
         }
     }
 
