@@ -33,7 +33,7 @@ for(const [key, {src}] of Object.entries(sounds)) PIXISound.add(key, src);
 
 /** Audio methods */
 const sound = {
-    volume_master: 0.5,
+    volume_master: 0.3,
 
     recents: {},
     play(name, volume) {
