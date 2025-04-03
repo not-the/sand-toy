@@ -82,10 +82,11 @@ class Pixel extends PIXI.Sprite {
     /** Set a pixel to a material
      * @param {String} typeArg Material name
      * @param {String} preColor If defined this will be used as the color value instead of a random value
-     * @param {Boolean} fresh Used to prevent gases from teleporting to the top of the screen
      * @param {String} preMat If a custom material object was defined by the pixel's predecessor it will be inherited
+     * @param {Boolean} fresh Used to prevent gases from teleporting to the top of the screen
+     * @param {Boolean} clearBackground Only used when clearing the screen. Otherwise disabled hatches will remain in the background.
      */
-    set(typeArg, preColor, fresh, clearBackground=false) {
+    set(typeArg, preColor, preMat, fresh, clearBackground=false) {
         if(this === undefined || this?.type === typeArg) return;
 
         // Background
@@ -104,7 +105,7 @@ class Pixel extends PIXI.Sprite {
         // };
 
         // Material reference
-        this.mat = materials[type];
+        this.mat = preMat ?? materials[type];
         
         // Brand new pixel
         if(preColor === undefined) this.data = { age:0, rotation:parse(this.mat.rotation), timestamp:elapsed };
@@ -517,8 +518,7 @@ class Pixel extends PIXI.Sprite {
     /** Explosion */
     tick_explosion() {
         this.forRegion(9, (x, y) => {
-            let type = ['fire', 'smoke']
-            // this.set(type.random());
+            const type = ['fire', 'smoke']
             world.run(x, y, 'set', type.random());
         })
     }

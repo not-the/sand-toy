@@ -109,7 +109,8 @@ const brush = {
             ) {
                 if(world.getPixel(x, y)?.type !== 'air') return;
             }
-            world.run(x, y, 'set', type, undefined, undefined, true);
+            
+            world.run(x, y, 'set', type, undefined, undefined, undefined, true);
         }
     },
 

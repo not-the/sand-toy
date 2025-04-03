@@ -270,7 +270,7 @@ const world = {
                 const color = colors[colorIndex] ?? undefined;
                 if(type === null) continue;
 
-                this.run(xi, yi, 'set', type, color, false, true);
+                world.getPixel(xi, yi).set(type, color, undefined, false, true);
             }
         }
     },
@@ -383,7 +383,7 @@ const world = {
     clear() {
         this.forAll(p => {
             delete p.background;
-            p.set('air', undefined, undefined, true);
+            p.set('air', undefined, undefined, undefined, true);
         });
     },
 
