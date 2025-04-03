@@ -147,12 +147,11 @@ app.ticker.add(delta => {
     if(controls.pressed['click'] && !controls.pressed['ui_dragging']) brush.draw(controls.mouse.x, controls.mouse.y);
     else controls.mouse.drawing = false;
 
-
-    // UI
+    // UI scroll positions
     containers.mats.x = lerp(containers.mats.x, containers.mats.ix, 0.3*delta);
     containers.more.x = lerp(containers.more.x, containers.more.ix, 0.3*delta);
 
-    let max = ( containers.mats.width - app.view.width + ( (ui.elements?.bg.width ?? 0)*5 ) ) * -1;
+    const max = ( containers.mats.width - app.view.width + ( (ui.elements?.bg.width ?? 0)*5 ) ) * -1;
     if(containers.mats.x > 0) {
         containers.mats.ix /= 1.5;
         if(containers.mats.ix < 0) containers.mats.ix = 0;
@@ -160,15 +159,15 @@ app.ticker.add(delta => {
     else if(containers.mats.x < max) {
         containers.mats.ix = max;
     }
-
-    // Indicator
+    
+    // Brush Indicator
     brush.indicator.alpha = (Math.abs(Math.sin(elapsed/20)+1)/20)+0.2;
 
     // Elapsed
     elapsed += delta;
-    if(world.paused) return;
 
     // Tick
+    if(world.paused) return;
     if(elapsed >= last_tick+world.ticktime) {
         world.tick();
         last_tick = elapsed;
@@ -255,11 +254,14 @@ document.addEventListener('touchend', () => delete controls.pressed['ui_dragging
 function moveHandler(event) {
     const marginLeft = (document.body.scrollWidth-canvas.scrollWidth)/2;
 
+    // Mouse position
     const mouseX = event.clientX - canvas.offsetLeft - marginLeft;
     const mouseY = event.clientY - canvas.offsetTop + window.scrollY;
 
     // Last position
-    controls.lastMouse.x = controls.mouse.x, controls.lastMouse.y = controls.mouse.y, controls.lastMouse.drawing = controls.mouse.drawing;
+    controls.lastMouse.x = controls.mouse.x;
+    controls.lastMouse.y = controls.mouse.y;
+    controls.lastMouse.drawing = controls.mouse.drawing;
     
     // scale mouse coordinates to canvas coordinates
     controls.mouse.x = Math.floor(mouseX * canvas.width / canvas.clientWidth / config.scale);

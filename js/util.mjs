@@ -52,8 +52,14 @@ export function distance(one, two) {
     return [Math.hypot(distX, distY), distX, distY];
 }
 
-/** Interpolation function. Will return target value if values are within 1 of eachother */
-export function lerp(a, b, alpha) { return Math.abs(b-a)<1?b : a + alpha * (b - a); }
+/** Interpolation function. Will return target value if values are within 1 of eachother, or if the result would otherwise surpass the target value. */
+export function lerp(a, b, alpha) {
+    const result = Math.abs(b-a)<1?b : a + alpha * (b - a);
+
+    const direction = b < a ? -1 : 1;
+    if(direction === -1) return result < b ? b : result;
+    return result > b ? b : result;
+}
 
 /** RGB color mix */
 export function colorMix(color1, color2, percent=0.5) {
