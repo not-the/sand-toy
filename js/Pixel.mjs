@@ -466,8 +466,13 @@ class Pixel extends PIXI.Sprite {
 
     power_wireless_transmitter() {
         if(!this.data?.target) return console.warn("Wireless transmitter has no destination specified");
+
+        // Get target
         const target = world.getPixel(...this.data.target);
-        target.power();
+
+        // Power target
+        if(target.type === "wire") target.set("electricity");
+        else target.power();
     }
 
     tick_light_sensor() {
