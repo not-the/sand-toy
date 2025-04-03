@@ -498,6 +498,7 @@
         "// colors": [ "aaddff" ],
         "glows": true,
 
+        "fade": 8,
         "despawn_timer": 10,
         "air": true
     },
@@ -743,6 +744,7 @@
         "air": true,
         "gas": true,
 
+        "fade": 18,
         "despawn_timer": 18
     },
     "exhaust": {

@@ -238,9 +238,10 @@ class Pixel extends PIXI.Sprite {
         const matTickString = `tick_${this.type.replace(' ', '_')}`;
         if(this?.[matTickString] !== undefined) this?.[matTickString]();
 
-        // Plasma
-        if(this.type === 'lightning plasma' || this.type === 'laser plasma' || this.type === 'firework plasma') {
-            this.alpha = (1 - this.data.age / (this.mat.despawn_timer + 5)) ** 2.2;
+        // Plasma fade out
+        if(this.mat.fade) {
+            const fade = this.mat.fade ?? 5;
+            this.alpha = (1 - this.data.age / (this.mat.despawn_timer + fade)) ** 2.2;
         }
 
         // Mud grows grass
