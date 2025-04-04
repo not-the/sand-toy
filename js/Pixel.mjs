@@ -879,14 +879,25 @@ class Pixel extends PIXI.Sprite {
 
     /** Powers the pixel */
     power() {
+        // Already powered this frame
+        if(this.data.poweredTimestamp === elapsed) return;
+
+        // Determine if target pixel has a method for when it's powered (Pixel.power_<material>)
         const matToggleString = `power_${this.type.replace(' ', '_')}`;
         if(this?.[matToggleString] !== undefined) {
             // Contiguous
             if(this.mat?.power_contiguous) {
-                this.getContiguous().forEach(p => p[matToggleString]());
+                this.getContiguous().forEach(p => {
+                    p[matToggleString](); // Power
+
+                    p.data.poweredTimestamp = elapsed; // Remember when last powered
+                });
             }
             // Single
-            else this?.[matToggleString]();
+            else {
+                this?.[matToggleString](); // Power
+                this.data.poweredTimestamp = elapsed; // Remember when last powered
+            }
         }
     }
 
