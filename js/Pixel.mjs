@@ -349,6 +349,8 @@ class Pixel extends PIXI.Sprite {
 
     /** Returns an array of contigious pixels (touching within von Neumann neighborhood and of the same type) */
     getContiguous(contiguous=[], origin=this) {
+        if(contiguous.length > 5000) return;
+        
         const neighbors = this.getVonNeumannNeighborArray();
 
         // Add self
@@ -356,10 +358,13 @@ class Pixel extends PIXI.Sprite {
 
         // Iterate over neighbors
         for(const p of neighbors) {
-            if(contiguous.includes(p)) continue; // Ignore if already in list
+            // Ignore if already in list
+            if(contiguous.includes(p)) continue;
+
+            // Add to list
             if(
                 p?.type === origin.type || // Same type
-                (origin.background !== undefined && p?.background !== undefined && p?.background === origin.background)
+                (origin.background !== undefined && p?.background !== undefined && p?.background === origin.background) // Background type matches origin
             ) {
                 contiguous.push(p);
                 p.getContiguous(contiguous, origin);
@@ -689,14 +694,14 @@ class Pixel extends PIXI.Sprite {
 
     tick_grass() {
         if(Math.random() >= 0.9) {
-            let above = world.getPixel(this.x, this.y-1);
+            const above = world.getPixel(this.x, this.y-1);
 
             if(!above?.mat?.air && above?.type !== 'grass') this.set('mud');
         }
     }
 
     tick_firework() {
-        let below = world.getPixel(this.x, this.y+1);
+        const below = world.getPixel(this.x, this.y+1);
 
         if(below !== undefined && below?.mat?.air && (Math.random() < 0.3)) below.set('exhaust');
     }
@@ -937,7 +942,6 @@ class Pixel extends PIXI.Sprite {
             if(this.mat?.power_contiguous) {
                 this.getContiguous().forEach(p => {
                     p[matToggleString](this === p); // Power
-
                     p.data.poweredTimestamp = elapsed; // Remember when last powered
                 });
             }
