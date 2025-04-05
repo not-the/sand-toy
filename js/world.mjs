@@ -373,6 +373,11 @@ const world = {
         if(!ui.optionsVisible && dir !== 0) ui.actions.options(false);
     },
 
+    /** Returns a readable game speed multiplier based on world.ticktime */
+    getGameSpeed(value=this.ticktime) {
+        return value < 0 ? Math.abs(value) : (2 / value);
+    },
+
     /** Toggle pause */
     playPause() {
         this.paused = !this.paused;

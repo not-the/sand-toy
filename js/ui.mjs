@@ -55,9 +55,13 @@ const ui = {
         brush_size: (e=ui.elements.brush_size) => e.text = brush.size,
         ticktime: (e=ui.elements.ticktime) => {
             const value = world.ticktime;
+            const speed = world.getGameSpeed(); // Readable multiplier
+
+            // Fill
             e.text =
-                value < 0 ? `${Math.abs(value)}/frame` :
-                value === 0 ? 'Max' : (2 / value).toFixed(1) + 'x';
+                value < 0 ? `${speed}/frame` :
+                value === 0 ? 'Max' :
+                speed.toFixed(1) + 'x';
         }
     },
 
