@@ -6,7 +6,6 @@ import sound from './sound.mjs'
 
 import { elapsed, materials, containers, brush } from './main.mjs'
 import { randomInt, colorMix, parse, clamp, hexToRgb } from './util.mjs'
-import ui from './ui.mjs'
 
 /** Pixel class */
 class Pixel extends PIXI.Sprite {
@@ -224,7 +223,7 @@ class Pixel extends PIXI.Sprite {
         // this.moving = false;
 
         // Track pixel's age
-        if(this?.mat?.track_age || this.mat?.despawn_timer) this.data.age += 1;
+        if(this.mat?.track_age || this.mat?.despawn_timer) this.data.age += 1;
 
         // Despawn chance
         if(this.mat?.despawn_chance !== undefined) {
@@ -239,14 +238,13 @@ class Pixel extends PIXI.Sprite {
 
         // Reacts
         if(/*this.mat?.reacts !== undefined*/ this.type !== 'air') {
-            let radius = this.mat?.reaction_radius ?? 3;
+            const radius = this.mat?.reaction_radius ?? 3;
             this.forRegion(radius, (x, y) => {
                 // Don't test current pixel
                 if(this.x === x && this.y === y) return;
 
                 // Testing pixel
-                let dest = world.getPixel(x, y);
-                // console.log(dest?.type);
+                const dest = world.getPixel(x, y);
                 if(dest === undefined) return;
 
                 // Convert
@@ -273,13 +271,13 @@ class Pixel extends PIXI.Sprite {
         if(this?.[matTickString] !== undefined) this?.[matTickString]();
 
         // Plasma fade out
-        if(this.mat.fade) {
+        if(this.mat?.fade) {
             const fade = this.mat.fade ?? 5;
             this.alpha = (1 - this.data.age / (this.mat.despawn_timer + fade)) ** 2.2;
         }
 
         // Mud grows grass
-        else if(this.mat.grows_grass) {
+        else if(this.mat?.grows_grass) {
             // Random chance
             if(Math.random() >= 0.995) {
 
@@ -519,7 +517,7 @@ class Pixel extends PIXI.Sprite {
         if(target.type === "wire") target.set("electricity");
         else target.power();
     }
-    
+
     power_piano_key() {
         const speed = 2 ** (this.data.semitone / 12);
         sound.play("piano_c", undefined, speed);
@@ -707,24 +705,26 @@ class Pixel extends PIXI.Sprite {
         const colors = parse(materials['firework plasma'].all_colors);
 
         this.forRegion(5, (x, y, ox, oy) => {
+            /* {Pixel} */
             const p = world.getPixel(x, y);
             if(p === undefined) return;
 
             // Must be air
             if(!p.mat.air && p.type !== "firework explosion") return;
 
-            // Set
-            p.set('firework plasma');
-            p.setColor(parse(colors));
-
+            
             // Random momentum
-            p.mat = {
+            const mat = {
                 ...structuredClone(materials["firework plasma"]),
                 moves: [
                     { "x": x-ox-1, "y": y-oy-1 }
                 ],
                 move_chance: randomInt(1, 3) / 10
-            }
+            };
+
+            // Set
+            p.set('firework plasma', undefined, mat);
+            p.setColor(parse(colors));
         })
     }
 

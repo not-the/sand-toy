@@ -254,23 +254,25 @@ const world = {
         }
     },
 
-    /** Takes in a world data Object and loads it
-     * @param {Object} data 
+    /** Takes in a worldData Object and loads it
+     * @param {Object} worldData 
      */
-    import(data) {
-        if(!data) return console.error("No world data parameter provided");
+    import(worldData) {
+        if(!worldData) return console.error("No world data parameter provided");
 
-        const { grid, colors } = data;
+        const { grid, colors } = worldData;
 
         // Populate world with air pixels
         for(let yi in grid) {
             let col = grid[yi];
             for(let xi = 0; xi < col.length; xi++) {
-                const [type, colorIndex] = col[xi];
+                const [type, colorIndex, data] = col[xi];
                 const color = colors[colorIndex] ?? undefined;
                 if(type === null) continue;
 
-                world.getPixel(xi, yi).set(type, color, undefined, false, true);
+                const p = world.getPixel(xi, yi);
+                p.set(type, color, undefined, false, true);
+                p.data = data;
             }
         }
     },
