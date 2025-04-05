@@ -70,7 +70,7 @@ const sound = {
             volume: (volume ?? snippet?.volume ?? 1) * this.volume_master,
             loop: snippet.loop,
             // complete: () => console.log(name + ' complete')
-            speed: parse(speed ?? snippet.speed ?? 1)
+            speed: parse(speed ?? snippet.speed ?? 1) // * (world.getGameSpeed() ?? 1)
         }
 
         let s;
