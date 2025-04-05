@@ -120,10 +120,10 @@ class Pixel extends PIXI.Sprite {
         if(this.mat?.gas === true || fresh !== undefined) this.fresh = fresh??1;
         if(this.mat?.background === true) this.background = this.type;
 
-        // SFX
-        if(this.mat?.sfx !== undefined) {
-            let place = this.mat?.sfx?.place;
-            if(place && preColor === undefined) sound.play(parse(place));
+        // Placement SFX
+        const sfxPlace = this.mat?.sfx?.place;
+        if(sfxPlace !== undefined && sfxPlace && preColor === undefined) {
+            sound.play(parse(sfxPlace));
         }
 
 
@@ -228,6 +228,13 @@ class Pixel extends PIXI.Sprite {
 
                 // Roll chance
                 if(conversion.chance === undefined || Math.random() <= conversion.chance ) {
+                    // SFX
+                    const sfxReacts = dest.mat?.sfx?.reacts;
+                    if(sfxReacts !== undefined) {
+                        sound.play(parse(sfxReacts));
+                    }
+
+                    // React
                     dest.set(parse(conversion.to));
                 }
             }, true);
@@ -454,16 +461,25 @@ class Pixel extends PIXI.Sprite {
         this.set("light off");
     }
 
-    power_light_off() {
+    power_light_off(isFirstPowered) {
         this.set("light");
+        if(isFirstPowered) sound.play("light_on", undefined, [0.8, 0.83, 0.86, 0.9]);
     }
 
-    power_hatch() {
+    /** Power Hatch. Turns into an OFF Hatch
+     * @param {Boolean} isFirstPowered When powering contigiously, this will only be true for the origin pixel
+     */
+    power_hatch(isFirstPowered) {
         this.set("hatch off");
+        if(isFirstPowered) sound.play("click_2", undefined, 0.6);
     }
 
-    power_hatch_off() {
-        this.set("hatch");
+    /** Power Hatch (off). Turns into an ON hatch
+     * @param {Boolean} isFirstPowered When powering contigiously, this will only be true for the origin pixel
+     */
+    power_hatch_off(isFirstPowered) {
+        this.set("hatch", undefined, undefined, undefined, true);
+        if(isFirstPowered) sound.play("click_1", undefined, 0.6);
     }
 
     power_wireless_transmitter() {
@@ -888,7 +904,7 @@ class Pixel extends PIXI.Sprite {
             // Contiguous
             if(this.mat?.power_contiguous) {
                 this.getContiguous().forEach(p => {
-                    p[matToggleString](); // Power
+                    p[matToggleString](this === p); // Power
 
                     p.data.poweredTimestamp = elapsed; // Remember when last powered
                 });

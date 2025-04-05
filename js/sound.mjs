@@ -1,7 +1,17 @@
 import * as PIXI from '../lib/pixi.mjs'
 import { sound as PIXISound } from '../lib/pixi-sound.mjs'
+import { parse } from './util.mjs';
 
-/** Sound effects list */
+/**
+ * @typedef {Object} Sound Object containing data for a sound effect
+ * @property {String} src (Required) File URL 
+ * @property {Number} volume (Optional) Volume relative to other files. Defaults to 1
+ * @property {Number|Array} speed (Optional) Playback speed. Can be an array of numbers if you want a randomized speed.
+ */
+
+/** Sound effects list
+ * @type {Object.<String, Sound>}
+*/
 const sounds = {
     // Thunder
     "thunder1": { src: "./assets/sfx/thunder1.mp3" },
@@ -27,6 +37,15 @@ const sounds = {
     "fireworks2": { src: "./assets/sfx/firework_explosion_002.mp3" },
     // "fireworks3": { src: "./assets/sfx/firework_explosion_fizz_001.mp3" },
     "fireworks4": { src: "./assets/sfx/firework_explosion_fizz_002.mp3" },
+    
+    // Balloons
+    "balloon_pop": { src: "./assets/sfx/zapsplat_foley_balloon_pop_20568.mp3", volume: 0.3, speed: [0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3] },
+
+    // Clicks
+    "click_1": { src: "./assets/sfx/zapsplat_household_switch_video_game_controller_click_001_110095.mp3", volume: 0.9 },
+    "click_2": { src: "./assets/sfx/zapsplat_household_switch_video_game_controller_click_002_110096.mp3", volume: 0.9 },
+    
+    "light_on": { src: "./assets/sfx/trimmed_zapsplat_household_fluorescent_bulb_light_on_starter_hum_buzz_002_111457.ogg", volume: 0.7 },
 }
 // Register sounds
 for(const [key, {src}] of Object.entries(sounds)) PIXISound.add(key, src);
@@ -36,13 +55,19 @@ const sound = {
     volume_master: 0.3,
 
     recents: {},
-    play(name, volume) {
-        if(this.recents[name] > Date.now()-100) return; // Already played sound within last 100ms
+    play(name, volume, speed) {
+        // Sound effect data
+        const snippet = sounds?.[name];
+
+        // Already played sound within last 75ms
+        const minMS = snippet.min_ms ?? 75;
+        if(this.recents[name] > Date.now()-minMS) return; 
 
         const options = {
-            volume: (volume ?? sounds?.[name]?.volume ?? 1) * this.volume_master,
-            loop: sounds[name].loop,
+            volume: (volume ?? snippet?.volume ?? 1) * this.volume_master,
+            loop: snippet.loop,
             // complete: () => console.log(name + ' complete')
+            speed: parse(speed ?? snippet.speed ?? 1)
         }
 
         let s;

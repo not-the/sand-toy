@@ -686,6 +686,9 @@
             "lightning plasma": { "to": "fire" },
             "laser plasma": { "to": "air" },
             "acid": { "to": "air" }
+        },
+        "sfx": {
+            "reacts": "balloon_pop"
         }
     },
     "firework": {
