@@ -62,6 +62,33 @@ class Pixel extends PIXI.Sprite {
             }
         },
 
+        setupInstrument: p => {
+            const notes = {
+                'C': 0,
+                'C#': 1,
+                'D': 2,
+                'D#': 3,
+                'E': 4,
+                'F': 5,
+                'F#': 6,
+                'G': 7,
+                'G#': 8,
+                'A': 9,
+                'A#': 10,
+                'B': 11
+            };
+
+            const prompt = window.prompt("Choose a note to play")?.toUpperCase?.();
+            let semitone = notes[prompt];
+
+            // Invalid
+            if(semitone === undefined) semitone = Number(prompt);
+            if(Number.isNaN(semitone)) return p.set("smoke");
+
+            // Remember
+            this.data.semitone = semitone;
+        },
+
         artSand: p => {
             const timeframe = elapsed/50;
             const elapsedFloor  = Math.floor(timeframe);
@@ -491,6 +518,11 @@ class Pixel extends PIXI.Sprite {
         // Power target
         if(target.type === "wire") target.set("electricity");
         else target.power();
+    }
+    
+    power_piano_key() {
+        const speed = 2 ** (this.data.semitone / 12);
+        sound.play("piano_c", undefined, speed);
     }
 
     tick_light_sensor() {

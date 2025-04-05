@@ -46,6 +46,9 @@ const sounds = {
     "click_2": { src: "./assets/sfx/zapsplat_household_switch_video_game_controller_click_002_110096.mp3", volume: 0.9 },
     
     "light_on": { src: "./assets/sfx/trimmed_zapsplat_household_fluorescent_bulb_light_on_starter_hum_buzz_002_111457.ogg", volume: 0.7 },
+    
+    // Music
+    "piano_c": { src: "./assets/sfx/notec_yhGsG75.mp3", volume: 0.7, min_ms: 0 },
 }
 // Register sounds
 for(const [key, {src}] of Object.entries(sounds)) PIXISound.add(key, src);

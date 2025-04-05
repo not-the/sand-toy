@@ -902,6 +902,16 @@
         "non_solid": true,
         "background": true
     },
+    "piano key": {
+        "placement": "once",
+        "brush_size": 1,
+
+        "colors": ["#D3BE5F", "#C4B266"],
+        "powerable": true,
+        "power_contiguous": true,
+
+        "onset": "setupInstrument"
+    },
     "wireless transmitter": {
         "placement": "once",
         "brush_size": 1,
