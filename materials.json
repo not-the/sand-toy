@@ -2,7 +2,7 @@
     "air": {
     "colors": ["344457", "344457", "344457", "334454", "344558"],
         "float": 99,
-        "air": true
+        "non_solid": true
     },
     "concrete": {
         "colors": [
@@ -499,8 +499,7 @@
         "glows": true,
 
         "fade": 8,
-        "despawn_timer": 10,
-        "air": true
+        "despawn_timer": 10
     },
 
     "#Man-made": 0,
@@ -655,7 +654,6 @@
             "FFF8CA",
             "F9F1E4"
         ],
-        "rgb_color_wheel": ["ff7a7a", "ffab7a", "ffd47a", "d9ff7a", "7aff91", "7afff1", "7ac0ff", "8a7aff", "e87aff", "ff7a7a"],
         "glows": true,
 
         "powerable": true,
@@ -669,6 +667,10 @@
 
         "powerable": true,
         "power_contiguous": true
+    },
+    "rgb light": {
+        "colors": ["ff7a7a", "ffab7a", "ffd47a", "d9ff7a", "7aff91", "7afff1", "7ac0ff", "8a7aff", "e87aff", "ff7a7a"],
+        "glows": true
     },
     "balloons": {
         "colors": [
@@ -723,6 +725,8 @@
     "firework plasma": {
         "hidden": true,
         "clone_proof": true,
+        "non_solid": true,
+        "laser_pass": true,
 
         "colors": [ "ffffff" ],
         "all_colors": [
@@ -744,7 +748,6 @@
         ],
 
         "glows": true,
-        "air": true,
         "gas": true,
 
         "fade": 18,

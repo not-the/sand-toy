@@ -284,7 +284,7 @@ class Pixel extends PIXI.Sprite {
                 let above = world.getPixel(this.x, this.y-1);
                 // let below = world.getPixel(this.x, this.y+1);
 
-                if(above !== undefined && above?.mat?.air /* && !this.moving*/) this.set('grass seeds');
+                if(above !== undefined && above?.mat?.non_solid /* && !this.moving*/) this.set('grass seeds');
             }
         }
 
@@ -679,7 +679,7 @@ class Pixel extends PIXI.Sprite {
     tick_grass_seeds() {
         let above = world.getPixel(this.x, this.y-1);
         let below = world.getPixel(this.x, this.y+1);
-        if(above === undefined || !above?.mat?.air && below?.type !== 'mud' && below?.type !== 'grass') return;
+        if(above === undefined || !above?.mat?.non_solid && below?.type !== 'mud' && below?.type !== 'grass') return;
 
         // Grow
         if(Math.random() >= 0.7) {
@@ -696,14 +696,14 @@ class Pixel extends PIXI.Sprite {
         if(Math.random() >= 0.9) {
             const above = world.getPixel(this.x, this.y-1);
 
-            if(!above?.mat?.air && above?.type !== 'grass') this.set('mud');
+            if(!above?.mat?.non_solid && above?.type !== 'grass') this.set('mud');
         }
     }
 
     tick_firework() {
         const below = world.getPixel(this.x, this.y+1);
 
-        if(below !== undefined && below?.mat?.air && (Math.random() < 0.3)) below.set('exhaust');
+        if(below !== undefined && below?.mat?.non_solid && (Math.random() < 0.3)) below.set('exhaust');
     }
 
     tick_firework_explosion() {
@@ -715,7 +715,7 @@ class Pixel extends PIXI.Sprite {
             if(p === undefined) return;
 
             // Must be air
-            if(!p.mat.air && p.type !== "firework explosion") return;
+            if(!p.mat.non_solid && p.type !== "firework explosion") return;
 
             
             // Random momentum
@@ -766,7 +766,7 @@ class Pixel extends PIXI.Sprite {
     
                 // Test if destination is valid
                 const dest = world.getPixel(this.x+rx, this.y+ry);
-                if(dest === undefined || (!dest?.mat?.air && !dest?.mat?.non_solid)) continue;
+                if(dest === undefined || !dest?.mat?.non_solid) continue;
     
                 // Spawn
                 dest.set(this.data.clone_material);
@@ -1049,7 +1049,7 @@ class Pixel extends PIXI.Sprite {
         let h_movement;
 
         // Normal horizontal
-        if(!world.grid?.[this.y+1]?.[this.x]?.mat?.air) {
+        if(!world.grid?.[this.y+1]?.[this.x]?.mat?.non_solid) {
             h_movement = Math.sin(elapsed/period + this.y/0.45) + Math.cos(elapsed/period + this.x/6-offset);
         }
         // Falling
