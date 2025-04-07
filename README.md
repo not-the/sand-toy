@@ -30,12 +30,13 @@ In most cases, non-boolean properties also support the use of an array in order 
 /** Example material - The key will be used as the material name. "color" is
 the only required property, all others are optional. */
 "wood": {
-    /* colors {Array} Each pixel will randomly choose a color from this array */
+    /* colors {Array} Each pixel will randomly choose a color from this array
+    */
     "colors": ["#344457", "#334454", "#344558"],
 
-    /* air {Boolean} If set to true, our material can be destroyed by things
-    like grass growing. */
-    "air": false,
+    /* air {Boolean} If set to true, our material will be treated like an
+    empty pixel and will allow other materials to replace it like it's air */
+    "non_solid": false,
 
     /* glows {Boolean} If set to true, lightly colored pixels will appear to
     glow. */
@@ -117,11 +118,12 @@ the only required property, all others are optional. */
     /* hidden {Boolean} If set to true, our material won't appear in the list */
     "hidden": true,
 
-    /* brush_replace {String} Defaults to true if undefined. If explicity set to false,
-    other materials will not be destroyed when drawing. */
+    /* brush_replace {String} Defaults to true if undefined. If explicity set
+    to false, other materials will not be destroyed when drawing. */
     "brush_replace": false,
 
-    /* brush_size {Number} (1-100) Choosing the material will set your brush size to this value. */
+    /* brush_size {Number} (1-100) Choosing the material will set your brush
+    size to this value. */
     "brush_size": 1,
 
     /* placement {String} If set to "once" the material will be placed once when
@@ -130,15 +132,41 @@ the only required property, all others are optional. */
 
     /* sfx {Object} */
     "sfx": {
-        /* place {Array} A random sound will be played when the material spawns
-        in. Sounds must be registered using JS */
-        "place": ["thunder1", "thunder2", "thunder3"]
+        /* place {Array|String} A random sound will be played when the material
+        spawns in. Sounds must be registered using JS */
+        "place": ["thunder1", "thunder2", "thunder3"],
+        
+        /* reacts {Array|String} Sound to be played when the material reacts
+        with another */
+        "reacts": "balloon_pop"
     },
+
+    /* acid_proof {Boolean} If true, the material will not be destroyed by acid
+    */
+    "acid_proof": false,
+
+    /* lightning_pass {Boolean} If true, lightning will pass through the
+    material without replacing it. */
+    "lightning_pass": false,
+
+    /* laser_pass {Boolean} If true, lasers will pass through the material
+    without replacing it. Example: see plastic */
+    "laser_pass": true,
+
+    /* clone_type {String} Must be a material name. If defined, cloners will
+    copy the defined material instead of our material. */
+    "clone_type": "laser",
+
+    /* clone_proof {Boolean} If true, cloners will be unable to copy the
+    material */
+    "clone_proof": false,
+
+    /* clone_proof {String} If defined the material will trigger the
+    appropriate sensor type. */
+    "sensor_type": "fluid",
 
 
     // MISC
-    "lightning_pass": false,
-    "laser_pass": true, // Currently unused
     "conductive": true, // Currently unused
     "while_behavior": true, // Currently unused
     "fade": 5, // Currently unused
