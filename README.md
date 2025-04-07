@@ -34,7 +34,7 @@ the only required property, all others are optional. */
     */
     "colors": ["#344457", "#334454", "#344558"],
 
-    /* air {Boolean} If set to true, our material will be treated like an
+    /* non_solid {Boolean} If set to true, our material will be treated like an
     empty pixel and will allow other materials to replace it like it's air */
     "non_solid": false,
 
