@@ -550,7 +550,7 @@ class Pixel extends PIXI.Sprite {
     /** copy of light sensor with water instead of laser */
     tick_fluid_sensor() {
         const neighbors = this.getVonNeumannNeighborArray();
-        const active = neighbors.some(p => p?.type === "water");
+        const active = neighbors.some(p => p?.mat?.sensor_type === "fluid");
 
         // State
         const wasActive = this.data.power_source;
