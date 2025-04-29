@@ -86,15 +86,15 @@ the only required property, all others are optional. */
     despawn. 0.1 = 10% */
     "despawn_chance": 0.1,
 
-    /* despawn_chance {Number} Time (in ticks) until the material will
+    /* despawn_timer {Number} Time (in ticks) until the material will
     despawn. */
     "despawn_timer": 100,
 
-    /* despawn_chance {Number} CURRENTLY UNUSED. Time (in ticks) before the
+    /* min_despawn_age {Number} CURRENTLY UNUSED. Time (in ticks) before the
     material is allowed to despawn for any reason. */
     "min_despawn_age": 60,
 
-    /* despawn_chance {String or Array} If undefined, materials will convert
+    /* despawn_conversion {String or Array} If undefined, materials will convert
     into air by default. Can be either a string, or an array for a random
     material */
     "despawn_conversion": ["ash", "fire"],
