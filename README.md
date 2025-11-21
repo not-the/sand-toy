@@ -161,8 +161,8 @@ the only required property, all others are optional. */
     material */
     "clone_proof": false,
 
-    /* clone_proof {String} If defined the material will trigger the
-    appropriate sensor type. */
+    /* sensor_type {String} If defined the material will trigger the
+    appropriate sensor type. (Can be "fluid" or "light") */
     "sensor_type": "fluid",
 
 
